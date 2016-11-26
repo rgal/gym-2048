@@ -115,7 +115,7 @@ class Game2048Env(gym.Env):
         return highest
 
     def move(self, direction, trial=False):
-	"""Perform one move of the game. Shift things to one side then,
+        """Perform one move of the game. Shift things to one side then,
         combine. directions 0, 1, 2, 3 are left, up, right, down.
         Returns the score that [would have] got."""
         if not trial:
@@ -169,7 +169,7 @@ class Game2048Env(gym.Env):
         return move_score
 
     def combine(self, shifted_row):
-	"""Combine same tiles when moving to one side. This function always
+        """Combine same tiles when moving to one side. This function always
            shifts towards the left. Also count the score of combined tiles."""
         move_score = 0
         combined_row = [0] * 4
@@ -218,7 +218,7 @@ class Game2048Env(gym.Env):
         return (combined_row, move_score)
 
     def isend(self):
-	"""Has the game ended. Game ends if there are no legal moves.
+        """Has the game ended. Game ends if there are no legal moves.
         If there are empty spaces then there must be legal moves."""
 
         actions = list()
