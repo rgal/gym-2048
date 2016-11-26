@@ -20,6 +20,13 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(b.combine([4, 2, 2, 4]), ([4, 4, 4, 0], 4))
         self.assertEqual(b.combine([4, 4, 4, 4]), ([8, 8, 0, 0], 16))
 
+        # Test short input
+        self.assertEqual(b.combine([]), ([0, 0, 0, 0], 0))
+        self.assertEqual(b.combine([0]), ([0, 0, 0, 0], 0))
+        self.assertEqual(b.combine([2]), ([2, 0, 0, 0], 0))
+        self.assertEqual(b.combine([2, 4]), ([2, 4, 0, 0], 0))
+        self.assertEqual(b.combine([2, 2, 8]), ([4, 8, 0, 0], 4))
+
     def test_shift(self):
         b = game2048_env.Game2048Env()
         # Shift left without combining

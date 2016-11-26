@@ -186,7 +186,7 @@ class Game2048Env(gym.Env):
                 # Skip the next thing in the list.
                 skip = True
             output_index += 1
-        if not skip:
+        if shifted_row and not skip:
             combined_row[output_index] = shifted_row[-1]
 
         return (combined_row, move_score)
