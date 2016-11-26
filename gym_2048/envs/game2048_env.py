@@ -204,10 +204,6 @@ class Game2048Env(gym.Env):
         if direction:
            shifted_row.reverse()
 
-        # fill with 0s
-        zero_count = length - len(shifted_row)
-        shifted_row += [0] * zero_count
-
         (combined_row, move_score) = self.combine(shifted_row)
 
         # Reverse list to handle shifting to the right
