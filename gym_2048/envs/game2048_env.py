@@ -39,8 +39,15 @@ class Game2048Env(gym.Env):
         # Guess that the maximum reward is also 2**squares though you'll probably never get that.
         self.reward_range = (-1., float(2**squares))
 
+        # Initialise seed
+        self._seed()
+
         # Reset ready for a game
         self._reset()
+
+    def _seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     # Implement gym interface
     def _step(self, action):
@@ -93,13 +100,14 @@ class Game2048Env(gym.Env):
     def add_tile(self):
         """Add a tile, probably a 2 but maybe a 4"""
         val = 0
-        if random.random() > 0.8:
+        if self.np_random.random_sample() > 0.8:
             val = 4
         else:
             val = 2
         empties = self.empties()
         assert empties
-        empty = random.choice(empties)
+        empty_idx = self.np_random.choice(len(empties))
+        empty = empties[empty_idx]
         logging.debug("Adding %s at %s", val, (empty[0], empty[1]))
         self.set(empty[0], empty[1], val)
 
