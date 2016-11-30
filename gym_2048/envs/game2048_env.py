@@ -24,9 +24,10 @@ class Game2048Env(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        # Definitions for game
-        self.w = 4
-        self.h = 4
+        # Definitions for game. Board must be square.
+        self.size = 4
+        self.w = self.size
+        self.h = self.size
 
         # Members for gym implementation
         self.action_space = spaces.Discrete(4)
@@ -172,7 +173,7 @@ class Game2048Env(gym.Env):
         """Combine same tiles when moving to one side. This function always
            shifts towards the left. Also count the score of combined tiles."""
         move_score = 0
-        combined_row = [0] * 4
+        combined_row = [0] * self.size
         skip = False
         output_index = 0
         for p in pairwise(shifted_row):
@@ -194,7 +195,7 @@ class Game2048Env(gym.Env):
     def shift(self, row, direction):
         """Shift one row left (direction == 0) or right (direction == 1), combining if required."""
         length = len(row)
-        assert length == 4
+        assert length == self.size
         assert direction == 0 or direction == 1
 
         # Shift all non-zero digits up
@@ -210,7 +211,7 @@ class Game2048Env(gym.Env):
         if direction:
             combined_row.reverse()
 
-        assert len(combined_row) == 4
+        assert len(combined_row) == self.size
         return (combined_row, move_score)
 
     def isend(self):
