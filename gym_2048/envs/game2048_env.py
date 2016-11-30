@@ -30,10 +30,14 @@ class Game2048Env(gym.Env):
         self.size = 4
         self.w = self.size
         self.h = self.size
+        squares = self.size * self.size
 
         # Members for gym implementation
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(0, 16384, (self.w * self.h, ))
+        # Suppose that the maximum tile is as if you have powers of 2 across the board.
+        self.observation_space = spaces.Box(0, 2**squares, (self.w * self.h, ))
+        # Guess that the maximum reward is also 2**squares though you'll probably never get that.
+        self.reward_range = (-1., float(2**squares))
 
         # Reset ready for a game
         self._reset()
@@ -46,6 +50,7 @@ class Game2048Env(gym.Env):
         done = None
         try:
             score = float(self.move(action))
+            assert score <= 2**(self.w*self.h)
             self.add_tile()
             done = self.isend()
             reward = float(score)
