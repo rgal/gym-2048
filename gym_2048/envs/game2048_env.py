@@ -46,13 +46,15 @@ class Game2048Env(gym.Env):
             score = float(self.move(action))
             self.add_tile()
             done = self.isend()
+            reward = float(score)
         except IllegalMove as e:
             logging.debug("Illegal move, done.")
             done = True
+            # Negative reward for illegal move
+            reward = -1.
 
         #print("Am I done? {}".format(done))
         observation = np.array(self.Matrix).flatten()
-        reward = float(score)
         info = dict()
         return observation, reward, done, info
         # Return observation (board state), reward, done and info dict
