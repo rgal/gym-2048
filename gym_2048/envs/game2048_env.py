@@ -10,6 +10,8 @@ import argparse
 import itertools
 import logging
 import random
+from six import StringIO
+import sys
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -21,7 +23,7 @@ class IllegalMove(Exception):
     pass
 
 class Game2048Env(gym.Env):
-    metadata = {'render.modes': ['human']}
+    metadata = {'render.modes': ['human', 'ansi']}
 
     def __init__(self):
         # Definitions for game. Board must be square.
@@ -70,13 +72,17 @@ class Game2048Env(gym.Env):
         return np.array(self.Matrix).flatten()
 
     def _render(self, mode='human', close=False):
+        if close:
+            return
+        outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
         for y in range(self.h):
             for x in range(self.w):
                 s += '{0:5d}'.format(self.get(x, y))
             s += '\n'
-        print(s)
+        outfile.write(s)
+        return outfile
 
     # Implement 2048 game
     def add_tile(self):
