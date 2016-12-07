@@ -37,7 +37,7 @@ class Game2048Env(gym.Env):
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
         self.observation_space = spaces.Box(0, 2**squares, (self.w * self.h, ))
         # Guess that the maximum reward is also 2**squares though you'll probably never get that.
-        self.reward_range = (-1., float(2**squares))
+        self.reward_range = (0., float(2**squares))
 
         # Initialise seed
         self._seed()
@@ -62,10 +62,10 @@ class Game2048Env(gym.Env):
             done = self.isend()
             reward = float(score)
         except IllegalMove as e:
-            logging.debug("Illegal move, done.")
-            done = True
-            # Negative reward for illegal move
-            reward = -1.
+            logging.debug("Illegal move")
+            done = False
+            # No reward for illegal move
+            reward = 0.
 
         #print("Am I done? {}".format(done))
         observation = self.Matrix.flatten()
