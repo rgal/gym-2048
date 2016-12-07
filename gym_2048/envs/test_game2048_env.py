@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
+import numpy as np
 
 import game2048_env
 
@@ -54,17 +55,17 @@ class TestBoard(unittest.TestCase):
     def test_move(self):
         # Test a bunch of lines all moving at once.
         b = game2048_env.Game2048Env()
-        b.set_board([
+        b.set_board(np.array([
             [0, 2, 0, 4],
             [2, 2, 8, 0],
             [2, 2, 2, 8],
-            [2, 2, 4, 4]])
+            [2, 2, 4, 4]]))
         self.assertEqual(b.move(0), 20) # shift to the left
-        self.assertEqual(b.get_board(), [
+        self.assertTrue(np.array_equal(b.get_board(), np.array([
             [2, 4, 0, 0],
             [4, 8, 0, 0],
             [4, 2, 8, 0],
-            [4, 8, 0, 0]])
+            [4, 8, 0, 0]])))
 
         # Test that doing the same move again (without anything added) is illegal
         with self.assertRaises(game2048_env.IllegalMove):

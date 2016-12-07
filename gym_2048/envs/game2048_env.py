@@ -68,20 +68,20 @@ class Game2048Env(gym.Env):
             reward = -1.
 
         #print("Am I done? {}".format(done))
-        observation = np.array(self.Matrix).flatten()
+        observation = self.Matrix.flatten()
         info = dict()
         return observation, reward, done, info
         # Return observation (board state), reward, done and info dict
 
     def _reset(self):
-        self.Matrix = [[0 for x in range(self.w)] for y in range(self.h)]
+        self.Matrix = np.zeros((self.h, self.w), np.int)
         self.score = 0
 
         logging.debug("Adding tiles")
         self.add_tile()
         self.add_tile()
 
-        return np.array(self.Matrix).flatten()
+        return self.Matrix.flatten()
 
     def _render(self, mode='human', close=False):
         if close:
@@ -113,11 +113,11 @@ class Game2048Env(gym.Env):
 
     def get(self, x, y):
         """Return the value of one square."""
-        return self.Matrix[x][y]
+        return self.Matrix[x, y]
 
     def set(self, x, y, val):
         """Set the value of one square."""
-        self.Matrix[x][y] = val
+        self.Matrix[x, y] = val
 
     def empties(self):
         """Return a list of tuples of the location of empty squares."""
@@ -258,4 +258,3 @@ class Game2048Env(gym.Env):
     def set_board(self, new_board):
         """Retrieve the whole board, useful for testing."""
         self.Matrix = new_board
-
