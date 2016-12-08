@@ -81,6 +81,13 @@ class TestBoard(unittest.TestCase):
         with self.assertRaises(game2048_env.IllegalMove):
             b.move(0)
 
+        self.assertEqual(b.move(3), 8) # shift down
+        self.assertTrue(np.array_equal(b.get_board(), np.array([
+            [0, 4, 0, 0],
+            [2, 8, 0, 0],
+            [4, 2, 0, 0],
+            [8, 8, 8, 0]])))
+
     def test_highest(self):
         b = game2048_env.Game2048Env()
         b.set_board(np.array([
