@@ -81,5 +81,29 @@ class TestBoard(unittest.TestCase):
         with self.assertRaises(game2048_env.IllegalMove):
             b.move(0)
 
+    def test_highest(self):
+        b = game2048_env.Game2048Env()
+        b.set_board(np.array([
+            [0, 2, 0, 4],
+            [2, 2, 8, 0],
+            [2, 2, 2048, 8],
+            [2, 2, 4, 4]]))
+        self.assertEqual(b.highest(), 2048)
+
+    def test_isend(self):
+        b = game2048_env.Game2048Env()
+        b.set_board(np.array([
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2]]))
+        self.assertEqual(b.isend(), False)
+        b.set_board(np.array([
+            [2, 4, 8, 16],
+            [4, 8, 16, 2],
+            [8, 16, 2, 4],
+            [16, 2, 4, 8]]))
+        self.assertEqual(b.isend(), True)
+
 if __name__ == '__main__':
     unittest.main()
