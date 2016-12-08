@@ -12,13 +12,23 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(b.combine([0, 0, 0, 0]), ([0, 0, 0, 0], 0))
         self.assertEqual(b.combine([2, 0, 0, 0]), ([2, 0, 0, 0], 0))
         self.assertEqual(b.combine([2, 4, 0, 0]), ([2, 4, 0, 0], 0))
+        # None the same
         self.assertEqual(b.combine([2, 4, 8, 16]), ([2, 4, 8, 16], 0))
 
         # Test combining
+        # Left same same
         self.assertEqual(b.combine([2, 2, 8, 0]), ([4, 8, 0, 0], 4))
-        self.assertEqual(b.combine([2, 2, 2, 8]), ([4, 2, 8, 0], 4))
-        self.assertEqual(b.combine([2, 2, 4, 4]), ([4, 8, 0, 0], 12))
+        # Middle the same
         self.assertEqual(b.combine([4, 2, 2, 4]), ([4, 4, 4, 0], 4))
+        # Left and middle the same
+        self.assertEqual(b.combine([2, 2, 2, 8]), ([4, 2, 8, 0], 4))
+        # Right the same
+        self.assertEqual(b.combine([2, 8, 4, 4]), ([2, 8, 8, 0], 8))
+        # Left and right the same
+        self.assertEqual(b.combine([2, 2, 4, 4]), ([4, 8, 0, 0], 12))
+        # Right and middle the same
+        self.assertEqual(b.combine([2, 4, 4, 4]), ([2, 8, 4, 0], 8))
+        # All the same
         self.assertEqual(b.combine([4, 4, 4, 4]), ([8, 8, 0, 0], 16))
 
         # Test short input
