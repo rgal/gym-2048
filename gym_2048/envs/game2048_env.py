@@ -240,17 +240,14 @@ class Game2048Env(gym.Env):
         """Has the game ended. Game ends if there are no legal moves.
         If there are empty spaces then there must be legal moves."""
 
-        actions = list()
         for direction in range(4):
             try:
                 self.move(direction, trial=True)
-                actions.append(direction)
+                # Not the end if we can do any move
+                return False
             except IllegalMove:
                 pass
-
-        legal_moves = len(actions)
-        logging.debug("Legal moves %s", legal_moves)
-        return not bool(legal_moves)
+        return True
 
     def get_board(self):
         """Retrieve the whole board, useful for testing."""
