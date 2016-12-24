@@ -154,7 +154,6 @@ class Game2048Env(gym.Env):
             elif direction == 3:
                 logging.debug("Left")
 
-        changed = False
         movefunc = lib.move
         ints_16 = ctypes.c_int * 16
         i_list = list(self.Matrix.flatten())
@@ -162,9 +161,7 @@ class Game2048Env(gym.Env):
         board = ints_16(*i_list)
         move_score = movefunc(board, direction)
         after = list(board)
-        if after != before:
-            changed = True
-        if changed != True:
+        if move_score == 0 and after == before:
             raise IllegalMove
         if not trial:
             # Update the board from after list
