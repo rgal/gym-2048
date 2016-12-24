@@ -65,12 +65,49 @@ class TestBoard(unittest.TestCase):
     def test_move(self):
         # Test a bunch of lines all moving at once.
         b = game2048_env.Game2048Env()
+        # Test shift up
         b.set_board(np.array([
             [0, 2, 0, 4],
             [2, 2, 8, 0],
             [2, 2, 2, 8],
             [2, 2, 4, 4]]))
-        self.assertEqual(b.move(3), 20) # shift to the left
+        self.assertEqual(b.move(0), 12)
+        self.assertTrue(np.array_equal(b.get_board(), np.array([
+            [4, 4, 8, 4],
+            [2, 4, 2, 8],
+            [0, 0, 4, 4],
+            [0, 0, 0, 0]])))
+        # Test shift right
+        b.set_board(np.array([
+            [0, 2, 0, 4],
+            [2, 2, 8, 0],
+            [2, 2, 2, 8],
+            [2, 2, 4, 4]]))
+        self.assertEqual(b.move(1), 20)
+        self.assertTrue(np.array_equal(b.get_board(), np.array([
+            [0, 0, 2, 4],
+            [0, 0, 4, 8],
+            [0, 2, 4, 8],
+            [0, 0, 4, 8]])))
+        # Test shift down
+        b.set_board(np.array([
+            [0, 2, 0, 4],
+            [2, 2, 8, 0],
+            [2, 2, 2, 8],
+            [2, 2, 4, 4]]))
+        self.assertEqual(b.move(2), 12)
+        self.assertTrue(np.array_equal(b.get_board(), np.array([
+            [0, 0, 0, 0],
+            [0, 0, 8, 4],
+            [2, 4, 2, 8],
+            [4, 4, 4, 4]])))
+        # Test shift left
+        b.set_board(np.array([
+            [0, 2, 0, 4],
+            [2, 2, 8, 0],
+            [2, 2, 2, 8],
+            [2, 2, 4, 4]]))
+        self.assertEqual(b.move(3), 20)
         self.assertTrue(np.array_equal(b.get_board(), np.array([
             [2, 4, 0, 0],
             [4, 8, 0, 0],
@@ -81,6 +118,7 @@ class TestBoard(unittest.TestCase):
         with self.assertRaises(game2048_env.IllegalMove):
             b.move(3)
 
+        # Test a follow on move from the first one
         self.assertEqual(b.move(2), 8) # shift down
         self.assertTrue(np.array_equal(b.get_board(), np.array([
             [0, 4, 0, 0],
