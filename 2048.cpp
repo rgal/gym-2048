@@ -92,11 +92,15 @@ int shift(int row[SIZE], int direction) {
 
     score = combine(shifted_row);
 
-    if (direction)
-        reverse(shifted_row);
-
-    for (int i = 0; i != SIZE; i++) {
-        row[i] = shifted_row[i];
+    if (direction) {
+        // Copy shifted_row to row and reverse
+        for (int i = 0; i != SIZE; i++) {
+            row[SIZE - i - 1] = shifted_row[i];
+        }
+    } else {
+        for (int i = 0; i != SIZE; i++) {
+            row[i] = shifted_row[i];
+        }
     }
 
     return score;
