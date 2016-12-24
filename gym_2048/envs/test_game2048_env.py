@@ -70,7 +70,7 @@ class TestBoard(unittest.TestCase):
             [2, 2, 8, 0],
             [2, 2, 2, 8],
             [2, 2, 4, 4]]))
-        self.assertEqual(b.move(0), 20) # shift to the left
+        self.assertEqual(b.move(3), 20) # shift to the left
         self.assertTrue(np.array_equal(b.get_board(), np.array([
             [2, 4, 0, 0],
             [4, 8, 0, 0],
@@ -79,9 +79,9 @@ class TestBoard(unittest.TestCase):
 
         # Test that doing the same move again (without anything added) is illegal
         with self.assertRaises(game2048_env.IllegalMove):
-            b.move(0)
+            b.move(3)
 
-        self.assertEqual(b.move(3), 8) # shift down
+        self.assertEqual(b.move(2), 8) # shift down
         self.assertTrue(np.array_equal(b.get_board(), np.array([
             [0, 4, 0, 0],
             [2, 8, 0, 0],

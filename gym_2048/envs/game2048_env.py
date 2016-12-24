@@ -89,8 +89,8 @@ class Game2048Env(gym.Env):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
-        for y in range(self.h):
-            for x in range(self.w):
+        for x in range(self.w):
+            for y in range(self.h):
                 s += '{0:5d}'.format(self.get(x, y))
             s += '\n'
         outfile.write(s)
@@ -138,49 +138,50 @@ class Game2048Env(gym.Env):
 
     def move(self, direction, trial=False):
         """Perform one move of the game. Shift things to one side then,
-        combine. directions 0, 1, 2, 3 are left, up, right, down.
+        combine. directions 0, 1, 2, 3 are up, right, down, left.
         Returns the score that [would have] got."""
         if not trial:
             if direction == 0:
-                logging.debug("Left")
-            elif direction == 1:
                 logging.debug("Up")
-            elif direction == 2:
+            elif direction == 1:
                 logging.debug("Right")
-            elif direction == 3:
+            elif direction == 2:
                 logging.debug("Down")
+            elif direction == 3:
+                logging.debug("Left")
 
         changed = False
         move_score = 0
-        dir_mod_two = direction % 2
-        dir_div_two = int(direction / 2) # 0 for towards up left, 1 for towards bottom right
+        dir_div_two = int(direction / 2)
+        dir_mod_two = int(direction % 2)
+        shift_direction = dir_mod_two ^ dir_div_two # 0 for towards up left, 1 for towards bottom right
 
         # Construct a range for extracting row/column into a list
         rx = range(self.w)
         ry = range(self.h)
 
         if dir_mod_two == 0:
-            # Up or down, split into columns
-            for x in range(self.w):
-                old = [self.get(x, y) for y in ry]
-                (new, ms) = self.shift(old, dir_div_two)
-                move_score += ms
-                if old != new:
-                    changed = True
-                    if not trial:
-                        for y in ry:
-                            self.set(x, y, new[y])
-        else:
             # Left or right, split into rows
             for y in range(self.h):
                 old = [self.get(x, y) for x in rx]
-                (new, ms) = self.shift(old, dir_div_two)
+                (new, ms) = self.shift(old, shift_direction)
                 move_score += ms
                 if old != new:
                     changed = True
                     if not trial:
                         for x in rx:
                             self.set(x, y, new[x])
+        else:
+            # Up or down, split into columns
+            for x in range(self.w):
+                old = [self.get(x, y) for y in ry]
+                (new, ms) = self.shift(old, shift_direction)
+                move_score += ms
+                if old != new:
+                    changed = True
+                    if not trial:
+                        for y in ry:
+                            self.set(x, y, new[y])
         if changed != True:
             raise IllegalMove
 
