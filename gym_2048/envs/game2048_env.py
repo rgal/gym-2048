@@ -7,11 +7,15 @@ from gym.utils import seeding
 import numpy as np
 
 import argparse
+import copy
+import ctypes
 import itertools
 import logging
 import random
 from six import StringIO
 import sys
+
+lib = ctypes.cdll.LoadLibrary('./lib2048.dylib')
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -151,41 +155,24 @@ class Game2048Env(gym.Env):
                 logging.debug("Left")
 
         changed = False
-        move_score = 0
-        dir_div_two = int(direction / 2)
-        dir_mod_two = int(direction % 2)
-        shift_direction = dir_mod_two ^ dir_div_two # 0 for towards up left, 1 for towards bottom right
-
-        # Construct a range for extracting row/column into a list
-        rx = range(self.w)
-        ry = range(self.h)
-
-        if dir_mod_two == 0:
-            # Left or right, split into rows
-            for y in range(self.h):
-                old = [self.get(x, y) for x in rx]
-                (new, ms) = self.shift(old, shift_direction)
-                move_score += ms
-                if old != new:
-                    changed = True
-                    if not trial:
-                        for x in rx:
-                            self.set(x, y, new[x])
-        else:
-            # Up or down, split into columns
-            for x in range(self.w):
-                old = [self.get(x, y) for y in ry]
-                (new, ms) = self.shift(old, shift_direction)
-                move_score += ms
-                if old != new:
-                    changed = True
-                    if not trial:
-                        for y in ry:
-                            self.set(x, y, new[y])
+        movefunc = lib.move
+        ints_16 = ctypes.c_int * 16
+        i_list = list(self.Matrix.flatten())
+        before = copy.copy(i_list)
+        board = ints_16(*i_list)
+        move_score = movefunc(board, direction)
+        after = list(board)
+        if after != before:
+            changed = True
         if changed != True:
             raise IllegalMove
-
         if not trial:
+            # Update the board from after list
+            for idx, val in enumerate(after):
+                x = idx / self.w
+                y = idx % self.w
+                self.set(x, y, val)
+
             # Update score
             self.score += move_score
 
