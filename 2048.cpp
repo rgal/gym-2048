@@ -3,6 +3,10 @@
 
 #define SIZE 4
 
+extern "C" {
+    int move(int board[SIZE*SIZE], int direction);
+}
+
 void print_board(int board[SIZE * SIZE]) {
     for (int y = 0; y != SIZE; y++) {
         for (int x = 0; x != SIZE; x++) {
