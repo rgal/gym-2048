@@ -75,7 +75,7 @@ int shift(int row[SIZE], int direction) {
     assert((direction == 0) || (direction == 1));
     int shifted_row[SIZE];
     int output_index = 0;
-    print_array(row);
+    //print_array(row);
     // Shift up (or down)
     for (int i = 0; i != SIZE; i++) {
         shifted_row[i] = 0;
@@ -88,7 +88,7 @@ int shift(int row[SIZE], int direction) {
             output_index++;
         }
     }
-    print_array(shifted_row);
+    //print_array(shifted_row);
 
     score = combine(shifted_row);
 
