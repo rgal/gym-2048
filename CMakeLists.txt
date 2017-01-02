@@ -1,5 +1,11 @@
 cmake_minimum_required (VERSION 2.8.10)
 project (2048)
 set(CMAKE_BUILD_TYPE Release)
+
+add_subdirectory(googletest)
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 add_library (2048 SHARED 2048.cpp)
 add_executable (test2048 test2048.cpp 2048.cpp)
+target_link_libraries(test2048 gtest gtest_main)
+add_test(test2048 test2048)
