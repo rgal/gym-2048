@@ -18,9 +18,9 @@ class Node(object):
         self.state = state
         # How good each action is (based on the final score)
         # Initialise to a high value to encourage exploration
-        self.action_quality = [100.] * 4
+        self.action_quality = [0.] * 4
         # How many times each action has been taken (to handle averaging)
-        self.action_count = [1] * 4
+        self.action_count = [0] * 4
 
     def update_action(self, action, score):
         """Update the average for that action with the new information about the score."""
@@ -29,7 +29,7 @@ class Node(object):
 
     def visited(self):
         """Report how many times this state has been visited."""
-        return sum(self.action_count) - 4
+        return sum(self.action_count)
 
     def __str__(self):
         s = "State {} was visitied {} times. I know (action:count:score)".format(self.state, self.visited())
