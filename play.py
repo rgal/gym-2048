@@ -1,3 +1,4 @@
+import argparse
 from copy import copy
 import operator
 import pickle
@@ -77,18 +78,27 @@ class Knowledge(object):
                 break
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--episodes', type=int, default=10000)
+    parser.add_argument('--reportfrequency', type=int, default=100)
+    parser.add_argument('-o', '--output', default=None)
+    parser.add_argument('input', nargs='?', default=None)
+    args = parser.parse_args()
     env = gym.make('2048-v0')
     seen_states = dict()
     knowledge = Knowledge()
+    if args.input:
+        pkl_file = open(args.input, 'rb')
+        knowledge = pickle.load(pkl_file)
     # Epsilon is probability of using best action
     epsilon = 0.95
     # Lambda is the decay value for return on action
     llambda = 0.9
     previous_knowledge_size = 0
     start = datetime.datetime.now()
-    print("Episode,Steps,Cumulative reward,Best actions used,States known,States learnt since previous report")
+    print("Episode,Steps,Cumulative reward,Highest tile,Best actions used,States known,States learnt since previous report")
     total_moves = 0
-    for i_episode in range(100000):
+    for i_episode in range(args.episodes):
         #print "New episode"
         observation = env.reset()
         cumulative_reward = 0.
@@ -121,8 +131,8 @@ if __name__ == '__main__':
             cumulative_reward += reward
             if done:
                 #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
-                if (i_episode % 100) == 0:
-                    print("{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
+                if (i_episode % args.reportfrequency) == 0:
+                    print("{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
                     previous_knowledge_size = knowledge.size()
                 total_moves += (t + 1)
                 break
@@ -143,7 +153,8 @@ if __name__ == '__main__':
     print "{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds())
     print knowledge
 
-    #with open('knowledge.pkl', 'w') as f:
-    #    pickle.dump(knowledge, f)
-    #
-    #knowledge.dump(10)
+    if args.output:
+        with open(args.output, 'w') as f:
+            pickle.dump(knowledge, f)
+
+    knowledge.dump(10)
