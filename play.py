@@ -12,10 +12,8 @@ import gym_2048
 # TODO: Consider if can get stuck always picking the best action as an uninitialised value if don't use epsilon greedy.
 class Node(object):
     """This represents a state of what to do from a particular state."""
-    def __init__(self, state):
+    def __init__(self):
         # Remembers:
-        # The state as a tuple
-        self.state = state
         # How good each action is (based on the final score)
         # Initialise to a high value to encourage exploration
         self.action_quality = [0.] * 4
@@ -32,7 +30,7 @@ class Node(object):
         return sum(self.action_count)
 
     def __str__(self):
-        s = "State {} was visitied {} times. I know (action:count:score)".format(self.state, self.visited())
+        s = "Visited {} times. I know (action:count:score)".format(self.visited())
         for i in range(4):
             s += " {}:{}:{:.1f}".format(i, self.action_count[i], self.action_quality[i])
         return s
@@ -53,7 +51,7 @@ class Knowledge(object):
 
     def add(self, state, action, score):
         if state not in self.nodes:
-            self.nodes[state] = Node(state)
+            self.nodes[state] = Node()
         self.nodes[state].update_action(action, score)
 
     def get_node_for_state(self, state):
@@ -72,7 +70,7 @@ class Knowledge(object):
         """Dump knowledge, sorted by visits, limited by count."""
         count = 0
         for n, nod in sorted(self.nodes.items(), key=lambda x: x[1].visited(), reverse=True):
-            print self.nodes[n]
+            print("State: {} {}".format(n, self.nodes[n]))
             count += 1
             if limit and count > limit:
                 break
