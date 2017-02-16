@@ -140,8 +140,16 @@ if __name__ == '__main__':
         # Calculate TD lambda estimates, actual value + lambda of next one plus lambda squared of the next one etc.
         td_lambda_estimate = list()
         # TD0 lambda estimate
+        #print len(history)
         for h in history:
             td_lambda_estimate.append(h[2])
+        # Add TD1 (e.g. Lambda * reward goes to n-1 action
+        for td_factor in range(1, min(10, len(history))):
+            #print "Lambda estimate: {}".format(td_lambda_estimate)
+            lambda_multiplier = llambda**td_factor
+            #print "Lambda multiplier: {}".format(lambda_multiplier)
+            for i in range(len(history) - td_factor):
+                td_lambda_estimate[i] += history[i+td_factor][2] * lambda_multiplier
 
         # Update knowledge with estimates
         for idx, h in enumerate(history):
