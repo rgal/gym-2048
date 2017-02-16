@@ -76,73 +76,74 @@ class Knowledge(object):
             if limit and count > limit:
                 break
 
-env = gym.make('2048-v0')
-seen_states = dict()
-knowledge = Knowledge()
-# Epsilon is probability of using best action
-epsilon = 0.95
-# Lambda is the decay value for return on action
-llambda = 0.9
-previous_knowledge_size = 0
-start = datetime.datetime.now()
-print("Episode,Steps,Cumulative reward,Best actions used,States known,States learnt since previous report")
-total_moves = 0
-for i_episode in range(100000):
-    #print "New episode"
-    observation = env.reset()
-    cumulative_reward = 0.
-    history = list()
-    best_actions_used = 0
-    for t in range(1000):
-        #env.render()
-        #print(observation)
-        action = None
-        if (random.uniform(0, 1) < epsilon):
-            if knowledge.get_node_for_state(tuple(observation)):
-                #print "Picking best known action"
-                state_node = knowledge.get_node_for_state(tuple(observation))
-                action = state_node.best_action()
-                #print state_node
-                best_actions_used += 1
+if __name__ == '__main__':
+    env = gym.make('2048-v0')
+    seen_states = dict()
+    knowledge = Knowledge()
+    # Epsilon is probability of using best action
+    epsilon = 0.95
+    # Lambda is the decay value for return on action
+    llambda = 0.9
+    previous_knowledge_size = 0
+    start = datetime.datetime.now()
+    print("Episode,Steps,Cumulative reward,Best actions used,States known,States learnt since previous report")
+    total_moves = 0
+    for i_episode in range(100000):
+        #print "New episode"
+        observation = env.reset()
+        cumulative_reward = 0.
+        history = list()
+        best_actions_used = 0
+        for t in range(1000):
+            #env.render()
+            #print(observation)
+            action = None
+            if (random.uniform(0, 1) < epsilon):
+                if knowledge.get_node_for_state(tuple(observation)):
+                    #print "Picking best known action"
+                    state_node = knowledge.get_node_for_state(tuple(observation))
+                    action = state_node.best_action()
+                    #print state_node
+                    best_actions_used += 1
+                else:
+                    #print "Picking a random action due to lack of knowledge"
+                    action = env.action_space.sample()
             else:
-                #print "Picking a random action due to lack of knowledge"
+                #print "Picking a random action due to epsilon"
                 action = env.action_space.sample()
-        else:
-            #print "Picking a random action due to epsilon"
-            action = env.action_space.sample()
-        #print "Action: {}".format(action)
-        # Record what we did in a particular state
-        last_observation = tuple(observation)
-        #print "Observation: {}".format(last_observation)
-        observation, reward, done, info = env.step(action)
-        #print "New Observation: {}, reward: {}, done: {}, info: {}".format(observation, reward, done, info)
-        history.append((last_observation, action, reward))
-        cumulative_reward += reward
-        if done:
-            #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
-            if (i_episode % 100) == 0:
-                print("{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
-                previous_knowledge_size = knowledge.size()
-            total_moves += (t + 1)
-            break
-    # Go through history creating or updating knowledge
-    # Calculate TD lambda estimates, actual value + lambda of next one plus lambda squared of the next one etc.
-    td_lambda_estimate = list()
-    # TD0 lambda estimate
-    for h in history:
-        td_lambda_estimate.append(h[2])
+            #print "Action: {}".format(action)
+            # Record what we did in a particular state
+            last_observation = tuple(observation)
+            #print "Observation: {}".format(last_observation)
+            observation, reward, done, info = env.step(action)
+            #print "New Observation: {}, reward: {}, done: {}, info: {}".format(observation, reward, done, info)
+            history.append((last_observation, action, reward))
+            cumulative_reward += reward
+            if done:
+                #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
+                if (i_episode % 100) == 0:
+                    print("{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
+                    previous_knowledge_size = knowledge.size()
+                total_moves += (t + 1)
+                break
+        # Go through history creating or updating knowledge
+        # Calculate TD lambda estimates, actual value + lambda of next one plus lambda squared of the next one etc.
+        td_lambda_estimate = list()
+        # TD0 lambda estimate
+        for h in history:
+            td_lambda_estimate.append(h[2])
 
-    # Update knowledge with estimates
-    for idx, h in enumerate(history):
-        knowledge.add(h[0], h[1], td_lambda_estimate[idx])
-        #knowledge.add(h[0], h[1], cumulative_reward)
+        # Update knowledge with estimates
+        for idx, h in enumerate(history):
+            knowledge.add(h[0], h[1], td_lambda_estimate[idx])
+            #knowledge.add(h[0], h[1], cumulative_reward)
 
-end = datetime.datetime.now()
-taken = end - start
-print "{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds())
-print knowledge
+    end = datetime.datetime.now()
+    taken = end - start
+    print "{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds())
+    print knowledge
 
-#with open('knowledge.pkl', 'w') as f:
-#    pickle.dump(knowledge, f)
-#
-#knowledge.dump(10)
+    #with open('knowledge.pkl', 'w') as f:
+    #    pickle.dump(knowledge, f)
+    #
+    #knowledge.dump(10)
