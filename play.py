@@ -4,6 +4,7 @@ import operator
 import pickle
 import random
 import datetime
+import numpy as np
 
 import gym
 
@@ -19,6 +20,10 @@ class Node(object):
         self.action_quality = [0.] * 4
         # How many times each action has been taken (to handle averaging)
         self.action_count = [0] * 4
+
+    def get_estimate(self, action):
+        """Return estimate of the quality of specified action."""
+        return self.action_quality[action]
 
     def update_action(self, action, score):
         """Update the average for that action with the new information about the score."""
@@ -53,6 +58,12 @@ class Knowledge(object):
         if state not in self.nodes:
             self.nodes[state] = Node()
         self.nodes[state].update_action(action, score)
+
+    def get_estimate(self, state, action):
+        try:
+            return self.get_node_for_state(state).get_estimate(action)
+        except AttributeError:
+            return 0.
 
     def get_node_for_state(self, state):
         try:
@@ -94,7 +105,7 @@ if __name__ == '__main__':
     llambda = 0.9
     previous_knowledge_size = 0
     start = datetime.datetime.now()
-    print("Episode,Steps,Cumulative reward,Highest tile,Best actions used,States known,States learnt since previous report")
+    print("Episode,Steps,Cumulative reward,Highest tile,Best actions used,States known,States learnt since previous report,mse")
     total_moves = 0
     for i_episode in range(args.episodes):
         #print "New episode"
@@ -147,13 +158,23 @@ if __name__ == '__main__':
             for i in range(len(history) - td_factor):
                 td_lambda_estimate[i] += history[i+td_factor][2] * lambda_multiplier
 
+        # Calculate MSE as of previous estimate for that action and my new finding.
+        real_data = np.zeros(len(history))
+        estimates = np.zeros(len(history))
+        for idx, h in enumerate(history):
+            # state is h[0], action is h[1], new finding is td_lambda_estimate[idx]
+            real_data[idx] = td_lambda_estimate[idx]
+            estimates[idx] = knowledge.get_estimate(h[0], h[1])
+        mse = ((real_data - estimates) ** 2).mean(axis=None)
+        #print mse
+
         # Update knowledge with estimates
         for idx, h in enumerate(history):
             knowledge.add(h[0], h[1], td_lambda_estimate[idx])
             #knowledge.add(h[0], h[1], cumulative_reward)
 
         if (i_episode % args.reportfrequency) == 0:
-            print("{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
+            print("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse))
             previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
