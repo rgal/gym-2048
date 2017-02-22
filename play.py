@@ -128,12 +128,10 @@ if __name__ == '__main__':
             history.append((last_observation, action, reward))
             cumulative_reward += reward
             if done:
-                #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
-                if (i_episode % args.reportfrequency) == 0:
-                    print("{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
-                    previous_knowledge_size = knowledge.size()
                 total_moves += (t + 1)
                 break
+
+        #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
         # Go through history creating or updating knowledge
         # Calculate TD lambda estimates, actual value + lambda of next one plus lambda squared of the next one etc.
         td_lambda_estimate = list()
@@ -153,6 +151,10 @@ if __name__ == '__main__':
         for idx, h in enumerate(history):
             knowledge.add(h[0], h[1], td_lambda_estimate[idx])
             #knowledge.add(h[0], h[1], cumulative_reward)
+
+        if (i_episode % args.reportfrequency) == 0:
+            print("{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size))
+            previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
     taken = end - start
