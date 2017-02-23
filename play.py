@@ -109,6 +109,8 @@ if __name__ == '__main__':
     total_moves = 0
     # Make a buffer for averaging MSE over episodes
     mse_vals = np.zeros(100)
+    cr_vals = np.zeros(100)
+    ht_vals = np.zeros(100)
     for i_episode in range(args.episodes):
         #print "New episode"
         observation = env.reset()
@@ -169,6 +171,8 @@ if __name__ == '__main__':
             estimates[idx] = knowledge.get_estimate(h[0], h[1])
         mse = ((real_data - estimates) ** 2).mean(axis=None)
         mse_vals[i_episode % 100] = mse
+        cr_vals[i_episode % 100] = cumulative_reward
+        ht_vals[i_episode % 100] = env.highest()
         #print mse
 
         # Update knowledge with estimates
@@ -177,7 +181,7 @@ if __name__ == '__main__':
             #knowledge.add(h[0], h[1], cumulative_reward)
 
         if (i_episode % args.reportfrequency) == 0:
-            print("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cumulative_reward, env.highest(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None)))
+            print("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None)))
             previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
