@@ -88,6 +88,7 @@ class Knowledge(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--epsilon', type=float, default=0.95)
     parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--reportfrequency', type=int, default=100)
     parser.add_argument('-o', '--output', default=None)
@@ -100,7 +101,7 @@ if __name__ == '__main__':
         pkl_file = open(args.input, 'rb')
         knowledge = pickle.load(pkl_file)
     # Epsilon is probability of using best action
-    epsilon = 0.95
+    epsilon = args.epsilon
     # Lambda is the decay value for return on action
     llambda = 0.9
     previous_knowledge_size = 0
