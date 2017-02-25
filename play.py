@@ -89,6 +89,7 @@ class Knowledge(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epsilon', type=float, default=0.95, help="Epsilon is probability of using best action")
+    parser.add_argument('--llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
     parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--reportfrequency', type=int, default=100)
     parser.add_argument('-o', '--output', default=None)
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     # Epsilon is probability of using best action
     epsilon = args.epsilon
     # Lambda is the decay value for return on action
-    llambda = 0.9
+    llambda = args.llambda
     previous_knowledge_size = 0
     start = datetime.datetime.now()
     print("Episode,Steps,Cumulative reward,Highest tile,Best actions used,States known,States learnt since previous report,mse")
