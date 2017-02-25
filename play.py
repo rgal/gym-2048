@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--alpha', type=float, default=0.01, help="Alpha is the proportion to update your estimate by")
     parser.add_argument('--epsilon', type=float, default=0.95, help="Epsilon is probability of using best action")
-    parser.add_argument('--llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
+    parser.add_argument('--lambda', dest='llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
     parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--reportfrequency', type=int, default=100)
     parser.add_argument('-o', '--output', default=None)
