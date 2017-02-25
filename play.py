@@ -25,10 +25,10 @@ class Node(object):
         """Return estimate of the quality of specified action."""
         return self.action_quality[action]
 
-    def update_action(self, action, score):
+    def update_action(self, action, score, alpha):
         """Update the average for that action with the new information about the score."""
         self.action_count[action] += 1
-        self.action_quality[action] += (score - self.action_quality[action]) / self.action_count[action]
+        self.action_quality[action] += (score - self.action_quality[action]) * alpha
 
     def visited(self):
         """Report how many times this state has been visited."""
@@ -54,10 +54,10 @@ class Knowledge(object):
     def __init__(self):
         self.nodes = dict()
 
-    def add(self, state, action, score):
+    def add(self, state, action, score, alpha):
         if state not in self.nodes:
             self.nodes[state] = Node()
-        self.nodes[state].update_action(action, score)
+        self.nodes[state].update_action(action, score, alpha)
 
     def get_estimate(self, state, action):
         try:
@@ -88,6 +88,7 @@ class Knowledge(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--alpha', type=float, default=0.01, help="Alpha is the proportion to update your estimate by")
     parser.add_argument('--epsilon', type=float, default=0.95, help="Epsilon is probability of using best action")
     parser.add_argument('--llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
     parser.add_argument('--episodes', type=int, default=10000)
@@ -101,6 +102,8 @@ if __name__ == '__main__':
     if args.input:
         pkl_file = open(args.input, 'rb')
         knowledge = pickle.load(pkl_file)
+    # Alpha is the proportion to update your estimate by
+    alpha = args.alpha
     # Epsilon is probability of using best action
     epsilon = args.epsilon
     # Lambda is the decay value for return on action
@@ -179,7 +182,7 @@ if __name__ == '__main__':
 
         # Update knowledge with estimates
         for idx, h in enumerate(history):
-            knowledge.add(h[0], h[1], td_lambda_estimate[idx])
+            knowledge.add(h[0], h[1], td_lambda_estimate[idx], alpha)
             #knowledge.add(h[0], h[1], cumulative_reward)
 
         if (i_episode % args.reportfrequency) == 0:
