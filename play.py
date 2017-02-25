@@ -1,5 +1,6 @@
 import argparse
 from copy import copy
+import math
 import operator
 import pickle
 import random
@@ -45,15 +46,34 @@ class Node(object):
             s += " {}:{}:{:.1f}".format(i, self.action_count[i], self.action_quality[i])
         return s
 
-    def best_action(self):
-        """Report which the best action would be based on score."""
+    def ucb1_action(self):
+	"""Report which the best action would be based on upper confidence
+bounds. This consists of the (scaled) quality + an upper confidence bound based
+on the number of visits. Don't need random tiebreaking for this as more times
+around will make a difference."""
+        sum_quality = sum(self.action_quality)
+        sum_counts = sum(self.action_count)
+        ucb1s = list()
+        for i, quality in enumerate(self.action_quality):
+            count = self.action_count[i]
+            if not count:
+                count = 1
+            scaled_quality = 0.25 # If there is no quality then default to evens
+            if sum_quality:
+                scaled_quality = quality / sum_quality
+            ucb = math.sqrt((2. * math.log(sum_counts)) / count)
+            ucb1s.append(scaled_quality + ucb)
+        #print ucb1s
+        return ucb1s.index(max(ucb1s))
+
+    def greedy_action(self):
+        """Report which the best action would be based on score. In event of a tie break, choose one randomly."""
         joint_best_actions = []
         max_quality = max(self.action_quality)
         for i, quality in enumerate(self.action_quality):
             if quality == max_quality:
                 joint_best_actions.append(i)
         return random.choice(joint_best_actions)
-        #return self.action_quality.index(max(self.action_quality))
 
 class Knowledge(object):
     def __init__(self):
@@ -103,7 +123,7 @@ def choose_action(env, knowledge, epsilon):
         if knowledge.get_node_for_state(tuple(observation)):
             #print "Picking best known action"
             state_node = knowledge.get_node_for_state(tuple(observation))
-            action = state_node.best_action()
+            action = state_node.ucb1_action()
             #print state_node
             best = True
         else:
