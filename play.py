@@ -110,12 +110,13 @@ if __name__ == '__main__':
     llambda = args.llambda
     previous_knowledge_size = 0
     start = datetime.datetime.now()
-    print("Episode,Steps,Cumulative reward,Highest tile,Best actions used,States known,States learnt since previous report,mse")
+    print("Episode,Steps,Cumulative reward,High score,Highest tile,Best actions used,States known,States learnt since previous report,mse")
     total_moves = 0
     # Make a buffer for averaging MSE over episodes
     mse_vals = np.zeros(100)
     cr_vals = np.zeros(100)
     ht_vals = np.zeros(100)
+    high_score = 0.
     for i_episode in range(args.episodes):
         #print "New episode"
         observation = env.reset()
@@ -187,8 +188,10 @@ if __name__ == '__main__':
             knowledge.add(h[0], h[1], td_lambda_estimate[idx], alpha)
             #knowledge.add(h[0], h[1], cumulative_reward)
 
+        if cumulative_reward > high_score:
+            high_score = cumulative_reward
         if (i_episode % args.reportfrequency) == 0:
-            print("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None)))
+            print("{},{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None)))
             previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
