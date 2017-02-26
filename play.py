@@ -86,6 +86,24 @@ class Knowledge(object):
             if limit and count > limit:
                 break
 
+def choose_action(env, knowledge, epsilon):
+    action = None
+    best = False
+    if (random.uniform(0, 1) > epsilon):
+        if knowledge.get_node_for_state(tuple(observation)):
+            #print "Picking best known action"
+            state_node = knowledge.get_node_for_state(tuple(observation))
+            action = state_node.best_action()
+            #print state_node
+            best = True
+        else:
+            #print "Picking a random action due to lack of knowledge"
+            action = env.action_space.sample()
+    else:
+        #print "Picking a random action due to epsilon"
+        action = env.action_space.sample()
+    return (action, best)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--alpha', type=float, default=0.1, help="Alpha is the proportion to update your estimate by")
@@ -126,20 +144,9 @@ if __name__ == '__main__':
         for t in range(1000):
             #env.render()
             #print(observation)
-            action = None
-            if (random.uniform(0, 1) > epsilon):
-                if knowledge.get_node_for_state(tuple(observation)):
-                    #print "Picking best known action"
-                    state_node = knowledge.get_node_for_state(tuple(observation))
-                    action = state_node.best_action()
-                    #print state_node
-                    best_actions_used += 1
-                else:
-                    #print "Picking a random action due to lack of knowledge"
-                    action = env.action_space.sample()
-            else:
-                #print "Picking a random action due to epsilon"
-                action = env.action_space.sample()
+            (action, best) = choose_action(env, knowledge, epsilon)
+            if best:
+                best_actions_used += 1
             #print "Action: {}".format(action)
             # Record what we did in a particular state
             last_observation = tuple(observation)
