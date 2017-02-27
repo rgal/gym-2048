@@ -141,23 +141,35 @@ if __name__ == '__main__':
         cumulative_reward = 0.
         history = list()
         best_actions_used = 0
+        # Initialise S, A
+        (action, best) = choose_action(env, knowledge, epsilon)
+        if best:
+            best_actions_used += 1
         for t in range(1000):
             #env.render()
             #print(observation)
-            (action, best) = choose_action(env, knowledge, epsilon)
-            if best:
-                best_actions_used += 1
             #print "Action: {}".format(action)
-            # Record what we did in a particular state
-            last_observation = tuple(observation)
+            #last_observation = tuple(observation)
             #print "Observation: {}".format(last_observation)
-            observation, reward, done, info = env.step(action)
-            #print "New Observation: {}, reward: {}, done: {}, info: {}".format(observation, reward, done, info)
-            history.append((last_observation, action, reward))
+            # Take action, observe R, S'
+            next_observation, reward, done, info = env.step(action)
+            #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
+            # Record what we did in a particular state
+
+            history.append((tuple(observation), action, reward))
             cumulative_reward += reward
             if done:
                 total_moves += (t + 1)
                 break
+
+            # Choose A' from S'	using policy derived from Q
+            (next_action, best) = choose_action(env, knowledge, epsilon)
+            if best:
+                best_actions_used += 1
+
+            observation = next_observation
+            action = next_action
+
 
         #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
         # Go through history creating or updating knowledge
