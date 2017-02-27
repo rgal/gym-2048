@@ -30,6 +30,11 @@ class Node(object):
         self.action_count[action] += 1
         self.action_quality[action] += (score - self.action_quality[action]) * alpha
 
+    def update_action_quality(self, action, new_quality):
+        """Update the average for that action with the new information about the score."""
+        self.action_count[action] += 1
+        self.action_quality[action] = new_quality
+
     def visited(self):
         """Report how many times this state has been visited."""
         return sum(self.action_count)
@@ -58,6 +63,11 @@ class Knowledge(object):
         if state not in self.nodes:
             self.nodes[state] = Node()
         self.nodes[state].update_action(action, score, alpha)
+
+    def update_state_action_quality(self, state, action, new_quality):
+        if state not in self.nodes:
+            self.nodes[state] = Node()
+        self.nodes[state].update_action_quality(action, new_quality)
 
     def get_estimate(self, state, action):
         try:
@@ -108,6 +118,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--alpha', type=float, default=0.1, help="Alpha is the proportion to update your estimate by")
     parser.add_argument('--epsilon', type=float, default=0.1, help="Epsilon is probability of exploration rather than choosing best action")
+    parser.add_argument('--gamma', type=float, default=0.9, help="Gamma is the decay constant for SARSA TD Error")
     parser.add_argument('--lambda', dest='llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
     parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--reportfrequency', type=int, default=100)
@@ -124,6 +135,8 @@ if __name__ == '__main__':
     alpha = args.alpha
     # Epsilon is probability of using best action
     epsilon = args.epsilon
+    # Gamma is the decay value for SARSA updates
+    gamma = args.gamma
     # Lambda is the decay value for return on action
     llambda = args.llambda
     previous_knowledge_size = 0
@@ -136,6 +149,8 @@ if __name__ == '__main__':
     ht_vals = np.zeros(100)
     high_score = 0.
     for i_episode in range(args.episodes):
+        # Eligibility trace records how much state, action pairs affect the current reward
+        eligibility_trace = dict()
         #print "New episode"
         observation = env.reset()
         cumulative_reward = 0.
@@ -164,8 +179,30 @@ if __name__ == '__main__':
 
             # Choose A' from S'	using policy derived from Q
             (next_action, best) = choose_action(env, knowledge, epsilon)
+            # Update my stats
             if best:
                 best_actions_used += 1
+
+            # Calculate delta
+            delta = reward + gamma * knowledge.get_estimate(tuple(next_observation), next_action) - knowledge.get_estimate(tuple(observation), action)
+            #print(delta)
+            # Increment eligibility trace for state and action
+            sa = (tuple(observation), action)
+            if sa in eligibility_trace:
+                eligibility_trace[sa] += 1
+            else:
+                eligibility_trace[sa] = 1
+
+            # Update previous data for states through history
+            for h in history:
+                state = h[0]
+                action = h[1]
+                sa = (state, action)
+                estimate = knowledge.get_estimate(state, action)
+                et = eligibility_trace[sa]
+                knowledge.update_state_action_quality(state, action, estimate + alpha * delta * et)
+
+                eligibility_trace[sa] = et * llambda * gamma
 
             observation = next_observation
             action = next_action
@@ -177,35 +214,35 @@ if __name__ == '__main__':
         td_lambda_estimate = list()
         # TD lambda estimate (First estimate should be weighted by (1 - l), second by (1 - l)l etc.
         #print len(history)
-        for h in history:
-            td_factor = 0
-            lambda_multiplier = (1. - llambda) * (llambda**td_factor)
-            td_lambda_estimate.append(h[2] * lambda_multiplier)
-        # Add TD1 (e.g. Lambda * reward goes to n-1 action
-        for td_factor in range(1, min(10, len(history))):
-            #print "Lambda estimate: {}".format(td_lambda_estimate)
-            lambda_multiplier = (1. - llambda) * (llambda**td_factor)
-            #print "Lambda multiplier: {}".format(lambda_multiplier)
-            for i in range(len(history) - td_factor):
-                td_lambda_estimate[i] += history[i+td_factor][2] * lambda_multiplier
+        #for h in history:
+        #    td_factor = 0
+        #    lambda_multiplier = (1. - llambda) * (llambda**td_factor)
+        #    td_lambda_estimate.append(h[2] * lambda_multiplier)
+        ## Add TD1 (e.g. Lambda * reward goes to n-1 action
+        #for td_factor in range(1, min(10, len(history))):
+        #    #print "Lambda estimate: {}".format(td_lambda_estimate)
+        #    lambda_multiplier = (1. - llambda) * (llambda**td_factor)
+        #    #print "Lambda multiplier: {}".format(lambda_multiplier)
+        #    for i in range(len(history) - td_factor):
+        #        td_lambda_estimate[i] += history[i+td_factor][2] * lambda_multiplier
 
-        # Calculate MSE as of previous estimate for that action and my new finding.
-        real_data = np.zeros(len(history))
-        estimates = np.zeros(len(history))
-        for idx, h in enumerate(history):
-            # state is h[0], action is h[1], new finding is td_lambda_estimate[idx]
-            real_data[idx] = td_lambda_estimate[idx]
-            estimates[idx] = knowledge.get_estimate(h[0], h[1])
-        mse = ((real_data - estimates) ** 2).mean(axis=None)
-        mse_vals[i_episode % 100] = mse
+        ## Calculate MSE as of previous estimate for that action and my new finding.
+        #real_data = np.zeros(len(history))
+        #estimates = np.zeros(len(history))
+        #for idx, h in enumerate(history):
+        #    # state is h[0], action is h[1], new finding is td_lambda_estimate[idx]
+        #    real_data[idx] = td_lambda_estimate[idx]
+        #    estimates[idx] = knowledge.get_estimate(h[0], h[1])
+        #mse = ((real_data - estimates) ** 2).mean(axis=None)
+        #mse_vals[i_episode % 100] = mse
         cr_vals[i_episode % 100] = cumulative_reward
         ht_vals[i_episode % 100] = env.highest()
         #print mse
 
         # Update knowledge with estimates
-        for idx, h in enumerate(history):
-            knowledge.add(h[0], h[1], td_lambda_estimate[idx], alpha)
-            #knowledge.add(h[0], h[1], cumulative_reward)
+        #for idx, h in enumerate(history):
+        #    knowledge.add(h[0], h[1], td_lambda_estimate[idx], alpha)
+        #    #knowledge.add(h[0], h[1], cumulative_reward)
 
         if cumulative_reward > high_score:
             high_score = cumulative_reward
