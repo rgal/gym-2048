@@ -41,9 +41,19 @@ class Node(object):
         return sum(self.action_count)
 
     def __str__(self):
-        s = "Visited {} times. I know (action:count:score)".format(self.visited())
-        for i in range(4):
-            s += " {}:{}:{:.1f}".format(i, self.action_count[i], self.action_quality[i])
+        def fmt(action):
+            count = self.action_count[action]
+            quality = self.action_quality[action]
+            return "{quality:.1f} ({count})".format(quality=quality, count=count)
+
+        indent = " " * len(fmt(3))
+        s = "Visited {} times.\n".format(self.visited())
+        s += "{}  {}\n".format(indent, fmt(0))
+        s += "{}  ^\n".format(indent)
+        s += "{} < > {}\n".format(fmt(3), fmt(1))
+        s += "{}  v\n".format(indent)
+        s += "{}  {}\n".format(indent, fmt(2))
+
         return s
 
     def ucb1_action(self):
@@ -111,7 +121,9 @@ class Knowledge(object):
         """Dump knowledge, sorted by visits, limited by count."""
         count = 0
         for n, nod in sorted(self.nodes.items(), key=lambda x: x[1].visited(), reverse=True):
-            print("State: {} {}".format(n, self.nodes[n]))
+            npa = np.array(n)
+            grid = npa.reshape((4, 4))
+            print("State:\n{}\nKnowledge:\n{}\n".format(grid, nod))
             count += 1
             if limit and count > limit:
                 break
