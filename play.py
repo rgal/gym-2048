@@ -128,7 +128,7 @@ class Knowledge(object):
             if limit and count > limit:
                 break
 
-def choose_action(env, knowledge, epsilon):
+def choose_action(env, observation, knowledge, epsilon):
     action = None
     best = False
     if (random.uniform(0, 1) > epsilon):
@@ -145,6 +145,59 @@ def choose_action(env, knowledge, epsilon):
         #print "Picking a random action due to epsilon"
         action = env.action_space.sample()
     return (action, best)
+
+
+def train():
+    # Eligibility trace records how much state, action pairs affect the current reward
+    eligibility_trace = dict()
+    #print "New episode"
+    observation = env.reset()
+    history = list()
+    # Initialise S, A
+    (action, best) = choose_action(env, observation, knowledge, epsilon)
+    for t in range(1000):
+        #env.render()
+        #print(observation)
+        #print "Action: {}".format(action)
+        #last_observation = tuple(observation)
+        #print "Observation: {}".format(last_observation)
+        # Take action, observe R, S'
+        next_observation, reward, done, info = env.step(action)
+        #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
+        # Record what we did in a particular state
+
+        history.append((tuple(observation), action, reward))
+
+        if done:
+            #total_moves += (t + 1)
+            break
+
+        # Choose A' from S'	using policy derived from Q
+        (next_action, best) = choose_action(env, observation, knowledge, epsilon)
+
+        # Calculate delta
+        delta = reward + gamma * knowledge.get_estimate(tuple(next_observation), next_action) - knowledge.get_estimate(tuple(observation), action)
+        #print(delta)
+        # Increment eligibility trace for state and action
+        sa = (tuple(observation), action)
+        if sa in eligibility_trace:
+            eligibility_trace[sa] += 1
+        else:
+            eligibility_trace[sa] = 1
+
+        # Update previous data for states through history
+        for h in history:
+            state = h[0]
+            action = h[1]
+            sa = (state, action)
+            estimate = knowledge.get_estimate(state, action)
+            et = eligibility_trace[sa]
+            knowledge.update_state_action_quality(state, action, estimate + alpha * delta * et)
+
+            eligibility_trace[sa] = et * llambda * gamma
+
+        observation = next_observation
+        action = next_action
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -167,86 +220,35 @@ if __name__ == '__main__':
     epsilon = args.epsilon
     gamma = args.gamma
     llambda = args.llambda
+
     previous_knowledge_size = 0
     start = datetime.datetime.now()
-    print("Episode,Steps,Cumulative reward,High score,Highest tile,Best actions used,States known,States learnt since previous report,mse")
-    total_moves = 0
-    # Make a buffer for averaging MSE over episodes
-    mse_vals = np.zeros(100)
-    cr_vals = np.zeros(100)
-    ht_vals = np.zeros(100)
+    print("Episode,Steps,Cumulative reward,High score,Highest tile,States known,States learnt since previous report,mse")
     high_score = 0.
     for i_episode in range(args.episodes):
-        # Eligibility trace records how much state, action pairs affect the current reward
-        eligibility_trace = dict()
-        #print "New episode"
-        observation = env.reset()
-        cumulative_reward = 0.
-        history = list()
-        best_actions_used = 0
-        # Initialise S, A
-        (action, best) = choose_action(env, knowledge, epsilon)
-        if best:
-            best_actions_used += 1
-        for t in range(1000):
-            #env.render()
-            #print(observation)
-            #print "Action: {}".format(action)
-            #last_observation = tuple(observation)
-            #print "Observation: {}".format(last_observation)
-            # Take action, observe R, S'
-            next_observation, reward, done, info = env.step(action)
-            #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
-            # Record what we did in a particular state
+        train()
 
-            history.append((tuple(observation), action, reward))
-            cumulative_reward += reward
-            if done:
-                total_moves += (t + 1)
-                break
-
-            # Choose A' from S' using policy derived from Q
-            (next_action, best) = choose_action(env, knowledge, epsilon)
-            # Update my stats
-            if best:
-                best_actions_used += 1
-
-            # Calculate delta
-            delta = reward + gamma * knowledge.get_estimate(tuple(next_observation), next_action) - knowledge.get_estimate(tuple(observation), action)
-            #print(delta)
-            # Increment eligibility trace for state and action
-            sa = (tuple(observation), action)
-            if sa in eligibility_trace:
-                eligibility_trace[sa] += 1
-            else:
-                eligibility_trace[sa] = 1
-
-            # Update previous data for states through history
-            for h in history:
-                state = h[0]
-                action = h[1]
-                sa = (state, action)
-                estimate = knowledge.get_estimate(state, action)
-                et = eligibility_trace[sa]
-                knowledge.update_state_action_quality(state, action, estimate + alpha * delta * et)
-
-                eligibility_trace[sa] = et * llambda * gamma
-
-            observation = next_observation
-            action = next_action
-
-        cr_vals[i_episode % 100] = cumulative_reward
-        ht_vals[i_episode % 100] = env.unwrapped.highest()
-
-        if cumulative_reward > high_score:
-            high_score = cumulative_reward
         if (i_episode % args.reportfrequency) == 0:
-            print(("{},{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
+            # Evaluate how good our current knowledge is, with a number of games
+            # Make a buffer for averaging MSE over episodes
+            cumulative_reward = 0.
+            #cumulative_reward += reward
+            if cumulative_reward > high_score:
+                high_score = cumulative_reward
+            mse_vals = np.zeros(100)
+            cr_vals = np.zeros(100)
+            ht_vals = np.zeros(100)
+            cr_vals[i_episode % 100] = cumulative_reward
+            ht_vals[i_episode % 100] = env.unwrapped.highest()
+            t = 0
+            print(("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
             previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
     taken = end - start
     print("{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds()))
+    print(knowledge)
+    print("{} moves took {}. {:.1f} moves per second".format(1, taken, 1 / taken.total_seconds()))
     print(knowledge)
 
     if args.output:
