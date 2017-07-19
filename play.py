@@ -163,13 +163,9 @@ if __name__ == '__main__':
     if args.input:
         pkl_file = open(args.input, 'rb')
         knowledge = pickle.load(pkl_file)
-    # Alpha is the proportion to update your estimate by
     alpha = args.alpha
-    # Epsilon is probability of using best action
     epsilon = args.epsilon
-    # Gamma is the decay value for SARSA updates
     gamma = args.gamma
-    # Lambda is the decay value for return on action
     llambda = args.llambda
     previous_knowledge_size = 0
     start = datetime.datetime.now()
