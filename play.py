@@ -235,42 +235,8 @@ if __name__ == '__main__':
             observation = next_observation
             action = next_action
 
-
-        #print("Episode finished after {} timesteps. Cumulative reward {}".format(t+1, cumulative_reward))
-        # Go through history creating or updating knowledge
-        # Calculate TD lambda estimates, actual value + lambda of next one plus lambda squared of the next one etc.
-        td_lambda_estimate = list()
-        # TD lambda estimate (First estimate should be weighted by (1 - l), second by (1 - l)l etc.
-        #print len(history)
-        #for h in history:
-        #    td_factor = 0
-        #    lambda_multiplier = (1. - llambda) * (llambda**td_factor)
-        #    td_lambda_estimate.append(h[2] * lambda_multiplier)
-        ## Add TD1 (e.g. Lambda * reward goes to n-1 action
-        #for td_factor in range(1, min(10, len(history))):
-        #    #print "Lambda estimate: {}".format(td_lambda_estimate)
-        #    lambda_multiplier = (1. - llambda) * (llambda**td_factor)
-        #    #print "Lambda multiplier: {}".format(lambda_multiplier)
-        #    for i in range(len(history) - td_factor):
-        #        td_lambda_estimate[i] += history[i+td_factor][2] * lambda_multiplier
-
-        ## Calculate MSE as of previous estimate for that action and my new finding.
-        #real_data = np.zeros(len(history))
-        #estimates = np.zeros(len(history))
-        #for idx, h in enumerate(history):
-        #    # state is h[0], action is h[1], new finding is td_lambda_estimate[idx]
-        #    real_data[idx] = td_lambda_estimate[idx]
-        #    estimates[idx] = knowledge.get_estimate(h[0], h[1])
-        #mse = ((real_data - estimates) ** 2).mean(axis=None)
-        #mse_vals[i_episode % 100] = mse
         cr_vals[i_episode % 100] = cumulative_reward
         ht_vals[i_episode % 100] = env.unwrapped.highest()
-        #print mse
-
-        # Update knowledge with estimates
-        #for idx, h in enumerate(history):
-        #    knowledge.add(h[0], h[1], td_lambda_estimate[idx], alpha)
-        #    #knowledge.add(h[0], h[1], cumulative_reward)
 
         if cumulative_reward > high_score:
             high_score = cumulative_reward
