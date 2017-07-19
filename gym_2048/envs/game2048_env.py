@@ -237,8 +237,12 @@ class Game2048Env(gym.Env):
         return (combined_row, move_score)
 
     def isend(self):
-        """Has the game ended. Game ends if there are no legal moves.
-        If there are empty spaces then there must be legal moves."""
+        """Has the game ended. Game ends if there is a 2048 tile or there are
+        no legal moves. If there are empty spaces then there must be legal
+        moves."""
+
+        if self.highest() == 2048:
+            return True
 
         for direction in range(4):
             try:
