@@ -57,7 +57,7 @@ class Node(object):
         return s
 
     def ucb1_action(self):
-	"""Report which the best action would be based on upper confidence
+        """Report which the best action would be based on upper confidence
 bounds. This consists of the (scaled) quality + an upper confidence bound based
 on the number of visits. Don't need random tiebreaking for this as more times
 around will make a difference."""
@@ -205,7 +205,7 @@ if __name__ == '__main__':
                 total_moves += (t + 1)
                 break
 
-            # Choose A' from S'	using policy derived from Q
+            # Choose A' from S' using policy derived from Q
             (next_action, best) = choose_action(env, knowledge, epsilon)
             # Update my stats
             if best:
