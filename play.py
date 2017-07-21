@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--epsilon', type=float, default=0.1, help="Epsilon is probability of exploration rather than choosing best action")
     parser.add_argument('--gamma', type=float, default=0.9, help="Gamma is the decay constant for SARSA TD Error")
     parser.add_argument('--lambda', dest='llambda', type=float, default=0.9, help="Lambda is the decay value for return on action")
-    parser.add_argument('--episodes', type=int, default=10000)
+    parser.add_argument('--episodes', type=int, default=1000)
     parser.add_argument('--reportfrequency', type=int, default=100)
     parser.add_argument('-o', '--output', default=None)
     parser.add_argument('input', nargs='?', default=None)
