@@ -17,7 +17,7 @@ def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = itertools.tee(iterable)
     next(b, None)
-    return itertools.izip(a, b)
+    return zip(a, b)
 
 class IllegalMove(Exception):
     pass
@@ -157,8 +157,8 @@ class Game2048Env(gym.Env):
         shift_direction = dir_mod_two ^ dir_div_two # 0 for towards up left, 1 for towards bottom right
 
         # Construct a range for extracting row/column into a list
-        rx = range(self.w)
-        ry = range(self.h)
+        rx = list(range(self.w))
+        ry = list(range(self.h))
 
         if dir_mod_two == 0:
             # Left or right, split into rows
