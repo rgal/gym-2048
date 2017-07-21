@@ -264,7 +264,7 @@ if __name__ == '__main__':
         #mse = ((real_data - estimates) ** 2).mean(axis=None)
         #mse_vals[i_episode % 100] = mse
         cr_vals[i_episode % 100] = cumulative_reward
-        ht_vals[i_episode % 100] = env.highest()
+        ht_vals[i_episode % 100] = env.unwrapped.highest()
         #print mse
 
         # Update knowledge with estimates
