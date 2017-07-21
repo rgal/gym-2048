@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
 import unittest
 import numpy as np
 
-import game2048_env
+import gym_2048.envs.game2048_env as game2048_env
 
 class TestBoard(unittest.TestCase):
     def test_combine(self):
