@@ -120,10 +120,10 @@ class Knowledge(object):
     def dump(self, limit=0):
         """Dump knowledge, sorted by visits, limited by count."""
         count = 0
-        for n, nod in sorted(self.nodes.items(), key=lambda x: x[1].visited(), reverse=True):
+        for n, nod in sorted(list(self.nodes.items()), key=lambda x: x[1].visited(), reverse=True):
             npa = np.array(n)
             grid = npa.reshape((4, 4))
-            print("State:\n{}\nKnowledge:\n{}\n".format(grid, nod))
+            print(("State:\n{}\nKnowledge:\n{}\n".format(grid, nod)))
             count += 1
             if limit and count > limit:
                 break
@@ -275,13 +275,13 @@ if __name__ == '__main__':
         if cumulative_reward > high_score:
             high_score = cumulative_reward
         if (i_episode % args.reportfrequency) == 0:
-            print("{},{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None)))
+            print(("{},{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), best_actions_used, knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
             previous_knowledge_size = knowledge.size()
 
     end = datetime.datetime.now()
     taken = end - start
-    print "{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds())
-    print knowledge
+    print("{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds()))
+    print(knowledge)
 
     if args.output:
         with open(args.output, 'w') as f:
