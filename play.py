@@ -140,10 +140,10 @@ def choose_action(env, observation, knowledge, epsilon):
             best = True
         else:
             #print "Picking a random action due to lack of knowledge"
-            action = env.action_space.sample()
+            action = random.randint(0, 3)
     else:
         #print "Picking a random action due to epsilon"
-        action = env.action_space.sample()
+        action = random.randint(0, 3)
     return (action, best)
 
 
