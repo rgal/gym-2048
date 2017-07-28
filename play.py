@@ -151,6 +151,10 @@ def train():
     # Eligibility trace records how much state, action pairs affect the current reward
     eligibility_trace = dict()
     #print "New episode"
+    # Initialise seed for environment
+    env.seed()
+    # Initialise seed for agent
+    random.seed()
     observation = env.reset()
     history = list()
     # Initialise S, A
