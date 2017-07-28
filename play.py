@@ -1,7 +1,5 @@
 import argparse
-from copy import copy
 import math
-import operator
 import pickle
 import random
 import datetime
@@ -147,7 +145,7 @@ def choose_action(env, observation, knowledge, epsilon):
     return (action, best)
 
 
-def train():
+def train(k):
     # Eligibility trace records how much state, action pairs affect the current reward
     eligibility_trace = dict()
     #print "New episode"
@@ -158,7 +156,7 @@ def train():
     observation = env.reset()
     history = list()
     # Initialise S, A
-    (action, best) = choose_action(env, observation, knowledge, epsilon)
+    (action, best) = choose_action(env, observation, k, epsilon)
     for t in range(1000):
         #env.render()
         #print(observation)
@@ -177,10 +175,10 @@ def train():
             break
 
         # Choose A' from S'	using policy derived from Q
-        (next_action, best) = choose_action(env, observation, knowledge, epsilon)
+        (next_action, best) = choose_action(env, observation, k, epsilon)
 
         # Calculate delta
-        delta = reward + gamma * knowledge.get_estimate(tuple(next_observation), next_action) - knowledge.get_estimate(tuple(observation), action)
+        delta = reward + gamma * k.get_estimate(tuple(next_observation), next_action) - k.get_estimate(tuple(observation), action)
         #print(delta)
         # Increment eligibility trace for state and action
         sa = (tuple(observation), action)
@@ -194,22 +192,24 @@ def train():
             state = h[0]
             action = h[1]
             sa = (state, action)
-            estimate = knowledge.get_estimate(state, action)
+            estimate = k.get_estimate(state, action)
             et = eligibility_trace[sa]
-            knowledge.update_state_action_quality(state, action, estimate + alpha * delta * et)
+            k.update_state_action_quality(state, action, estimate + alpha * delta * et)
 
             eligibility_trace[sa] = et * llambda * gamma
 
         observation = next_observation
         action = next_action
 
-def evaluate():
+def evaluate(k):
     # Don't explore when evaluating, just use best actions
     epsilon = 0
 
     evaluation_episodes = 10
 
     cr_vals = np.zeros(10)
+    scores = list()
+
     for eval_episode in range(evaluation_episodes):
         cumulative_reward = 0.
         # Fix seed for environment so we are always evaluating the same game
@@ -220,33 +220,22 @@ def evaluate():
         observation = env.reset()
         #env.render()
 
-        (action, best) = choose_action(env, observation, knowledge, epsilon)
+        (action, best) = choose_action(env, observation, k, epsilon)
         for t in range(1000):
             next_observation, reward, done, info = env.step(action)
             cumulative_reward += reward
             if done:
                 break
             # Choose A' from S'	using policy derived from Q
-            (next_action, best) = choose_action(env, observation, knowledge, epsilon)
+            (next_action, best) = choose_action(env, observation, k, epsilon)
             observation = next_observation
             action = next_action
-        print("Score: {}".format(cumulative_reward))
+        #print("Score: {}".format(cumulative_reward))
+        scores.append(str(cumulative_reward))
         cr_vals[eval_episode] = cumulative_reward
-    print("Average score: {}".format(cr_vals.mean()))
-
-        # # Make a buffer for averaging MSE over episodes
-        # if cumulative_reward > high_score:
-        #     high_score = cumulative_reward
-        # mse_vals = np.zeros(100)
-        # cr_vals = np.zeros(100)
-        # ht_vals = np.zeros(100)
-        # cr_vals[i_episode % 100] = cumulative_reward
-        # ht_vals[i_episode % 100] = env.unwrapped.highest()
-        # t = 0
-        # print(("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
-        # previous_knowledge_size = knowledge.size()
-
-
+    scores.append(str(cr_vals.mean()))
+    #print("Average score: {}".format(cr_vals.mean()))
+    return scores
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -272,14 +261,20 @@ if __name__ == '__main__':
 
     previous_knowledge_size = 0
     start = datetime.datetime.now()
-    print("Episode,Steps,Cumulative reward,High score,Highest tile,States known,States learnt since previous report,mse")
     high_score = 0.
+    print("Episodes,A,B,C,D,E,F,G,H,I,J,Average")
     for i_episode in range(args.episodes):
-        train()
-
         if (i_episode % args.reportfrequency) == 0:
             # Evaluate how good our current knowledge is, with a number of games
-            evaluate()
+            s = evaluate(knowledge)
+            print(','.join([str(i_episode)] + s))
+
+        train(knowledge)
+
+    if (i_episode % args.reportfrequency) == 0:
+        # Evaluate how good our current knowledge is, with a number of games
+        s = evaluate(knowledge)
+        print(','.join([str(i_episode)] + s))
 
     # Close the environment
     env.close()
