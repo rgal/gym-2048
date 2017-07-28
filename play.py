@@ -207,38 +207,44 @@ def evaluate():
     # Don't explore when evaluating, just use best actions
     epsilon = 0
 
-    cumulative_reward = 0.
-    # Would like this to be doing the same thing every time, fixed seeds?
-    env.seed(123)
-    # Seed random number generator which is used in the agent for selecting actions.
-    random.seed(456)
+    evaluation_episodes = 10
 
-    observation = env.reset()
-    #env.render()
+    cr_vals = np.zeros(10)
+    for eval_episode in range(evaluation_episodes):
+        cumulative_reward = 0.
+        # Fix seed for environment so we are always evaluating the same game
+        env.seed(123 + eval_episode)
+        # Fix seed for agent so we are always making the same random choices when required
+        random.seed(456 + eval_episode)
 
-    (action, best) = choose_action(env, observation, knowledge, epsilon)
-    for t in range(1000):
-        next_observation, reward, done, info = env.step(action)
-        cumulative_reward += reward
-        if done:
-            break
-        # Choose A' from S'	using policy derived from Q
-        (next_action, best) = choose_action(env, observation, knowledge, epsilon)
-        observation = next_observation
-        action = next_action
-    print("{}".format(cumulative_reward))
+        observation = env.reset()
+        #env.render()
 
-    # # Make a buffer for averaging MSE over episodes
-    # if cumulative_reward > high_score:
-    #     high_score = cumulative_reward
-    # mse_vals = np.zeros(100)
-    # cr_vals = np.zeros(100)
-    # ht_vals = np.zeros(100)
-    # cr_vals[i_episode % 100] = cumulative_reward
-    # ht_vals[i_episode % 100] = env.unwrapped.highest()
-    # t = 0
-    # print(("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
-    # previous_knowledge_size = knowledge.size()
+        (action, best) = choose_action(env, observation, knowledge, epsilon)
+        for t in range(1000):
+            next_observation, reward, done, info = env.step(action)
+            cumulative_reward += reward
+            if done:
+                break
+            # Choose A' from S'	using policy derived from Q
+            (next_action, best) = choose_action(env, observation, knowledge, epsilon)
+            observation = next_observation
+            action = next_action
+        print("Score: {}".format(cumulative_reward))
+        cr_vals[eval_episode] = cumulative_reward
+    print("Average score: {}".format(cr_vals.mean()))
+
+        # # Make a buffer for averaging MSE over episodes
+        # if cumulative_reward > high_score:
+        #     high_score = cumulative_reward
+        # mse_vals = np.zeros(100)
+        # cr_vals = np.zeros(100)
+        # ht_vals = np.zeros(100)
+        # cr_vals[i_episode % 100] = cumulative_reward
+        # ht_vals[i_episode % 100] = env.unwrapped.highest()
+        # t = 0
+        # print(("{},{},{},{},{},{},{},{}".format(i_episode, t + 1, cr_vals.mean(), high_score, ht_vals.mean(), knowledge.size(), knowledge.size() - previous_knowledge_size, mse_vals.mean(axis=None))))
+        # previous_knowledge_size = knowledge.size()
 
 
 
@@ -274,18 +280,13 @@ if __name__ == '__main__':
         if (i_episode % args.reportfrequency) == 0:
             # Evaluate how good our current knowledge is, with a number of games
             evaluate()
-            evaluate()
-            evaluate()
 
     # Close the environment
     env.close()
 
     end = datetime.datetime.now()
     taken = end - start
-    total_moves = 0
-    print("{} moves took {}. {:.1f} moves per second".format(total_moves, taken, total_moves / taken.total_seconds()))
-    print(knowledge)
-    print("{} moves took {}. {:.1f} moves per second".format(1, taken, 1 / taken.total_seconds()))
+    print("{} episodes took {}. {:.1f} episodes per second".format(args.episodes, taken, args.episodes / taken.total_seconds()))
     print(knowledge)
 
     if args.output:
