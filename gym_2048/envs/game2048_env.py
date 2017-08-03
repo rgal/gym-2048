@@ -89,10 +89,9 @@ class Game2048Env(gym.Env):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
-        for x in range(self.w):
-            for y in range(self.h):
-                s += '{0:5d}'.format(self.get(x, y))
-            s += '\n'
+        npa = np.array(self.Matrix)
+        grid = npa.reshape((4, 4))
+        s += "{}\n".format(grid)
         outfile.write(s)
         return outfile
 
