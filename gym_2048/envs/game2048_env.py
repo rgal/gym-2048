@@ -1,15 +1,13 @@
 from __future__ import print_function
 
 import gym
-from gym import error, spaces, utils
+from gym import spaces
 from gym.utils import seeding
 
 import numpy as np
 
-import argparse
 import itertools
 import logging
-import random
 from six import StringIO
 import sys
 
