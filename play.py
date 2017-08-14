@@ -224,15 +224,17 @@ def train(k):
 
         observation = next_observation
         action = next_action
+        #print("")
 
 def evaluate(k):
+    #print("Evaluating")
     # Don't explore when evaluating, just use best actions
     epsilon = 0
 
     evaluation_episodes = 10
 
     cr_vals = np.zeros(10)
-    scores = list()
+    crs = list()
 
     for eval_episode in range(evaluation_episodes):
         cumulative_reward = 0.
@@ -255,11 +257,11 @@ def evaluate(k):
             observation = next_observation
             action = next_action
         #print("Score: {}".format(cumulative_reward))
-        scores.append(str(cumulative_reward))
+        crs.append(str(cumulative_reward))
         cr_vals[eval_episode] = cumulative_reward
-    scores.append(str(cr_vals.mean()))
+    crs.append(str(cr_vals.mean()))
     #print("Average score: {}".format(cr_vals.mean()))
-    return scores
+    return crs
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -286,19 +288,27 @@ if __name__ == '__main__':
     previous_knowledge_size = 0
     start = datetime.datetime.now()
     high_score = 0.
-    print("Episodes,A,B,C,D,E,F,G,H,I,J,Average")
+    #print("Episodes,A,B,C,D,E,F,G,H,I,J,Average")
+    print("Episode,", end='')
+    for i in range(4, 600, 2):
+        print("{},".format(i), end='')
+    print("")
     for i_episode in range(args.episodes):
         if (i_episode % args.reportfrequency) == 0:
+            print("{},".format(i_episode), end='')
+            knowledge.report()
+            print("")
+
             # Evaluate how good our current knowledge is, with a number of games
             s = evaluate(knowledge)
-            print(','.join([str(i_episode)] + s))
+            #print(','.join([str(i_episode)] + s))
 
         train(knowledge)
 
     if (i_episode % args.reportfrequency) == 0:
         # Evaluate how good our current knowledge is, with a number of games
         s = evaluate(knowledge)
-        print(','.join([str(i_episode)] + s))
+        #print(','.join([str(i_episode)] + s))
 
     # Close the environment
     env.close()
