@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import math
 import pickle
@@ -83,6 +85,10 @@ around will make a difference."""
                 joint_best_actions.append(i)
         return random.choice(joint_best_actions)
 
+def get_tile_total_for_state(state):
+    """Report the total value of all tiles on the board in this state. State is a tuple."""
+    return sum(state)
+
 class Knowledge(object):
     def __init__(self):
         self.nodes = dict()
@@ -114,6 +120,24 @@ class Knowledge(object):
 
     def __str__(self):
         return "I know about {} states".format(self.size())
+
+    def report(self):
+        """Report how many states I know for each tile total"""
+        freq = dict()
+        max_tile_total = 0
+        for state, node in self.nodes.items():
+            tile_total = get_tile_total_for_state(state)
+            max_tile_total = max(max_tile_total, tile_total)
+            try:
+                freq[tile_total] += 1
+            except:
+                freq[tile_total] = 1
+        #print("Tile total,States known")
+        for i in range(4, max_tile_total, 2):
+            try:
+                print("{},".format(freq[i]), end='')
+            except KeyError:
+                print("{},".format(0), end='')
 
     def dump(self, limit=0):
         """Dump knowledge, sorted by visits, limited by count."""
