@@ -123,6 +123,7 @@ class Knowledge(object):
 
     def report(self):
         """Report how many states I know for each tile total"""
+        report = ''
         freq = dict()
         max_tile_total = 0
         for state, node in self.nodes.items():
@@ -135,9 +136,10 @@ class Knowledge(object):
         #print("Tile total,States known")
         for i in range(4, max_tile_total, 2):
             try:
-                print("{},".format(freq[i]), end='')
+                report += "{},".format(freq[i])
             except KeyError:
-                print("{},".format(0), end='')
+                report += "{},".format(0)
+        return report
 
     def dump(self, limit=0, size=4):
         """Dump knowledge, sorted by visits, limited by count."""
@@ -290,26 +292,26 @@ if __name__ == '__main__':
     start = datetime.datetime.now()
     high_score = 0.
     #print("Episodes,A,B,C,D,E,F,G,H,I,J,Average")
-    print("Episode,", end='')
-    for i in range(4, 600, 2):
-        print("{},".format(i), end='')
-    print("")
-    for i_episode in range(args.episodes):
+    with open('tile_total_frequency.csv', 'w') as ttf:
+        ttf.write("Episode,")
+        for i in range(4, 600, 2):
+            ttf.write("{},".format(i))
+        ttf.write("\n")
+        for i_episode in range(args.episodes):
+
+            if (i_episode % args.reportfrequency) == 0:
+                ttf.write("{},{}\n".format(i_episode, knowledge.report()))
+
+                # Evaluate how good our current knowledge is, with a number of games
+                #s = evaluate(knowledge)
+                #print(','.join([str(i_episode)] + s))
+
+            train(knowledge)
+
         if (i_episode % args.reportfrequency) == 0:
-            print("{},".format(i_episode), end='')
-            knowledge.report()
-            print("")
-
             # Evaluate how good our current knowledge is, with a number of games
-            s = evaluate(knowledge)
+            #s = evaluate(knowledge)
             #print(','.join([str(i_episode)] + s))
-
-        train(knowledge)
-
-    if (i_episode % args.reportfrequency) == 0:
-        # Evaluate how good our current knowledge is, with a number of games
-        s = evaluate(knowledge)
-        #print(','.join([str(i_episode)] + s))
 
     # Close the environment
     env.close()
