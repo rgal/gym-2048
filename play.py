@@ -139,12 +139,13 @@ class Knowledge(object):
             except KeyError:
                 print("{},".format(0), end='')
 
-    def dump(self, limit=0):
+    def dump(self, limit=0, size=4):
         """Dump knowledge, sorted by visits, limited by count."""
         count = 0
         for n, nod in sorted(list(self.nodes.items()), key=lambda x: x[1].visited(), reverse=True):
             npa = np.array(n)
-            grid = npa.reshape((4, 4))
+            grid = npa.reshape((size, size))
+
             print(("State:\n{}\nKnowledge:\n{}\n".format(grid, nod)))
             count += 1
             if limit and count > limit:
