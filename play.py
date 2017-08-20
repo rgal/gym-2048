@@ -171,15 +171,24 @@ def choose_action(env, observation, knowledge, epsilon):
         action = random.randint(0, 3)
     return (action, best)
 
-
-def train(k):
+def train(k, seed=None, agent_seed=None):
+    """Train for one game. k is the knowledge which will be used, and added to.
+    seed (optional) specifies the seed for the game.
+    agent_seed specifies the seed for the agent."""
+    #print("Training")
     # Eligibility trace records how much state, action pairs affect the current reward
     eligibility_trace = dict()
     #print "New episode"
     # Initialise seed for environment
-    env.seed()
+    if seed:
+        env.seed(seed)
+    else:
+        env.seed()
     # Initialise seed for agent
-    random.seed()
+    if agent_seed:
+        random.seed(agent_seed)
+    else:
+        random.seed()
     observation = env.reset()
     history = list()
     # Initialise S, A
