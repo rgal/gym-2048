@@ -92,7 +92,7 @@ class Game2048Env(gym.Env):
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
         npa = np.array(self.Matrix)
-        grid = npa.reshape((4, 4))
+        grid = npa.reshape((self.size, self.size))
         s += "{}\n".format(grid)
         outfile.write(s)
         return outfile
