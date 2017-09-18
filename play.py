@@ -210,7 +210,7 @@ def train(k, seed=None, agent_seed=None):
             #total_moves += (t + 1)
             break
 
-        # Choose A' from S'	using policy derived from Q
+        # Choose A' from S' using policy derived from Q
         (next_action, best) = choose_action(env, observation, k, epsilon)
 
         # Calculate delta
@@ -264,7 +264,7 @@ def evaluate(k):
             cumulative_reward += reward
             if done:
                 break
-            # Choose A' from S'	using policy derived from Q
+            # Choose A' from S' using policy derived from Q
             (next_action, best) = choose_action(env, observation, k, epsilon)
             observation = next_observation
             action = next_action
@@ -317,7 +317,7 @@ if __name__ == '__main__':
 
             train(knowledge)
 
-        if (i_episode % args.reportfrequency) == 0:
+        #if (i_episode % args.reportfrequency) == 0:
             # Evaluate how good our current knowledge is, with a number of games
             #s = evaluate(knowledge)
             #print(','.join([str(i_episode)] + s))
