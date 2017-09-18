@@ -162,7 +162,7 @@ class Game2048Env(gym.Env):
         ry = list(range(self.h))
 
         if dir_mod_two == 0:
-            # Left or right, split into rows
+            # Up or down, split into columns
             for y in range(self.h):
                 old = [self.get(x, y) for x in rx]
                 (new, ms) = self.shift(old, shift_direction)
@@ -173,7 +173,7 @@ class Game2048Env(gym.Env):
                         for x in rx:
                             self.set(x, y, new[x])
         else:
-            # Up or down, split into columns
+            # Left or right, split into rows
             for x in range(self.w):
                 old = [self.get(x, y) for y in ry]
                 (new, ms) = self.shift(old, shift_direction)
