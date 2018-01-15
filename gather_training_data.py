@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import argparse
 import numpy as np
 import pygame
 
@@ -51,13 +52,16 @@ def gather_training_data(env, seed=None):
     return data
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
+    args = parser.parse_args()
     # Initialise environment
     env = gym.make('2048-v0')
 
     # Initialise pygame for detecting keypresses
     pygame.init()
 
-    data = gather_training_data(env)
+    data = gather_training_data(env, seed=args.seed)
 
     # Close the environment
     env.close()
