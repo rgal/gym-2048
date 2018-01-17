@@ -94,7 +94,10 @@ if __name__ == '__main__':
     #print("Outputs: {}".format(y))
 
     # Save training data
-    os.makedirs(args.output)
+    try:
+        os.makedirs(args.output)
+    except OSError:
+        pass
     with open(os.path.join(args.output, 'x.npy'), 'w') as f:
         np.save(f, x)
     with open(os.path.join(args.output, 'y.npy'), 'w') as f:
