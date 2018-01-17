@@ -83,9 +83,9 @@ if __name__ == '__main__':
 
     data_size = len(data)
     print("Got {} data values".format(data_size))
-    x = np.empty([data_size, 16], dtype=np.int)
+    x = np.empty([data_size, 4, 4], dtype=np.int)
     for idx, d in enumerate(data):
-        x[idx] = d['input']
+        x[idx] = np.reshape(d['input'], (4, 4))
     y = np.zeros([data_size, 4], dtype=np.int)
     for idx, d in enumerate(data):
         y[idx, d['output']] = 1
