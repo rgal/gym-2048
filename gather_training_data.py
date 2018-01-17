@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse
 import numpy as np
+import os
 import pygame
 
 import gym
@@ -66,6 +67,7 @@ def gather_training_data(env, seed=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--output', '-o', default='.', help="Set the directory for outputting files")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
@@ -92,7 +94,8 @@ if __name__ == '__main__':
     #print("Outputs: {}".format(y))
 
     # Save training data
-    with open('x.npy', 'w') as f:
+    os.makedirs(args.output)
+    with open(os.path.join(args.output, 'x.npy'), 'w') as f:
         np.save(f, x)
-    with open('y.npy', 'w') as f:
+    with open(os.path.join(args.output, 'y.npy'), 'w') as f:
         np.save(f, y)
