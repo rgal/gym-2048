@@ -12,7 +12,10 @@ if __name__ == '__main__':
     parser.add_argument('input', nargs='+', help="Specify directories of input files to merge")
     args = parser.parse_args()
 
-    os.makedirs(args.output)
+    try:
+        os.makedirs(args.output)
+    except OSError:
+        pass
     for vals in ['x', 'y']:
         data = None
         filename = '{}.npy'.format(vals)
