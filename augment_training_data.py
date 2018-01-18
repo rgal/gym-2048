@@ -8,6 +8,7 @@ import os
 
 def augment(inputs, outputs):
     """Flip the board horizontally, then add rotations to other orientations."""
+    print("Started with {} data points".format(inputs.shape[0]))
     # Add horizontal flip of inputs and outputs
     flipped_inputs = np.concatenate((inputs, np.flip(inputs, 2)))
 
@@ -25,6 +26,7 @@ def augment(inputs, outputs):
         np.roll(flipped_outputs, 1, axis=1),
         np.roll(flipped_outputs, 2, axis=1),
         np.roll(flipped_outputs, 3, axis=1)))
+    print("Augmented to {} data points".format(augmented_inputs.shape[0]))
     return (augmented_inputs, augmented_outputs)
 
 if __name__ == '__main__':
@@ -37,11 +39,12 @@ if __name__ == '__main__':
         x = np.load(f)
     with open(os.path.join(args.input[0], 'y.npy'), 'r') as f:
         y = np.load(f)
+    (ax, ay) = augment(x, y)
     try:
         os.makedirs(args.output)
     except OSError:
         pass
     with open(os.path.join(args.output, 'x.npy'), 'w') as f:
-        x = np.save(f)
+        np.save(f, ax)
     with open(os.path.join(args.output, 'y.npy'), 'w') as f:
-        y = np.save(f)
+        np.save(f, ay)
