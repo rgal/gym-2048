@@ -53,8 +53,12 @@ def gather_training_data(env, seed=None):
             print("Read action {}".format(action))
 
             # Add this data to the data collection
-            data.append({'input': observation, 'output': action})
-            observation, reward, done, info = env.step(action)
+            new_observation, reward, done, info = env.step(action)
+            if np.array_equal(observation, new_observation):
+                print("Suppressing recording of illegal move")
+            else:
+                data.append({'input': observation, 'output': action})
+            observation = new_observation
             print()
 
             if done:
