@@ -21,8 +21,19 @@ with open(os.path.join(input_folder, 'x.npy'), 'r') as f:
     x_training = np.reshape(x_training, (number_of_items, 16)).astype(float)
 with open(os.path.join(input_folder, 'y.npy'), 'r') as f:
     y_training = np.load(f).astype(float)
-for _ in range(1000):
+(thisW, thisb, thisy) = sess.run([W, b, y], feed_dict={x: x_training, y_: y_training})
+print("Initial gradients: {}".format(thisW))
+print("Initial biases: {}".format(thisb))
+print("Initial output: {}".format(thisy))
+
+for _ in range(1):
   sess.run(train_step, feed_dict={x: x_training, y_: y_training})
-correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+
+(thisW, thisb, thisy) = sess.run([W, b, y], feed_dict={x: x_training, y_: y_training})
+print("Trained gradients: {}".format(thisW))
+print("Trained biases: {}".format(thisb))
+print("Trained output: {}".format(thisy))
+
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 print(sess.run(accuracy, feed_dict={x: x_training, y_: y_training}))
