@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 x = tf.placeholder(tf.float32, [None, 16])
-W = tf.Variable(tf.zeros([16, 4]))
+W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
 b = tf.Variable(tf.zeros([4]))
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 y_ = tf.placeholder(tf.float32, [None, 4])
