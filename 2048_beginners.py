@@ -18,9 +18,9 @@ input_folder = 'augmented'
 with open(os.path.join(input_folder, 'x.npy'), 'r') as f:
     x_training = np.load(f)
     number_of_items = x_training.shape[0]
-    x_training = np.reshape(x_training, (number_of_items, 16))
+    x_training = np.reshape(x_training, (number_of_items, 16)).astype(float)
 with open(os.path.join(input_folder, 'y.npy'), 'r') as f:
-    y_training = np.load(f)
+    y_training = np.load(f).astype(float)
 for _ in range(1000):
   sess.run(train_step, feed_dict={x: x_training, y_: y_training})
 correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
