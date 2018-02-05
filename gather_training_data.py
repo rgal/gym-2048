@@ -62,6 +62,8 @@ def gather_training_data(env, seed=None):
             print()
 
             if done:
+                # Draw final board
+                env.render()
                 print("End of game")
                 break
     except Exiting:
