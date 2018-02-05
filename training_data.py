@@ -52,3 +52,29 @@ class training_data(object):
     def dump(self):
         print(self._x)
         print(self._y)
+
+    def augment(self):
+        """Flip the board horizontally, then add rotations to other orientations."""
+        inputs = self.get_x()
+        outputs = self.get_y()
+        print("Started with {} data points".format(inputs.shape[0]))
+        # Add horizontal flip of inputs and outputs
+        flipped_inputs = np.concatenate((inputs, np.flip(inputs, 2)))
+
+        # Swap directions 1 and 3
+        temp = np.copy(outputs)
+        temp[:,[1,3]] = temp[:,[3,1]]
+        flipped_outputs = np.concatenate((outputs, temp))
+
+        # Add 3 rotations of the previous
+        augmented_inputs = np.concatenate((flipped_inputs,
+            np.rot90(flipped_inputs, k=1, axes=(2, 1)),
+            np.rot90(flipped_inputs, k=2, axes=(2, 1)),
+            np.rot90(flipped_inputs, k=3, axes=(2, 1))))
+        augmented_outputs = np.concatenate((flipped_outputs,
+            np.roll(flipped_outputs, 1, axis=1),
+            np.roll(flipped_outputs, 2, axis=1),
+            np.roll(flipped_outputs, 3, axis=1)))
+        print("Augmented to {} data points".format(augmented_inputs.shape[0]))
+        self._x = augmented_inputs
+        self._y = augmented_outputs
