@@ -11,6 +11,8 @@ import gym
 
 import gym_2048
 
+import training_data
+
 class Exiting(Exception):
     def __init__(self):
         super(Exiting, self).__init__()
@@ -18,7 +20,7 @@ class Exiting(Exception):
 def gather_training_data(env, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
-    data = list()
+    data = training_data.training_data()
     # Initialise seed for environment
     if seed:
         env.seed(seed)
@@ -57,7 +59,7 @@ def gather_training_data(env, seed=None):
             if np.array_equal(observation, new_observation):
                 print("Suppressing recording of illegal move")
             else:
-                data.append({'input': observation, 'output': action})
+                data.add(observation, action)
             observation = new_observation
             print()
 
@@ -87,24 +89,7 @@ if __name__ == '__main__':
     # Close the environment
     env.close()
 
-    data_size = len(data)
-    print("Got {} data values".format(data_size))
-    x = np.empty([data_size, 4, 4], dtype=np.int)
-    for idx, d in enumerate(data):
-        x[idx] = np.reshape(d['input'], (4, 4))
-    y = np.zeros([data_size, 4], dtype=np.int)
-    for idx, d in enumerate(data):
-        y[idx, d['output']] = 1
+    print("Got {} data values".format(data.size()))
 
-    #print("Inputs: {}".format(x))
-    #print("Outputs: {}".format(y))
+    data.write(args.output)
 
-    # Save training data
-    try:
-        os.makedirs(args.output)
-    except OSError:
-        pass
-    with open(os.path.join(args.output, 'x.npy'), 'w') as f:
-        np.save(f, x)
-    with open(os.path.join(args.output, 'y.npy'), 'w') as f:
-        np.save(f, y)
