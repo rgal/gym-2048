@@ -11,14 +11,30 @@ class training_data(object):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y = np.zeros([0, 4], dtype=np.int)
 
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
+
     def add(self, board, action):
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
         y = np.zeros([1, 4], dtype=np.int)
         y[0, action] = 1
         self._y = np.append(self._y, y, axis=0)
 
+    def merge(self, other):
+        self._x = np.concatenate((self._x, other.get_x()))
+        self._y = np.concatenate((self._y, other.get_y()))
+
     def size(self):
         return self._x.shape[0]
+
+    def read(self, input_dir):
+        with open(os.path.join(input_dir, 'x.npy'), 'r') as f:
+            self._x = np.load(f)
+        with open(os.path.join(input_dir, 'y.npy'), 'r') as f:
+            self._y = np.load(f)
 
     def write(self, output_dir):
         # Save training data
