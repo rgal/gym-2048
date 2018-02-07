@@ -11,6 +11,9 @@ class training_data(object):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y = np.zeros([0, 4], dtype=np.int)
 
+    def _check_lengths(self):
+        assert self._x.shape[0] == self._y.shape[0]
+
     def get_x(self):
         return self._x
 
@@ -26,6 +29,7 @@ class training_data(object):
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
         self._y = np.concatenate((self._y, other.get_y()))
+        self._check_lengths()
 
     def size(self):
         return self._x.shape[0]
@@ -35,6 +39,7 @@ class training_data(object):
             self._x = np.load(f)
         with open(os.path.join(input_dir, 'y.npy'), 'r') as f:
             self._y = np.load(f)
+        self._check_lengths()
 
     def write(self, output_dir):
         # Save training data
@@ -57,7 +62,6 @@ class training_data(object):
         """Flip the board horizontally, then add rotations to other orientations."""
         inputs = self.get_x()
         outputs = self.get_y()
-        print("Started with {} data points".format(inputs.shape[0]))
         # Add horizontal flip of inputs and outputs
         flipped_inputs = np.concatenate((inputs, np.flip(inputs, 2)))
 
@@ -75,6 +79,6 @@ class training_data(object):
             np.roll(flipped_outputs, 1, axis=1),
             np.roll(flipped_outputs, 2, axis=1),
             np.roll(flipped_outputs, 3, axis=1)))
-        print("Augmented to {} data points".format(augmented_inputs.shape[0]))
         self._x = augmented_inputs
         self._y = augmented_outputs
+        self._check_lengths()
