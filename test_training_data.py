@@ -15,5 +15,55 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
 
+    def test_augment(self):
+        td = training_data.training_data()
+        initial_board = np.array([[1, 1, 0, 0],
+                                  [0, 0, 0, 0],
+                                  [0, 0, 0, 0],
+                                  [0, 0, 0, 0]])
+        td.add(initial_board, 1)
+        td.augment()
+        self.assertEqual(td.size(), 8)
+        expected_x = np.array([
+            [[1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
+            [[1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            ], dtype=np.int)
+        expected_y = np.array([
+            [0, 1, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 1, 0]
+            ], dtype=np.int)
+        self.assertTrue(np.array_equal(td.get_x(), expected_x))
+        self.assertTrue(np.array_equal(td.get_y(), expected_y))
+
+    def test_merge(self):
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 1)
+        td2 = training_data.training_data()
+        td2.add(np.zeros([1, 4, 4]), 2)
+        td.merge(td2)
+        expected_x = np.array([
+            [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            ], dtype=np.int)
+        expected_y = np.array([[0, 1, 0, 0], [0, 0, 1, 0]], dtype=np.int)
+        self.assertTrue(np.array_equal(td.get_x(), expected_x))
+        self.assertTrue(np.array_equal(td.get_y(), expected_y))
+
+    def test_size(self):
+        td = training_data.training_data()
+        self.assertEqual(td.size(), 0)
+
 if __name__ == '__main__':
     unittest.main()
