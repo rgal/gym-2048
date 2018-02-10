@@ -24,10 +24,13 @@ x_training = t.get_x()
 y_training = t.get_y()
 
 number_of_items = t.size()
-x_training = np.reshape(x_training, (number_of_items, 16))#.astype(float)
+x_training = np.reshape(x_training, (number_of_items, 16)).astype(float)
 
-x_training_tensor = tf.convert_to_tensor(x_training, dtype='float32')
-y_training_tensor = tf.convert_to_tensor(y_training)
+#x_training_tensor = tf.convert_to_tensor(x_training, dtype='float32')
+#y_training_tensor = tf.convert_to_tensor(y_training)
+#print x_training_tensor
+
+dataset = tf.data.Dataset.from_tensor_slices({"a": x_training, "b": y_training})
 
 (thisW, thisb, thisy) = sess.run([W, b, y], feed_dict={x: x_training, y_: y_training})
 print("Initial gradients: {}".format(thisW))
