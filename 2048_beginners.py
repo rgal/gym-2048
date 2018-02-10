@@ -3,6 +3,8 @@ import os
 import tensorflow as tf
 import numpy as np
 
+import training_data
+
 x = tf.placeholder(tf.float32, [None, 16])
 W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
 b = tf.Variable(tf.zeros([4]))
@@ -15,12 +17,18 @@ tf.global_variables_initializer().run()
 
 # Load data
 input_folder = 'augmented'
-with open(os.path.join(input_folder, 'x.npy'), 'r') as f:
-    x_training = np.load(f)
-    number_of_items = x_training.shape[0]
-    x_training = np.reshape(x_training, (number_of_items, 16)).astype(float)
-with open(os.path.join(input_folder, 'y.npy'), 'r') as f:
-    y_training = np.load(f).astype(float)
+
+t = training_data.training_data()
+t.read(input_folder)
+x_training = t.get_x()
+y_training = t.get_y()
+
+number_of_items = t.size()
+x_training = np.reshape(x_training, (number_of_items, 16))#.astype(float)
+
+x_training_tensor = tf.convert_to_tensor(x_training, dtype='float32')
+y_training_tensor = tf.convert_to_tensor(y_training)
+
 (thisW, thisb, thisy) = sess.run([W, b, y], feed_dict={x: x_training, y_: y_training})
 print("Initial gradients: {}".format(thisW))
 print("Initial biases: {}".format(thisb))
