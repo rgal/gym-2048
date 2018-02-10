@@ -16,7 +16,7 @@ sess = tf.InteractiveSession()
 tf.global_variables_initializer().run()
 
 # Load data
-input_folder = 'augmented'
+input_folder = 'single_file'
 
 t = training_data.training_data()
 t.read(input_folder)
