@@ -57,7 +57,7 @@ class training_data(object):
             self._y = data['y']
         self._check_lengths()
 
-    def write(self, output_dir):
+    def write(self, output_dir, single_file=False):
         # Save training data
         try:
             os.makedirs(output_dir)
