@@ -34,25 +34,36 @@ class training_data(object):
     def size(self):
         return self._x.shape[0]
 
-    def read(self, input_dir):
-        with open(os.path.join(input_dir, 'x.npy'), 'r') as f:
-            self._x = np.load(f)
-        with open(os.path.join(input_dir, 'y.npy'), 'r') as f:
-            self._y = np.load(f)
+    def read(self, input_dir, single_file=False):
+        if single_file:
+            with open(os.path.join(input_dir, 'data.npy'), 'r') as f:
+                data = np.load(f)
+                self._x = data['x']
+                self._y = data['y']
+        else:
+            with open(os.path.join(input_dir, 'x.npy'), 'r') as f:
+                self._x = np.load(f)
+            with open(os.path.join(input_dir, 'y.npy'), 'r') as f:
+                self._y = np.load(f)
         self._check_lengths()
 
-    def write(self, output_dir):
+    def write(self, output_dir, single_file=False):
         # Save training data
         try:
             os.makedirs(output_dir)
         except OSError:
             pass
-        with open(os.path.join(output_dir, 'x.npy'), 'w') as f:
-            print("Outputting {} with shape {}".format('x.npy', self._x.shape))
-            np.save(f, self._x)
-        with open(os.path.join(output_dir, 'y.npy'), 'w') as f:
-            print("Outputting {} with shape {}".format('y.npy', self._y.shape))
-            np.save(f, self._y)
+        if single_file:
+            with open(os.path.join(output_dir, 'data.npy'), 'w') as f:
+                print("Outputting {} with shapes {} {}".format('data.npy', self._x.shape, self._y.shape))
+                np.savez(f, x=self._x, y=self._y)
+        else:
+            with open(os.path.join(output_dir, 'x.npy'), 'w') as f:
+                print("Outputting {} with shape {}".format('x.npy', self._x.shape))
+                np.save(f, self._x)
+            with open(os.path.join(output_dir, 'y.npy'), 'w') as f:
+                print("Outputting {} with shape {}".format('y.npy', self._y.shape))
+                np.save(f, self._y)
 
     def dump(self):
         print(self._x)
