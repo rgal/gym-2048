@@ -6,8 +6,7 @@ import numpy as np
 import training_data
 
 # Load data
-input_folder = 'single_file'
-
+input_folder = 'less_data'
 t = training_data.training_data()
 t.read(input_folder)
 x_training = t.get_x()
