@@ -36,14 +36,13 @@ training_init = new_iterator.make_initializer(dataset)
 sess = tf.InteractiveSession()
 
 # Print out data from dataset
-print("Training")
-sess.run(training_init)
-while True:
-    try:
-        print(sess.run([next_element['x'], next_element['y']]))
-    except tf.errors.OutOfRangeError:
-        print("End of dataset")
-        break
+#sess.run(training_init)
+#while True:
+#    try:
+#        print(sess.run([next_element['x'], next_element['y']]))
+#    except tf.errors.OutOfRangeError:
+#        print("End of dataset")
+#        break
 
 
 # Model
