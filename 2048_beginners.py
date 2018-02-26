@@ -61,9 +61,19 @@ if __name__ == '__main__':
     y_conv = tf.matmul(next_element['x'], W) + b
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=next_element['y'], logits=y_conv))
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('cross_entropy', cross_entropy)
+    with tf.name_scope('train'):
+        train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('corrent_prediction'):
+            correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
+        with tf.name_scope('accuracy'):
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('accuracy', accuracy)
+
+    # Merge summaries
+    merged = tf.summary.merge_all()
+    writer = tf.summary.FileWriter('logdir', sess.graph)
 
     def print_stuff(training_init, W, b, y):
         sess.run(training_init)
@@ -74,7 +84,7 @@ if __name__ == '__main__':
 
     # Train model
     tf.global_variables_initializer().run()
-    for i in range(20):
+    for i in range(50):
         sess.run(training_init)
         while True:
             try:
@@ -83,4 +93,7 @@ if __name__ == '__main__':
                 print("End of dataset")
                 break
         sess.run(training_init)
-        print(sess.run([cross_entropy, accuracy]))
+        summary, ce, acc = sess.run([merged, cross_entropy, accuracy])
+        print("Cross entropy {} and accuracy {}".format(ce, acc))
+        writer.add_summary(summary, i)
+    writer.close()
