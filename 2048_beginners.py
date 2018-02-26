@@ -52,6 +52,24 @@ b = tf.Variable(tf.zeros([4]))
 y = tf.nn.softmax(tf.matmul(next_element['x'], W) + b)
 #y_ = tf.placeholder(tf.float32, [None, 4])
 
+# Beginners trainer
+#cross_entropy = tf.reduce_mean(-tf.reduce_sum(next_element['y'] * tf.log(y), reduction_indices=[1]))
+#train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
+#correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(next_element['y'], 1))
+#accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+
+# Better one from mnist_expert
+y_conv = tf.matmul(next_element['x'], W) + b
+cross_entropy = tf.reduce_mean(
+    tf.nn.softmax_cross_entropy_with_logits(labels=next_element['y'], logits=y_conv))
+train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+
+
+
 def print_stuff(training_init, W, b, y):
     sess.run(training_init)
     (thisW, thisb, thisy) = sess.run([W, b, y])
@@ -59,28 +77,23 @@ def print_stuff(training_init, W, b, y):
     print("Initial biases: {}".format(thisb))
     print("Initial output: {}".format(thisy))
 
-# Trainer
-cross_entropy = tf.reduce_mean(-tf.reduce_sum(next_element['y'] * tf.log(y), reduction_indices=[1]))
-train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
 tf.global_variables_initializer().run()
 
 # Before training
 #print_stuff(training_init, W, b, y)
 
 # Train model
-sess.run(training_init)
-while True:
-    try:
-        (ts, my_y) = sess.run([train_step, y])
-    except tf.errors.OutOfRangeError:
-        print("End of dataset")
-        break
+for i in range(20):
+    sess.run(training_init)
+    while True:
+        try:
+            (ts, my_y) = sess.run([train_step, y_conv])
+        except tf.errors.OutOfRangeError:
+            print("End of dataset")
+            break
+    sess.run(training_init)
+    print(sess.run([cross_entropy, accuracy]))
 
 # After training
 #print_stuff(training_init, W, b, y)
 
-# Measure accuract of model
-sess.run(training_init)
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(next_element['y'], 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-print(sess.run(accuracy))
