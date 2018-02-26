@@ -3,97 +3,84 @@
 from __future__ import print_function
 
 import os
+import argparse
 
 import tensorflow as tf
 import numpy as np
 
 import training_data
 
-# Load data
-input_folder = 'less_data'
-t = training_data.training_data()
-t.read(input_folder)
-x_training = t.get_x()
-y_training = t.get_y()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', nargs='?', default='less_data')
+    args = parser.parse_args()
 
-# Flatten boards out to 1 dimension
-number_of_items = t.size()
-x_training = np.reshape(x_training, (number_of_items, 16)).astype(np.float32)
-y_training = y_training.astype(np.float32)
+    # Load data
+    input_folder = args.input
+    t = training_data.training_data()
+    t.read(input_folder)
+    x_training = t.get_x()
+    y_training = t.get_y()
 
-# Create tensorflow data from loaded numpy arrays
-dataset = tf.data.Dataset.from_tensor_slices({"x": x_training, "y": y_training})
-dataset = dataset.shuffle(2)
-dataset = dataset.batch(1)
-dataset = dataset.repeat(10)
+    # Flatten boards out to 1 dimension
+    number_of_items = t.size()
+    x_training = np.reshape(x_training, (number_of_items, 16)).astype(np.float32)
+    y_training = y_training.astype(np.float32)
 
-new_iterator = tf.data.Iterator.from_structure(dataset.output_types,
-                                           dataset.output_shapes)
-next_element = new_iterator.get_next()
-training_init = new_iterator.make_initializer(dataset)
+    # Create tensorflow data from loaded numpy arrays
+    dataset = tf.data.Dataset.from_tensor_slices({"x": x_training, "y": y_training})
+    dataset = dataset.shuffle(2)
+    dataset = dataset.batch(1)
+    dataset = dataset.repeat(10)
 
-# Create session
-sess = tf.InteractiveSession()
+    new_iterator = tf.data.Iterator.from_structure(dataset.output_types,
+                                               dataset.output_shapes)
+    next_element = new_iterator.get_next()
+    training_init = new_iterator.make_initializer(dataset)
 
-# Print out data from dataset
-#sess.run(training_init)
-#while True:
-#    try:
-#        print(sess.run([next_element['x'], next_element['y']]))
-#    except tf.errors.OutOfRangeError:
-#        print("End of dataset")
-#        break
+    # Create session
+    sess = tf.InteractiveSession()
 
+    # Print out data from dataset
+    #sess.run(training_init)
+    #while True:
+    #    try:
+    #        print(sess.run([next_element['x'], next_element['y']]))
+    #    except tf.errors.OutOfRangeError:
+    #        print("End of dataset")
+    #        break
 
-# Model
-#x = tf.placeholder(tf.float32, [None, 16])
-W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
-b = tf.Variable(tf.zeros([4]))
-y = tf.nn.softmax(tf.matmul(next_element['x'], W) + b)
-#y_ = tf.placeholder(tf.float32, [None, 4])
+    # Model
+    #x = tf.placeholder(tf.float32, [None, 16])
+    W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
+    b = tf.Variable(tf.zeros([4]))
+    y = tf.nn.softmax(tf.matmul(next_element['x'], W) + b)
+    #y_ = tf.placeholder(tf.float32, [None, 4])
 
-# Beginners trainer
-#cross_entropy = tf.reduce_mean(-tf.reduce_sum(next_element['y'] * tf.log(y), reduction_indices=[1]))
-#train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
-#correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(next_element['y'], 1))
-#accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    # Better trainer from mnist_expert
+    y_conv = tf.matmul(next_element['x'], W) + b
+    cross_entropy = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits(labels=next_element['y'], logits=y_conv))
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+    def print_stuff(training_init, W, b, y):
+        sess.run(training_init)
+        (thisW, thisb, thisy) = sess.run([W, b, y])
+        print("Initial gradients: {}".format(thisW))
+        print("Initial biases: {}".format(thisb))
+        print("Initial output: {}".format(thisy))
 
-# Better one from mnist_expert
-y_conv = tf.matmul(next_element['x'], W) + b
-cross_entropy = tf.reduce_mean(
-    tf.nn.softmax_cross_entropy_with_logits(labels=next_element['y'], logits=y_conv))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-
-
-
-def print_stuff(training_init, W, b, y):
-    sess.run(training_init)
-    (thisW, thisb, thisy) = sess.run([W, b, y])
-    print("Initial gradients: {}".format(thisW))
-    print("Initial biases: {}".format(thisb))
-    print("Initial output: {}".format(thisy))
-
-tf.global_variables_initializer().run()
-
-# Before training
-#print_stuff(training_init, W, b, y)
-
-# Train model
-for i in range(20):
-    sess.run(training_init)
-    while True:
-        try:
-            (ts, my_y) = sess.run([train_step, y_conv])
-        except tf.errors.OutOfRangeError:
-            print("End of dataset")
-            break
-    sess.run(training_init)
-    print(sess.run([cross_entropy, accuracy]))
-
-# After training
-#print_stuff(training_init, W, b, y)
-
+    # Train model
+    tf.global_variables_initializer().run()
+    for i in range(20):
+        sess.run(training_init)
+        while True:
+            try:
+                (ts, my_y) = sess.run([train_step, y_conv])
+            except tf.errors.OutOfRangeError:
+                print("End of dataset")
+                break
+        sess.run(training_init)
+        print(sess.run([cross_entropy, accuracy]))
