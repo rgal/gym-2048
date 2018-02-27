@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # Flatten boards out to 1 dimension
     number_of_items = t.size()
     x_training = np.reshape(x_training, (number_of_items, 16)).astype(np.float32)
-    y_training = y_training.astype(np.float32)
+    #y_training = y_training.astype(np.float32)
 
     # Create tensorflow data from loaded numpy arrays
     dataset = tf.data.Dataset.from_tensor_slices({"x": x_training, "y": y_training})
