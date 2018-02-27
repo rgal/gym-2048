@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Create tensorflow data from loaded numpy arrays
     dataset = tf.data.Dataset.from_tensor_slices({"x": x_training, "y": y_training})
     dataset = dataset.shuffle(2)
-    dataset = dataset.batch(1)
+    dataset = dataset.batch(10)
     dataset = dataset.repeat(10)
 
     new_iterator = tf.data.Iterator.from_structure(dataset.output_types,
