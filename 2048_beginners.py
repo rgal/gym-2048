@@ -12,6 +12,7 @@ import training_data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--augment', default=False, action='store_true', help='augment data')
     parser.add_argument('input', nargs='?', default='less_data')
     args = parser.parse_args()
 
@@ -19,6 +20,8 @@ if __name__ == '__main__':
     input_folder = args.input
     t = training_data.training_data()
     t.read(input_folder)
+    if args.augment:
+        t.augment()
     x_training = t.get_x()
     y_training = t.get_y()
 
