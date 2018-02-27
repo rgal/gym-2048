@@ -69,7 +69,7 @@ if __name__ == '__main__':
     with tf.name_scope('train'):
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
     with tf.name_scope('accuracy'):
-        with tf.name_scope('corrent_prediction'):
+        with tf.name_scope('correct_prediction'):
             correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(next_element['y'], 1))
         with tf.name_scope('accuracy'):
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
