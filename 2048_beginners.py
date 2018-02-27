@@ -55,12 +55,13 @@ if __name__ == '__main__':
 
     # Model
     #x = tf.placeholder(tf.float32, [None, 16])
-    W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
-    tf.summary.histogram('W', W)
-    b = tf.Variable(tf.zeros([4]))
-    tf.summary.histogram('b', b)
-    #y_ = tf.placeholder(tf.float32, [None, 4])
-    y_conv = tf.matmul(next_element['x'], W) + b
+    with tf.name_scope('fc'):
+        W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
+        tf.summary.histogram('W', W)
+        b = tf.Variable(tf.zeros([4]))
+        tf.summary.histogram('b', b)
+        #y_ = tf.placeholder(tf.float32, [None, 4])
+        y_conv = tf.matmul(next_element['x'], W) + b
 
     # Better trainer from mnist_expert
     cross_entropy = tf.reduce_mean(
