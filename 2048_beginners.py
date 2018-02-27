@@ -53,12 +53,13 @@ if __name__ == '__main__':
     # Model
     #x = tf.placeholder(tf.float32, [None, 16])
     W = tf.Variable(tf.truncated_normal((16, 4), stddev=0.1))
+    tf.summary.histogram('W', W)
     b = tf.Variable(tf.zeros([4]))
-    y = tf.nn.softmax(tf.matmul(next_element['x'], W) + b)
+    tf.summary.histogram('b', b)
     #y_ = tf.placeholder(tf.float32, [None, 4])
+    y_conv = tf.matmul(next_element['x'], W) + b
 
     # Better trainer from mnist_expert
-    y_conv = tf.matmul(next_element['x'], W) + b
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=next_element['y'], logits=y_conv))
     tf.summary.scalar('cross_entropy', cross_entropy)
@@ -74,13 +75,6 @@ if __name__ == '__main__':
     # Merge summaries
     merged = tf.summary.merge_all()
     writer = tf.summary.FileWriter('logdir', sess.graph)
-
-    def print_stuff(training_init, W, b, y):
-        sess.run(training_init)
-        (thisW, thisb, thisy) = sess.run([W, b, y])
-        print("Initial gradients: {}".format(thisW))
-        print("Initial biases: {}".format(thisb))
-        print("Initial output: {}".format(thisy))
 
     # Train model
     tf.global_variables_initializer().run()
