@@ -22,12 +22,13 @@ if __name__ == '__main__':
     t.read(input_folder)
     if args.augment:
         t.augment()
-    x_training = t.get_x()
-    y_training = t.get_y()
+    (x_training, x_dev) = t.get_x_partitioned()
+    (y_training, y_dev) = t.get_y_partitioned()
 
     # Flatten boards out to 1 dimension
-    number_of_items = t.size()
-    x_training = np.reshape(x_training, (number_of_items, 16)).astype(np.float32)
+    number_of_training_items = x_training.shape[0]
+    x_training = np.reshape(x_training, (number_of_training_items, 16)).astype(np.float32)
+    print("{} training items".format(number_of_training_items))
     #y_training = y_training.astype(np.float32)
 
     # Create tensorflow data from loaded numpy arrays
