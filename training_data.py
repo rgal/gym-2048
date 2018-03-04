@@ -10,6 +10,7 @@ class training_data(object):
     def __init__(self):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y = np.zeros([0, 4], dtype=np.int)
+        self._y_digit = np.zeros([0, 1], dtype=np.int)
 
     def _check_lengths(self):
         assert self._x.shape[0] == self._y.shape[0]
@@ -25,6 +26,10 @@ class training_data(object):
         y = np.zeros([1, 4], dtype=np.int)
         y[0, action] = 1
         self._y = np.append(self._y, y, axis=0)
+
+        y_digit = np.zeros([1, 1], dtype=np.int)
+        y_digit[0, 0] = action
+        self._y_digit = np.append(self._y_digit, y_digit, axis=0)
 
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
@@ -71,9 +76,9 @@ class training_data(object):
         """Save data as CSV file"""
         items = self.size()
         flat_x = np.reshape(self._x, (items, 16))
-        flat_data = np.concatenate((flat_x, self._y), axis=1)
+        flat_data = np.concatenate((flat_x, self._y_digit), axis=1)
         # Should have flat 16 square board and one hot encoded direction
-        assert flat_data.shape[1] == 20
+        assert flat_data.shape[1] == 17
         np.savetxt(filename, flat_data, fmt='%d', delimiter=',')
 
     def dump(self):
