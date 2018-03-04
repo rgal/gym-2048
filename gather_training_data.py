@@ -92,4 +92,5 @@ if __name__ == '__main__':
     print("Got {} data values".format(data.size()))
 
     data.write(args.output)
+    data.export_csv(os.path.join(args.output, 'data.csv'))
 
