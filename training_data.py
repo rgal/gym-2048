@@ -67,6 +67,15 @@ class training_data(object):
             print("Outputting {} with shapes {} {}".format('data.npy', self._x.shape, self._y.shape))
             np.savez(f, x=self._x, y=self._y)
 
+    def export_csv(self, filename):
+        """Save data as CSV file"""
+        items = self.size()
+        flat_x = np.reshape(self._x, (items, 16))
+        flat_data = np.concatenate((flat_x, self._y), axis=1)
+        # Should have flat 16 square board and one hot encoded direction
+        assert flat_data.shape[1] == 20
+        np.savetxt(filename, flat_data, fmt='%d', delimiter=',')
+
     def dump(self):
         print(self._x)
         print(self._y)
