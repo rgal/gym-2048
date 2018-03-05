@@ -41,11 +41,12 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--augment', default=False, action='store_true', help='augment data')
+    parser.add_argument('-e', '--epochs', type=int, default=5, help='How many times to go through data')
     parser.add_argument('input', nargs='?', default='less_data')
     args = parser.parse_args()
 
-    FILE_TRAIN = args.input
-    FILE_TEST = args.input
+    FILE_TRAIN = 'train.csv'
+    FILE_TEST = 'test.csv'
 
     # Print out a batch of data
     # next_batch = my_input_fn(FILE_TRAIN)
@@ -65,19 +66,26 @@ if __name__ == '__main__':
        n_classes=4,
        model_dir='model_dir') # Path to where checkpoints etc are stored
 
-    # Train our model, use the previously function my_input_fn
-    # Input to training is a file with training example
-    # Stop training after 8 iterations of train data (epochs)
-    classifier.train(
-       input_fn=lambda: my_input_fn(FILE_TRAIN, True, 8))
+    for epoch in range(args.epochs):
+        # Train our model, use the previously function my_input_fn
+        # Input to training is a file with training example
+        # Stop training after 8 iterations of train data (epochs)
+        classifier.train(
+           input_fn=lambda: my_input_fn(FILE_TRAIN, True))
 
-    # Evaluate our model using the examples contained in FILE_TEST
-    # Return value will contain evaluation_metrics such as: loss & average_loss
-    evaluate_result = classifier.evaluate(
-       input_fn=lambda: my_input_fn(FILE_TEST, False, 4))
-    print("Evaluation results")
-    for key in evaluate_result:
-       print("   {}, was: {}".format(key, evaluate_result[key]))
+        if epoch % 10 == 0:
+            # Evaluate our model using the examples contained in FILE_TEST
+            # Return value will contain evaluation_metrics such as: loss & average_loss
+            evaluate_result = classifier.evaluate(
+               input_fn=lambda: my_input_fn(FILE_TRAIN, False, 4), name='train')
+            print("Evaluation results")
+            for key in evaluate_result:
+               print("   {}, was: {}".format(key, evaluate_result[key]))
+            evaluate_result = classifier.evaluate(
+               input_fn=lambda: my_input_fn(FILE_TEST, False, 4), name='test')
+            print("Evaluation results")
+            for key in evaluate_result:
+               print("   {}, was: {}".format(key, evaluate_result[key]))
 
     sys.exit(1)
     # Load data
