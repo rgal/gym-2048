@@ -23,8 +23,6 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
        parsed_line = tf.decode_csv(line, [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
        features = parsed_line[0:16]
        label = parsed_line[16]
-       print(type(features))
-       print(features)
        d = dict(zip(feature_names, features)), label
        return d
 
@@ -48,11 +46,12 @@ if __name__ == '__main__':
 
     FILE_TRAIN = args.input
     FILE_TEST = args.input
-    next_batch = my_input_fn(FILE_TRAIN)
 
-    with tf.Session() as sess:
-        first_batch = sess.run(next_batch)
-    print(first_batch)
+    # Print out a batch of data
+    # next_batch = my_input_fn(FILE_TRAIN)
+    # with tf.Session() as sess:
+    #     first_batch = sess.run(next_batch)
+    # print(first_batch)
 
     # Create the feature_columns, which specifies the input to our model.
     # All our input features are numeric, so use numeric_column for each one.
