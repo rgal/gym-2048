@@ -14,12 +14,16 @@ class training_data(object):
 
     def _check_lengths(self):
         assert self._x.shape[0] == self._y.shape[0]
+        assert self._y.shape[0] == self._y_digit.shape[0]
 
     def get_x(self):
         return self._x
 
     def get_y(self):
         return self._y
+
+    def get_y_digit(self):
+        return self._y_digit
 
     def add(self, board, action):
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
@@ -34,6 +38,7 @@ class training_data(object):
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
         self._y = np.concatenate((self._y, other.get_y()))
+        self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))
         self._check_lengths()
 
     def get_x_partitioned(self):
@@ -60,6 +65,9 @@ class training_data(object):
             data = np.load(f)
             self._x = data['x']
             self._y = data['y']
+            self._y_digit = np.argmax(self._y, axis=1)
+        l = self.size()
+        self._y_digit = np.reshape(self._y_digit, (l, 1))
         self._check_lengths()
 
     def write(self, output_dir):
@@ -84,11 +92,14 @@ class training_data(object):
     def dump(self):
         print(self._x)
         print(self._y)
+        print(self._y_digit)
 
     def augment(self):
         """Flip the board horizontally, then add rotations to other orientations."""
         inputs = self.get_x()
         outputs = self.get_y()
+        output_digits = self.get_y_digit()
+
         # Add horizontal flip of inputs and outputs
         flipped_inputs = np.concatenate((inputs, np.flip(inputs, 2)))
 
@@ -96,6 +107,13 @@ class training_data(object):
         temp = np.copy(outputs)
         temp[:,[1,3]] = temp[:,[3,1]]
         flipped_outputs = np.concatenate((outputs, temp))
+
+        # Swap directions 1 and 3
+        temp = np.copy(output_digits)
+        temp[temp == 1] = 33
+        temp[temp == 3] = 1
+        temp[temp == 33] = 3
+        flipped_output_digits = np.concatenate((output_digits, temp))
 
         # Add 3 rotations of the previous
         augmented_inputs = np.concatenate((flipped_inputs,
@@ -106,6 +124,13 @@ class training_data(object):
             np.roll(flipped_outputs, 1, axis=1),
             np.roll(flipped_outputs, 2, axis=1),
             np.roll(flipped_outputs, 3, axis=1)))
+        augmented_output_digits = np.concatenate((flipped_output_digits,
+            np.mod(flipped_output_digits + 1, 4),
+            np.mod(flipped_output_digits + 2, 4),
+            np.mod(flipped_output_digits + 3, 4)
+        ))
         self._x = augmented_inputs
         self._y = augmented_outputs
+        self._y_digit = augmented_output_digits
+
         self._check_lengths()

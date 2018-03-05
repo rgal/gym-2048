@@ -44,8 +44,19 @@ class TestTrainingData(unittest.TestCase):
             [1, 0, 0, 0],
             [0, 0, 1, 0]
             ], dtype=np.int)
+        expected_y_digit = np.array([
+            [1],
+            [3],
+            [2],
+            [0],
+            [3],
+            [1],
+            [0],
+            [2]
+            ], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
         self.assertTrue(np.array_equal(td.get_y(), expected_y))
+        self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
 
     def test_merge(self):
         td = training_data.training_data()
