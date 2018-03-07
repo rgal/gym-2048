@@ -42,13 +42,51 @@ def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
     # Create three fully connected layers each layer having a dropout
     # probability of 0.1.
-    net = tf.feature_column.input_layer(features, params['feature_columns'])
 
-    for units in params['hidden_units']:
-        net = tf.layers.dense(net, units=units, activation=f.nn.relu)
+    # Input layer
+    fcs = tf.feature_column.input_layer(features, params['feature_columns'])
+
+    # Re-shape from flat features to 4d vector
+    # Input shape: [batch_size, 16]
+    # Output shape: [batch_size, 4, 4, 1]
+    square = tf.reshape(fcs, [-1, 4, 4, 1])
+
+    # Convolution layer 1
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, 16]
+    conv1 = tf.layers.conv2d(
+      inputs=square,
+      filters=16,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
+
+    # Convolution layer 2
+    # Input shape: [batch_size, 4, 4, 16]
+    # Output shape: [batch_size, 4, 4, 16]
+    conv2 = tf.layers.conv2d(
+      inputs=conv1,
+      filters=16,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
+
+    # Flatten into a batch of vectors
+    # Input shape: [batch_size, 4, 4, 16]
+    # Output shape: [batch_size, 4 * 4 * 16]
+    net = tf.reshape(conv2, [-1, 4 * 4 * 16])
+
+    # Fully connected layer
+    # Input shape: [batch_size, 4 * 4 * 16]
+    # Output shape: [batch_size, 16]
+    fc1 = tf.layers.dense(net, units=16, activation=tf.nn.relu)
+
+    # Add dropout operation; 0.6 probability that element will be kept
+    dropout = tf.layers.dropout(
+        inputs=fc1, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Compute logits (1 per class).
-    logits = tf.layers.dense(net, params['n_classes'], activation=None)
+    logits = tf.layers.dense(dropout, params['n_classes'], activation=None)
 
     # Compute predictions.
     predicted_classes = tf.argmax(logits, 1)
