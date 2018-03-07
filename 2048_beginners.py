@@ -40,8 +40,6 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
 
 def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
-    # Create three fully connected layers each layer having a dropout
-    # probability of 0.1.
 
     # Input layer
     fcs = tf.feature_column.input_layer(features, params['feature_columns'])
@@ -83,7 +81,7 @@ def my_model(features, labels, mode, params):
 
     # Add dropout operation; 0.6 probability that element will be kept
     dropout = tf.layers.dropout(
-        inputs=fc1, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+        inputs=fc1, rate=0.1, training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Compute logits (1 per class).
     logits = tf.layers.dense(dropout, params['n_classes'], activation=None)
@@ -148,8 +146,6 @@ if __name__ == '__main__':
         model_dir='model_dir', # Path to where checkpoints etc are stored
         params={
             'feature_columns': feature_columns,
-            # Two hidden layers of 16 nodes each.
-            'hidden_units': [16, 16],
             # The model must choose between 4 classes.
             'n_classes': 4,
         })
@@ -167,6 +163,7 @@ if __name__ == '__main__':
            input_fn=lambda: my_input_fn(FILE_TRAIN, True))
 
         if epoch % 10 == 0:
+            print("Epoch: {}".format(epoch))
             # Evaluate our model using the examples contained in FILE_TEST
             # Return value will contain evaluation_metrics such as: loss & average_loss
             evaluate_result = classifier.evaluate(
