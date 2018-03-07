@@ -38,6 +38,49 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
    batch_features, batch_labels = iterator.get_next()
    return batch_features, batch_labels
 
+def my_model(features, labels, mode, params):
+    """DNN with three hidden layers, and dropout of 0.1 probability."""
+    # Create three fully connected layers each layer having a dropout
+    # probability of 0.1.
+    net = tf.feature_column.input_layer(features, params['feature_columns'])
+
+    for units in params['hidden_units']:
+        net = tf.layers.dense(net, units=units, activation=f.nn.relu)
+
+    # Compute logits (1 per class).
+    logits = tf.layers.dense(net, params['n_classes'], activation=None)
+
+    # Compute predictions.
+    predicted_classes = tf.argmax(logits, 1)
+    if mode == tf.estimator.ModeKeys.PREDICT:
+        predictions = {
+            'class_ids': predicted_classes[:, tf.newaxis],
+            'probabilities': tf.nn.softmax(logits),
+            'logits': logits,
+        }
+        return tf.estimator.EstimatorSpec(mode, predictions=predictions)
+
+    # Compute loss.
+    loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+
+    # Compute evaluation metrics.
+    accuracy = tf.metrics.accuracy(labels=labels,
+                                   predictions=predicted_classes,
+                                   name='acc_op')
+    metrics = {'accuracy': accuracy}
+    tf.summary.scalar('accuracy', accuracy[1])
+
+    if mode == tf.estimator.ModeKeys.EVAL:
+        return tf.estimator.EstimatorSpec(
+            mode, loss=loss, eval_metric_ops=metrics)
+
+    # Create training op.
+    assert mode == tf.estimator.ModeKeys.TRAIN
+
+    optimizer = tf.train.AdagradOptimizer(learning_rate=0.05)
+    train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+    return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--augment', default=False, action='store_true', help='augment data')
@@ -60,11 +103,23 @@ if __name__ == '__main__':
 
     # Create a deep neural network regression classifier.
     # Use the DNNClassifier pre-made estimator
-    classifier = tf.estimator.DNNClassifier(
-       feature_columns=feature_columns, # The input features to our model
-       hidden_units=[16, 16], # Two layers, each with 10 neurons
-       n_classes=4,
-       model_dir='model_dir') # Path to where checkpoints etc are stored
+
+     # Build 2 hidden layer DNN with 10, 10 units respectively.
+    classifier = tf.estimator.Estimator(
+        model_fn=my_model,
+        model_dir='model_dir', # Path to where checkpoints etc are stored
+        params={
+            'feature_columns': feature_columns,
+            # Two hidden layers of 16 nodes each.
+            'hidden_units': [16, 16],
+            # The model must choose between 4 classes.
+            'n_classes': 4,
+        })
+    #classifier = tf.estimator.DNNClassifier(
+    #   feature_columns=feature_columns, # The input features to our model
+    #   hidden_units=[16, 16], # Two layers, each with 10 neurons
+    #   n_classes=4,
+    #   model_dir='model_dir') # Path to where checkpoints etc are stored
 
     for epoch in range(args.epochs):
         # Train our model, use the previously function my_input_fn
