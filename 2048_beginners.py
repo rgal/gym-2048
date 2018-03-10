@@ -127,11 +127,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--augment', default=False, action='store_true', help='augment data')
     parser.add_argument('-e', '--epochs', type=int, default=5, help='How many times to go through data')
-    parser.add_argument('input', nargs='?', default='less_data')
+    parser.add_argument('train_input', nargs='?', default='train.csv')
+    parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
 
-    FILE_TRAIN = 'train.csv'
-    FILE_TEST = 'test.csv'
+    FILE_TRAIN = args.train_input
+    FILE_TEST = args.test_input
 
     for learning_rate in [1e-1]:
       for dropout_rate in [0.1, 0.25, 0.4]:
