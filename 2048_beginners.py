@@ -133,8 +133,8 @@ if __name__ == '__main__':
     FILE_TRAIN = 'train.csv'
     FILE_TEST = 'test.csv'
 
-    for learning_rate in [1e-2, 1e-3, 1e-4]:
-      for dropout_rate in [0.25, 0.5, 0.75]:
+    for learning_rate in [1e-1]:
+      for dropout_rate in [0.1, 0.25, 0.4]:
         print("Learning rate: {}, dropout rate: {}".format(learning_rate, dropout_rate))
         # Print out a batch of data
         # next_batch = my_input_fn(FILE_TRAIN)
