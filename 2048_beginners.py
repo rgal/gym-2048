@@ -79,7 +79,7 @@ def my_model(features, labels, mode, params):
     # Output shape: [batch_size, 16]
     fc1 = tf.layers.dense(net, units=16, activation=tf.nn.relu)
 
-    # Add dropout operation; 0.6 probability that element will be kept
+    # Add dropout operation
     dropout = tf.layers.dropout(
         inputs=fc1, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
 
