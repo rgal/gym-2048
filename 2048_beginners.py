@@ -18,7 +18,7 @@ feature_names = [
 '03', '13', '23', '33',
 ]
 
-def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
+def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False):
    def decode_csv(line):
        parsed_line = tf.decode_csv(line, [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
        features = parsed_line[0:16]
@@ -26,9 +26,14 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
        d = dict(zip(feature_names, features)), label
        return d
 
+   def augment_data(dataset):
+       raise NotImplementedError
+
    dataset = (tf.data.TextLineDataset(file_path) # Read text file
        #.skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
+   if augment:
+       dataset = augment_data(dataset)
    if perform_shuffle:
        # Randomizes input using a window of 256 elements (read into memory)
        dataset = dataset.shuffle(buffer_size=256)
