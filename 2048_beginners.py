@@ -74,14 +74,15 @@ def my_model(features, labels, mode, params):
     # Output shape: [batch_size, 4 * 4 * 16]
     net = tf.reshape(conv2, [-1, 4 * 4 * 16])
 
-    # Fully connected layer
-    # Input shape: [batch_size, 4 * 4 * 16]
-    # Output shape: [batch_size, 16]
-    fc1 = tf.layers.dense(net, units=16, activation=tf.nn.relu)
+    for units in params['fc_layers']:
+        # Fully connected layer
+        # Input shape: [batch_size, 4 * 4 * 16]
+        # Output shape: [batch_size, 16]
+        net = tf.layers.dense(net, units=units, activation=tf.nn.relu)
 
     # Add dropout operation
     dropout = tf.layers.dropout(
-        inputs=fc1, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
+        inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Compute logits (1 per class).
     logits = tf.layers.dense(dropout, params['n_classes'], activation=None)
@@ -153,6 +154,7 @@ if __name__ == '__main__':
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
+                'fc_layers': [16],
             })
         #classifier = tf.estimator.DNNClassifier(
         #   feature_columns=feature_columns, # The input features to our model
