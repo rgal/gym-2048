@@ -137,47 +137,33 @@ if __name__ == '__main__':
     for learning_rate in [1e-1]:
       for dropout_rate in [0.1, 0.25, 0.4]:
         print("Learning rate: {}, dropout rate: {}".format(learning_rate, dropout_rate))
-        # Print out a batch of data
-        # next_batch = my_input_fn(FILE_TRAIN)
-        # with tf.Session() as sess:
-        #     first_batch = sess.run(next_batch)
-        # print(first_batch)
 
         # Create the feature_columns, which specifies the input to our model.
         # All our input features are numeric, so use numeric_column for each one.
         feature_columns = [tf.feature_column.numeric_column(k) for k in feature_names]
 
         # Create a deep neural network regression classifier.
-        # Use the DNNClassifier pre-made estimator
-
-         # Build 2 hidden layer DNN with 10, 10 units respectively.
+        # Build custom classifier
         classifier = tf.estimator.Estimator(
             model_fn=my_model,
             model_dir='model_dir/{}_{}'.format(learning_rate, dropout_rate), # Path to where checkpoints etc are stored
             params={
                 'feature_columns': feature_columns,
-                # The model must choose between 4 classes.
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
                 'fc_layers': [16],
             })
-        #classifier = tf.estimator.DNNClassifier(
-        #   feature_columns=feature_columns, # The input features to our model
-        #   hidden_units=[16, 16], # Two layers, each with 10 neurons
-        #   n_classes=4,
-        #   model_dir='model_dir') # Path to where checkpoints etc are stored
 
         for epoch in range(args.epochs):
             # Train our model, use the previously function my_input_fn
             # Input to training is a file with training example
-            # Stop training after 8 iterations of train data (epochs)
             classifier.train(
                input_fn=lambda: my_input_fn(FILE_TRAIN, True))
 
             if epoch % 10 == 0:
                 print("Epoch: {}".format(epoch))
-                # Evaluate our model using the examples contained in FILE_TEST
+                # Evaluate our model
                 # Return value will contain evaluation_metrics such as: loss & average_loss
                 evaluate_result = classifier.evaluate(
                    input_fn=lambda: my_input_fn(FILE_TRAIN, False, 4), name='train')
