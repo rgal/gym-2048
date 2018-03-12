@@ -52,32 +52,27 @@ def my_model(features, labels, mode, params):
     # Re-shape from flat features to 4d vector
     # Input shape: [batch_size, 16]
     # Output shape: [batch_size, 4, 4, 1]
-    square = tf.reshape(fcs, [-1, 4, 4, 1])
+    net = tf.reshape(fcs, [-1, 4, 4, 1])
 
-    # Convolution layer 1
-    # Input shape: [batch_size, 4, 4, 1]
-    # Output shape: [batch_size, 4, 4, 16]
-    conv1 = tf.layers.conv2d(
-      inputs=square,
-      filters=16,
-      kernel_size=[3, 3],
-      padding="same",
-      activation=tf.nn.relu)
+    for filters in params['conv_layers']:
+        # Convolution layer 1
+        # Input shape: [batch_size, 4, 4, 1]
+        # Output shape: [batch_size, 4, 4, 16]
+        net = tf.layers.conv2d(
+          inputs=net,
+          filters=filters,
+          kernel_size=[3, 3],
+          padding="same",
+          activation=tf.nn.relu)
 
-    # Convolution layer 2
-    # Input shape: [batch_size, 4, 4, 16]
-    # Output shape: [batch_size, 4, 4, 16]
-    conv2 = tf.layers.conv2d(
-      inputs=conv1,
-      filters=16,
-      kernel_size=[3, 3],
-      padding="same",
-      activation=tf.nn.relu)
+        # Add dropout operation
+        net = tf.layers.dropout(
+            inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, 16]
     # Output shape: [batch_size, 4 * 4 * 16]
-    net = tf.reshape(conv2, [-1, 4 * 4 * 16])
+    net = tf.reshape(net, [-1, 4 * 4 * params['conv_layers'][-1]])
 
     for units in params['fc_layers']:
         # Fully connected layer
@@ -85,12 +80,12 @@ def my_model(features, labels, mode, params):
         # Output shape: [batch_size, 16]
         net = tf.layers.dense(net, units=units, activation=tf.nn.relu)
 
-    # Add dropout operation
-    dropout = tf.layers.dropout(
-        inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
+        # Add dropout operation
+        net = tf.layers.dropout(
+            inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Compute logits (1 per class).
-    logits = tf.layers.dense(dropout, params['n_classes'], activation=None)
+    logits = tf.layers.dense(net, params['n_classes'], activation=None)
 
     # Compute predictions.
     predicted_classes = tf.argmax(logits, 1)
@@ -152,7 +147,8 @@ if __name__ == '__main__':
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
-                'fc_layers': [16],
+                'conv_layers': [32, 32],
+                'fc_layers': [64, 16],
             })
 
         for epoch in range(args.epochs):
