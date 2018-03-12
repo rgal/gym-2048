@@ -129,8 +129,8 @@ if __name__ == '__main__':
     FILE_TRAIN = args.train_input
     FILE_TEST = args.test_input
 
-    for learning_rate in [1e-1]:
-      for dropout_rate in [0.1, 0.25, 0.4]:
+    for learning_rate in [0.1, 0.05]:
+      for dropout_rate in [0.25, 0.5, 0.75]:
         print("Learning rate: {}, dropout rate: {}".format(learning_rate, dropout_rate))
 
         # Create the feature_columns, which specifies the input to our model.
