@@ -11,20 +11,14 @@ import numpy as np
 
 import training_data
 
-feature_names = [
-'00', '10', '20', '30',
-'01', '11', '21', '31',
-'02', '12', '22', '32',
-'03', '13', '23', '33',
-]
-
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False):
    def decode_csv(line):
        parsed_line = tf.decode_csv(line, [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
        features = parsed_line[0:16]
+       # Convert from list of tensors to one tensor
+       features = tf.cast(tf.stack(features), tf.float32)
        label = parsed_line[16]
-       d = dict(zip(feature_names, features)), label
-       return d
+       return {'board': features}, label
 
    def augment_data(dataset):
        raise NotImplementedError
@@ -46,13 +40,10 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
 def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
 
-    # Input layer
-    fcs = tf.feature_column.input_layer(features, params['feature_columns'])
-
     # Re-shape from flat features to 4d vector
     # Input shape: [batch_size, 16]
     # Output shape: [batch_size, 4, 4, 1]
-    net = tf.reshape(fcs, [-1, 4, 4, 1])
+    net = tf.reshape(features['board'], [-1, 4, 4, 1])
 
     for filters in params['conv_layers']:
         # Convolution layer 1
@@ -133,17 +124,12 @@ if __name__ == '__main__':
       for dropout_rate in [0.25, 0.5, 0.75]:
         print("Learning rate: {}, dropout rate: {}".format(learning_rate, dropout_rate))
 
-        # Create the feature_columns, which specifies the input to our model.
-        # All our input features are numeric, so use numeric_column for each one.
-        feature_columns = [tf.feature_column.numeric_column(k) for k in feature_names]
-
         # Create a deep neural network regression classifier.
         # Build custom classifier
         classifier = tf.estimator.Estimator(
             model_fn=my_model,
             model_dir='model_dir/{}_{}'.format(learning_rate, dropout_rate), # Path to where checkpoints etc are stored
             params={
-                'feature_columns': feature_columns,
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
