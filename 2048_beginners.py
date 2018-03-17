@@ -16,18 +16,38 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
        parsed_line = tf.decode_csv(line, [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
        features = parsed_line[0:16]
        # Convert from list of tensors to one tensor
-       features = tf.cast(tf.stack(features), tf.float32)
+       features = tf.reshape(tf.cast(tf.stack(features), tf.float32), [4, 4, 1])
        label = parsed_line[16]
        return {'board': features}, label
 
-   def augment_data(dataset):
-       raise NotImplementedError
+   def rotate90(feature, label):
+       image = feature['board']
+       rotated_image = tf.image.rot90(image, 3)
+       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by 90")
+       newlabel = label
+       newlabel += 1
+       newlabel %= 4
+       tf.Print(newlabel, [label, newlabel], "Label and rotated by 90")
+       return {'board': rotated_image}, newlabel
+
+   def rotate180(feature, label):
+       image = feature['board']
+       rotated_image = tf.image.rot90(image, 2)
+       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by 180")
+       newlabel = label
+       newlabel += 2
+       newlabel %= 4
+       tf.Print(newlabel, [label, newlabel], "Label and rotated by 180")
+       return {'board': rotated_image}, newlabel
 
    dataset = (tf.data.TextLineDataset(file_path) # Read text file
        #.skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
    if augment:
-       dataset = augment_data(dataset)
+       augmented = dataset.map(rotate90, num_parallel_calls=4)
+       dataset = dataset.concatenate(augmented)
+       augmented = dataset.map(rotate180, num_parallel_calls=4)
+       dataset = dataset.concatenate(augmented)
    if perform_shuffle:
        # Randomizes input using a window of 256 elements (read into memory)
        dataset = dataset.shuffle(buffer_size=256)
