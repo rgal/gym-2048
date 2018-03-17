@@ -20,34 +20,39 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
        label = parsed_line[16]
        return {'board': features}, label
 
-   def rotate90(feature, label):
        image = feature['board']
        rotated_image = tf.image.rot90(image, 3)
        tf.Print(rotated_image, [image, rotated_image], "Image and rotated by 90")
+   def rotate_board(feature, label, k):
+       image = feature['board']
+       rotated_image = tf.image.rot90(image, 4 - k)
+       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by k={}".format(k))
        newlabel = label
-       newlabel += 1
+       newlabel += k
        newlabel %= 4
-       tf.Print(newlabel, [label, newlabel], "Label and rotated by 90")
+       tf.Print(newlabel, [label, newlabel], "Label and rotated by k={}".format(k))
        return {'board': rotated_image}, newlabel
 
+   def rotate90(feature, label):
+       return rotate_board(feature, label, 1)
+
    def rotate180(feature, label):
-       image = feature['board']
-       rotated_image = tf.image.rot90(image, 2)
-       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by 180")
-       newlabel = label
-       newlabel += 2
-       newlabel %= 4
-       tf.Print(newlabel, [label, newlabel], "Label and rotated by 180")
-       return {'board': rotated_image}, newlabel
+       return rotate_board(feature, label, 2)
+
+   def rotate270(feature, label):
+       return rotate_board(feature, label, 3)
 
    dataset = (tf.data.TextLineDataset(file_path) # Read text file
        #.skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
    if augment:
-       augmented = dataset.map(rotate90, num_parallel_calls=4)
-       dataset = dataset.concatenate(augmented)
-       augmented = dataset.map(rotate180, num_parallel_calls=4)
-       dataset = dataset.concatenate(augmented)
+       #augmented = dataset.map(hflip, num_parallel_calls=1)
+       r90 = dataset.map(rotate90, num_parallel_calls=4)
+       r180 = dataset.map(rotate180, num_parallel_calls=4)
+       r270 = dataset.map(rotate270, num_parallel_calls=4)
+       dataset = dataset.concatenate(r90)
+       dataset = dataset.concatenate(r180)
+       dataset = dataset.concatenate(r270)
    if perform_shuffle:
        # Randomizes input using a window of 256 elements (read into memory)
        dataset = dataset.shuffle(buffer_size=256)
