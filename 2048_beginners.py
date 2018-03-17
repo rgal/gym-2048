@@ -26,11 +26,11 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
    def rotate_board(feature, label, k):
        image = feature['board']
        rotated_image = tf.image.rot90(image, 4 - k)
-       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by k={}".format(k))
+       #tf.Print(rotated_image, [image, rotated_image], "Image and rotated by k={}".format(k))
        newlabel = label
        newlabel += k
        newlabel %= 4
-       tf.Print(newlabel, [label, newlabel], "Label and rotated by k={}".format(k))
+       #tf.Print(newlabel, [label, newlabel], "Label and rotated by k={}".format(k))
        return {'board': rotated_image}, newlabel
 
    def rotate90(feature, label):
