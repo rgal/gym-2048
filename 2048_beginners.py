@@ -65,10 +65,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
 def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
 
-    # Re-shape from flat features to 4d vector
-    # Input shape: [batch_size, 16]
-    # Output shape: [batch_size, 4, 4, 1]
-    net = tf.reshape(features['board'], [-1, 4, 4, 1])
+    net = features['board']
 
     for filters in params['conv_layers']:
         # Convolution layer 1
