@@ -20,9 +20,17 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
        label = parsed_line[16]
        return {'board': features}, label
 
+   def hflip(feature, label):
        image = feature['board']
-       rotated_image = tf.image.rot90(image, 3)
-       tf.Print(rotated_image, [image, rotated_image], "Image and rotated by 90")
+       flipped_image = tf.image.flip_left_right(image)
+       #tf.Print(flipped_image, [image, flipped_image], "Image and flipped left right")
+       def one(): return tf.constant(1)
+       def three(): return tf.constant(3)
+       def nochange(): return label
+       newlabel = tf.case({tf.equal(label, tf.constant(1)): one, tf.equal(label, tf.constant(3)): three}, default=nochange)
+       #tf.Print(newlabel, [label, newlabel], "Label and flipped left right")
+       return {'board': flipped_image}, newlabel
+
    def rotate_board(feature, label, k):
        image = feature['board']
        rotated_image = tf.image.rot90(image, 4 - k)
