@@ -78,6 +78,40 @@ class training_data(object):
         print(self._y)
         print(self._y_digit)
 
+    def randomise(self):
+        """Randomise orientation of training data"""
+        inputs = self.get_x()
+        outputs = self.get_y()
+        output_digits = self.get_y_digit()
+        items = self.size()
+
+    def hflip(self):
+        """Flip all the data horizontally"""
+        inputs = self.get_x()
+        outputs = self.get_y()
+        output_digits = self.get_y_digit()
+
+        # Add horizontal flip of inputs and outputs
+        self._x = np.flip(inputs, 2)
+
+        # Swap directions 1 and 3
+        temp = np.copy(outputs)
+        temp[:,[1,3]] = temp[:,[3,1]]
+        self._y = temp
+
+        # Swap directions 1 and 3
+        temp = np.copy(output_digits)
+        temp[temp == 1] = 33
+        temp[temp == 3] = 1
+        temp[temp == 33] = 3
+        self._y_digit = temp
+
+    def rotate(self, k):
+        """Rotate the board by k * 90 degrees"""
+        self._x = np.rot90(self.get_x(), k=k, axes=(2, 1))
+        self._y = np.roll(self.get_y(), k, axis=1)
+        self._y_digit = np.mod(self.get_y_digit() + k, 4)
+
     def augment(self):
         """Flip the board horizontally, then add rotations to other orientations."""
         inputs = self.get_x()

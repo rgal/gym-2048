@@ -15,6 +15,64 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
 
+    def test_hflip(self):
+        td = training_data.training_data()
+        board1 = np.array([[1, 1, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0]])
+        td.add(board1, 1)
+        board2 = np.array([[0, 0, 0, 0],
+                           [2, 4, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0]])
+        td.add(board2, 2)
+        td.hflip()
+        expected_x = np.array([
+            [[0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[0, 0, 0, 0], [0, 0, 4, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
+            ], dtype=np.int)
+        expected_y = np.array([
+            [0, 0, 0, 1],
+            [0, 0, 1, 0]
+            ], dtype=np.int)
+        expected_y_digit = np.array([
+            [3],
+            [2]
+            ], dtype=np.int)
+        self.assertTrue(np.array_equal(td.get_x(), expected_x))
+        self.assertTrue(np.array_equal(td.get_y(), expected_y))
+        self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
+
+    def test_rotate(self):
+        td = training_data.training_data()
+        board1 = np.array([[1, 1, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0]])
+        td.add(board1, 1)
+        board2 = np.array([[0, 0, 0, 0],
+                           [2, 4, 0, 0],
+                           [0, 0, 0, 0],
+                           [0, 0, 0, 0]])
+        td.add(board2, 2)
+        td.rotate(3)
+        expected_x = np.array([
+            [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 4, 0, 0], [0, 2, 0, 0]]
+            ], dtype=np.int)
+        expected_y = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0]
+            ], dtype=np.int)
+        expected_y_digit = np.array([
+            [0],
+            [1]
+            ], dtype=np.int)
+        self.assertTrue(np.array_equal(td.get_x(), expected_x))
+        self.assertTrue(np.array_equal(td.get_y(), expected_y))
+        self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
+
     def test_augment(self):
         td = training_data.training_data()
         initial_board = np.array([[1, 1, 0, 0],
