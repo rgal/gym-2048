@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import copy
 import numpy as np
 import os
 
@@ -11,6 +12,9 @@ class training_data(object):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y = np.zeros([0, 4], dtype=np.int)
         self._y_digit = np.zeros([0, 1], dtype=np.int)
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def _check_lengths(self):
         assert self._x.shape[0] == self._y.shape[0]
@@ -116,41 +120,20 @@ class training_data(object):
 
     def augment(self):
         """Flip the board horizontally, then add rotations to other orientations."""
-        inputs = self.get_x()
-        outputs = self.get_y()
-        output_digits = self.get_y_digit()
-
-        # Add horizontal flip of inputs and outputs
-        flipped_inputs = np.concatenate((inputs, np.flip(inputs, 2)))
-
-        # Swap directions 1 and 3
-        temp = np.copy(outputs)
-        temp[:,[1,3]] = temp[:,[3,1]]
-        flipped_outputs = np.concatenate((outputs, temp))
-
-        # Swap directions 1 and 3
-        temp = np.copy(output_digits)
-        temp[temp == 1] = 33
-        temp[temp == 3] = 1
-        temp[temp == 33] = 3
-        flipped_output_digits = np.concatenate((output_digits, temp))
+        # Add a horizontal flip of the board
+        other = self.copy()
+        other.hflip()
+        self.merge(other)
 
         # Add 3 rotations of the previous
-        augmented_inputs = np.concatenate((flipped_inputs,
-            np.rot90(flipped_inputs, k=1, axes=(2, 1)),
-            np.rot90(flipped_inputs, k=2, axes=(2, 1)),
-            np.rot90(flipped_inputs, k=3, axes=(2, 1))))
-        augmented_outputs = np.concatenate((flipped_outputs,
-            np.roll(flipped_outputs, 1, axis=1),
-            np.roll(flipped_outputs, 2, axis=1),
-            np.roll(flipped_outputs, 3, axis=1)))
-        augmented_output_digits = np.concatenate((flipped_output_digits,
-            np.mod(flipped_output_digits + 1, 4),
-            np.mod(flipped_output_digits + 2, 4),
-            np.mod(flipped_output_digits + 3, 4)
-        ))
-        self._x = augmented_inputs
-        self._y = augmented_outputs
-        self._y_digit = augmented_output_digits
+        k1 = self.copy()
+        k2 = self.copy()
+        k3 = self.copy()
+        k1.rotate(1)
+        k2.rotate(2)
+        k3.rotate(3)
+        self.merge(k1)
+        self.merge(k2)
+        self.merge(k3)
 
         self._check_lengths()
