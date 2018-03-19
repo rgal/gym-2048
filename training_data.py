@@ -41,22 +41,6 @@ class training_data(object):
         self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))
         self._check_lengths()
 
-    def get_x_partitioned(self):
-        x_copy = np.copy(self._x)
-        np.random.shuffle(x_copy)
-        split_point = int(self.size() * 0.9)
-        x_train = x_copy[:split_point,:,:]
-        x_dev = x_copy[split_point:,:,:]
-        return (x_train, x_dev)
-
-    def get_y_partitioned(self):
-        y_copy = np.copy(self._y)
-        np.random.shuffle(y_copy)
-        split_point = int(self.size() * 0.9)
-        y_train = y_copy[:split_point,:]
-        y_dev = y_copy[split_point:,:]
-        return (y_train, y_dev)
-
     def size(self):
         return self._x.shape[0]
 
