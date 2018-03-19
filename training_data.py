@@ -105,12 +105,14 @@ class training_data(object):
         temp[temp == 3] = 1
         temp[temp == 33] = 3
         self._y_digit = temp
+        self._check_lengths()
 
     def rotate(self, k):
         """Rotate the board by k * 90 degrees"""
         self._x = np.rot90(self.get_x(), k=k, axes=(2, 1))
         self._y = np.roll(self.get_y(), k, axis=1)
         self._y_digit = np.mod(self.get_y_digit() + k, 4)
+        self._check_lengths()
 
     def augment(self):
         """Flip the board horizontally, then add rotations to other orientations."""
