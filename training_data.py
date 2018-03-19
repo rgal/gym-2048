@@ -82,6 +82,20 @@ class training_data(object):
             print("Outputting {} with shapes {} {}".format('data.npy', self._x.shape, self._y.shape))
             np.savez(f, x=self._x, y=self._y)
 
+    def import_csv(self, filename):
+        """Load data as CSV file"""
+        flat_data = np.loadtxt(filename, delimiter=',')
+        assert flat_data.shape[1] == 17
+        items = flat_data.shape[0]
+        self._x = np.reshape(flat_data[:,:16], (items, 4, 4))
+        y_digits = flat_data[:,16].astype(int)
+        # Reconstruct one hot _y
+        y = np.zeros([items, 4], dtype=np.int)
+        y[np.arange(items), y_digits] = 1
+        self._y = y
+        self._y_digit = np.reshape(y_digits, (items, 1))
+        self._check_lengths()
+
     def export_csv(self, filename):
         """Save data as CSV file"""
         items = self.size()
