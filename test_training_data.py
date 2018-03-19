@@ -130,6 +130,18 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
         self.assertTrue(np.array_equal(td.get_y(), expected_y))
 
+    def test_split(self):
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 1)
+        td2 = training_data.training_data()
+        td2.add(np.zeros([1, 4, 4]), 2)
+        td.merge(td2)
+        a, b = td.split()
+        self.assertTrue(np.array_equal(a.get_x(), np.ones([1, 4, 4])))
+        self.assertTrue(np.array_equal(a.get_y_digit(), [[1]]))
+        self.assertTrue(np.array_equal(b.get_x(), np.zeros([1, 4, 4])))
+        self.assertTrue(np.array_equal(b.get_y_digit(), [[2]]))
+
     def test_size(self):
         td = training_data.training_data()
         self.assertEqual(td.size(), 0)

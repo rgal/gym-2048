@@ -45,6 +45,20 @@ class training_data(object):
         self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))
         self._check_lengths()
 
+    def split(self, split=0.5):
+        splitpoint = int(self.size() * split)
+        a = training_data()
+        b = training_data()
+        a._x = self._x[:splitpoint,:,:]
+        b._x = self._x[splitpoint:,:,:]
+        a._y = self._y[:splitpoint,:]
+        b._y = self._y[splitpoint:,:]
+        a._y_digit = self._y_digit[:splitpoint,:]
+        b._y_digit = self._y_digit[splitpoint:,:]
+        a._check_lengths()
+        b._check_lengths()
+        return a, b
+
     def size(self):
         return self._x.shape[0]
 
