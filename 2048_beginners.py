@@ -181,29 +181,32 @@ if __name__ == '__main__':
     FILE_TRAIN = args.train_input
     FILE_TEST = args.test_input
 
-    for learning_rate in [0.1, 0.05]:
-      for dropout_rate in [0.25, 0.5, 0.75]:
-        print("Learning rate: {}, dropout rate: {}".format(learning_rate, dropout_rate))
+    layers = 4
+    for learning_rate in [0.1]:
+     for dropout_rate in [0]:
+      for augment in [True]:
+       for filters in [16]:
+        print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}".format(learning_rate, dropout_rate, layers, filters, augment))
 
         # Create a deep neural network regression classifier.
         # Build custom classifier
         classifier = tf.estimator.Estimator(
             model_fn=my_model,
-            model_dir='model_dir/{}_{}'.format(learning_rate, dropout_rate), # Path to where checkpoints etc are stored
+            model_dir='model_dir/{}_{}_{}_{}{}'.format(learning_rate, dropout_rate, layers, filters, '_a' if augment else ''), # Path to where checkpoints etc are stored
             params={
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
-                'fc_layers': [64, 16],
                 'residual_blocks': layers,
                 'filters': 16,
+                'fc_layers': [128, 32],
             })
 
         for epoch in range(args.epochs):
             # Train our model, use the previously function my_input_fn
             # Input to training is a file with training example
             classifier.train(
-               input_fn=lambda: my_input_fn(FILE_TRAIN, True))
+               input_fn=lambda: my_input_fn(FILE_TRAIN, True, 1, augment))
 
             if epoch % 10 == 0:
                 print("Epoch: {}".format(epoch))
