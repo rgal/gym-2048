@@ -62,26 +62,6 @@ class training_data(object):
     def size(self):
         return self._x.shape[0]
 
-    def read(self, input_dir):
-        with open(os.path.join(input_dir, 'data.npy'), 'r') as f:
-            data = np.load(f)
-            self._x = data['x']
-            self._y = data['y']
-            self._y_digit = np.argmax(self._y, axis=1)
-        l = self.size()
-        self._y_digit = np.reshape(self._y_digit, (l, 1))
-        self._check_lengths()
-
-    def write(self, output_dir):
-        # Save training data
-        try:
-            os.makedirs(output_dir)
-        except OSError:
-            pass
-        with open(os.path.join(output_dir, 'data.npy'), 'w') as f:
-            print("Outputting {} with shapes {} {}".format('data.npy', self._x.shape, self._y.shape))
-            np.savez(f, x=self._x, y=self._y)
-
     def import_csv(self, filename):
         """Load data as CSV file"""
         flat_data = np.loadtxt(filename, delimiter=',')

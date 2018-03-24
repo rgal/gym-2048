@@ -8,15 +8,15 @@ import training_data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', '-o', default='.', help="Set the directory for outputting files")
-    parser.add_argument('input', nargs='+', help="Specify directories of input files to merge")
+    parser.add_argument('--output', '-o', default='data.csv', help="Specify the output file name")
+    parser.add_argument('input', nargs='+', help="Specify input files to merge")
     args = parser.parse_args()
 
     data = training_data.training_data()
 
     for i in args.input:
         di = training_data.training_data()
-        di.read(i)
+        di.import_csv(i)
         data.merge(di)
 
-    data.write(args.output)
+    data.export_csv(args.output)
