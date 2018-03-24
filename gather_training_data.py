@@ -75,7 +75,7 @@ def gather_training_data(env, seed=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', '-o', default='.', help="Set the directory for outputting files")
+    parser.add_argument('--output', '-o', default='data.csv', help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
@@ -91,6 +91,4 @@ if __name__ == '__main__':
 
     print("Got {} data values".format(data.size()))
 
-    data.write(args.output)
-    data.export_csv(os.path.join(args.output, 'data.csv'))
-
+    data.export_csv(args.output)
