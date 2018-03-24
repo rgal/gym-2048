@@ -70,30 +70,61 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
    batch_features, batch_labels = iterator.get_next()
    return batch_features, batch_labels
 
+def residual_block(in_net, filters, dropout_rate, mode):
+    # Convolution layer 1
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, 16]
+    net = tf.layers.conv2d(
+      inputs=in_net,
+      filters=filters,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
+
+    # Add dropout operation
+    net = tf.layers.dropout(
+        inputs=net, rate=dropout_rate, training=mode == tf.estimator.ModeKeys.TRAIN)
+
+    # Convolution layer 1
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, 16]
+    net = tf.layers.conv2d(
+      inputs=net,
+      filters=filters,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
+
+    # Add dropout operation
+    net = tf.layers.dropout(
+        inputs=net, rate=dropout_rate, training=mode == tf.estimator.ModeKeys.TRAIN)
+
+    # Add skip connection
+    return in_net + net
+
 def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
 
-    net = features['board']
+    l0 = features['board']
 
-    for filters in params['conv_layers']:
-        # Convolution layer 1
-        # Input shape: [batch_size, 4, 4, 1]
-        # Output shape: [batch_size, 4, 4, 16]
-        net = tf.layers.conv2d(
-          inputs=net,
-          filters=filters,
-          kernel_size=[3, 3],
-          padding="same",
-          activation=tf.nn.relu)
+    # Convolution layer 1
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, 16]
+    block_inout = tf.layers.conv2d(
+      inputs=l0,
+      filters=params['filters'],
+      kernel_size=[3, 3],
+      padding="same",
+      activation=tf.nn.relu)
 
-        # Add dropout operation
-        net = tf.layers.dropout(
-            inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
+    #for filters in params['conv_layers']:
+    for res_block in range(params['residual_blocks']):
+        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode)
 
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, 16]
     # Output shape: [batch_size, 4 * 4 * 16]
-    net = tf.reshape(net, [-1, 4 * 4 * params['conv_layers'][-1]])
+    net = tf.reshape(block_inout, [-1, 4 * 4 * params['filters']])
 
     for units in params['fc_layers']:
         # Fully connected layer
@@ -163,8 +194,9 @@ if __name__ == '__main__':
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
-                'conv_layers': [32, 32],
                 'fc_layers': [64, 16],
+                'residual_blocks': layers,
+                'filters': 16,
             })
 
         for epoch in range(args.epochs):
