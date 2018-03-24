@@ -8,12 +8,32 @@ import training_data
 
 class TestTrainingData(unittest.TestCase):
     def test_add(self):
+        # Test add without reward
         td = training_data.training_data()
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y(), np.empty([0, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
         td.add(np.ones([1, 4, 4]), 1)
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_reward(), np.empty([0, 1], dtype=np.int)))
+
+        # Test add with reward
+        td = training_data.training_data()
+        self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y(), np.empty([0, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_reward(), np.empty([0, 1], dtype=np.int)))
+        td.add(np.ones([1, 4, 4]), 1, 4)
+        self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_reward(), np.array([[4]], dtype=np.int)))
+
+        # Test mixing causes assert
+        with self.assertRaises(Exception):
+            td.add(np.ones([1, 4, 4]), 1)
 
     def test_hflip(self):
         td = training_data.training_data()
@@ -79,7 +99,7 @@ class TestTrainingData(unittest.TestCase):
                                   [0, 0, 0, 0],
                                   [0, 0, 0, 0],
                                   [0, 0, 0, 0]])
-        td.add(initial_board, 1)
+        td.add(initial_board, 1, 4)
         td.augment()
         self.assertEqual(td.size(), 8)
         expected_x = np.array([
@@ -112,9 +132,20 @@ class TestTrainingData(unittest.TestCase):
             [0],
             [2]
             ], dtype=np.int)
+        expected_reward = np.array([
+            [4],
+            [4],
+            [4],
+            [4],
+            [4],
+            [4],
+            [4],
+            [4]
+            ], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
         self.assertTrue(np.array_equal(td.get_y(), expected_y))
         self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
+        self.assertTrue(np.array_equal(td.get_reward(), expected_reward))
 
     def test_merge(self):
         td = training_data.training_data()

@@ -12,6 +12,7 @@ class training_data(object):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y = np.zeros([0, 4], dtype=np.int)
         self._y_digit = np.zeros([0, 1], dtype=np.int)
+        self._reward = np.zeros([0, 1], dtype=np.int)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -19,6 +20,8 @@ class training_data(object):
     def _check_lengths(self):
         assert self._x.shape[0] == self._y.shape[0]
         assert self._y.shape[0] == self._y_digit.shape[0]
+        if self._reward.shape[0]:
+            assert self._y.shape[0] == self._reward.shape[0]
 
     def get_x(self):
         return self._x
@@ -29,7 +32,10 @@ class training_data(object):
     def get_y_digit(self):
         return self._y_digit
 
-    def add(self, board, action):
+    def get_reward(self):
+        return self._reward
+
+    def add(self, board, action, reward=None):
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
         y = np.zeros([1, 4], dtype=np.int)
         y[0, action] = 1
@@ -39,10 +45,20 @@ class training_data(object):
         y_digit[0, 0] = action
         self._y_digit = np.append(self._y_digit, y_digit, axis=0)
 
+        if reward is not None:
+            r = np.zeros([1, 1], dtype=np.int)
+            r[0, 0] = reward
+            self._reward = np.append(self._reward, r, axis=0)
+        else:
+            if self.track_rewards():
+                raise Exception("Expected reward to be added")
+        self._check_lengths()
+
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
         self._y = np.concatenate((self._y, other.get_y()))
         self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))
+        self._reward = np.concatenate((self._reward, other.get_reward()))
         self._check_lengths()
 
     def split(self, split=0.5):
@@ -55,6 +71,8 @@ class training_data(object):
         b._y = self._y[splitpoint:,:]
         a._y_digit = self._y_digit[:splitpoint,:]
         b._y_digit = self._y_digit[splitpoint:,:]
+        a._reward = self._reward[:splitpoint,:]
+        b._reward = self._reward[splitpoint:,:]
         a._check_lengths()
         b._check_lengths()
         return a, b
@@ -62,16 +80,23 @@ class training_data(object):
     def size(self):
         return self._x.shape[0]
 
+    def track_rewards(self):
+        return self._reward.shape[0] > 0
+
     def import_csv(self, filename):
         """Load data as CSV file"""
         flat_data = np.loadtxt(filename, delimiter=',')
-        assert flat_data.shape[1] == 17
+        assert flat_data.shape[1] == 17 or flat_data.shape[1] == 18
         items = flat_data.shape[0]
         self._x = np.reshape(flat_data[:,:16], (items, 4, 4))
         y_digits = flat_data[:,16].astype(int)
         # Reconstruct one hot _y
         y = np.zeros([items, 4], dtype=np.int)
         y[np.arange(items), y_digits] = 1
+        if flat_data.shape[1] == 18:
+            # Recorded rewards as well
+            self._reward = flat_data[:,17].astype(int)
+
         self._y = y
         self._y_digit = np.reshape(y_digits, (items, 1))
         self._check_lengths()
@@ -81,21 +106,21 @@ class training_data(object):
         items = self.size()
         flat_x = np.reshape(self._x, (items, 16))
         flat_data = np.concatenate((flat_x, self._y_digit), axis=1)
-        # Should have flat 16 square board and one hot encoded direction
-        assert flat_data.shape[1] == 17
+        if self.track_rewards():
+            flat_data = np.concatenate((flat_data, self._reward), axis=1)
+            # Should have flat 16 square board, one hot encoded direction and reward
+            assert flat_data.shape[1] == 18
+        else:
+            # Should have flat 16 square board and one hot encoded direction
+            assert flat_data.shape[1] == 17
         np.savetxt(filename, flat_data, fmt='%d', delimiter=',')
 
     def dump(self):
         print(self._x)
         print(self._y)
         print(self._y_digit)
-
-    def randomise(self):
-        """Randomise orientation of training data"""
-        inputs = self.get_x()
-        outputs = self.get_y()
-        output_digits = self.get_y_digit()
-        items = self.size()
+        if self.track_rewards():
+            print(self._reward)
 
     def hflip(self):
         """Flip all the data horizontally"""
