@@ -54,6 +54,13 @@ class training_data(object):
                 raise Exception("Expected reward to be added")
         self._check_lengths()
 
+    def get_n(self, n):
+        """Get training sample number n"""
+        if self.track_rewards():
+            return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:]
+        else:
+            return self._x[n,:,:], self._y_digit[n,:]
+
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
         self._y = np.concatenate((self._y, other.get_y()))

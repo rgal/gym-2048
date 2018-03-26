@@ -35,6 +35,24 @@ class TestTrainingData(unittest.TestCase):
         with self.assertRaises(Exception):
             td.add(np.ones([1, 4, 4]), 1)
 
+    def test_get_n(self):
+        # Test add without reward
+        td = training_data.training_data()
+        td.add(np.ones([4, 4], dtype=np.int), 1)
+        td.add(np.zeros([4, 4], dtype=np.int), 2)
+        (state, action) = td.get_n(1)
+        self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
+        self.assertEqual(action, 2)
+
+        # Test add with reward
+        td = training_data.training_data()
+        td.add(np.ones([4, 4]), 1, 4)
+        td.add(np.zeros([4, 4]), 2, 8)
+        (state, action, reward) = td.get_n(1)
+        self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
+        self.assertEqual(action, 2)
+        self.assertEqual(reward, 8)
+
     def test_hflip(self):
         td = training_data.training_data()
         board1 = np.array([[1, 1, 0, 0],
