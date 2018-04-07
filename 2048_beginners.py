@@ -70,7 +70,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
    batch_features, batch_labels = iterator.get_next()
    return batch_features, batch_labels
 
-def residual_block(in_net, filters, dropout_rate, mode):
+def residual_block(in_net, filters, dropout_rate, mode, bn=False):
     # Convolution layer 1
     # Input shape: [batch_size, 4, 4, 1]
     # Output shape: [batch_size, 4, 4, 16]
@@ -79,11 +79,17 @@ def residual_block(in_net, filters, dropout_rate, mode):
       filters=filters,
       kernel_size=[3, 3],
       padding="same",
-      activation=tf.nn.relu)
+      activation=None)
 
-    # Add dropout operation
-    net = tf.layers.dropout(
-        inputs=net, rate=dropout_rate, training=mode == tf.estimator.ModeKeys.TRAIN)
+    if bn:
+        # Batch norm
+        net = tf.layers.batch_normalization(
+            inputs=net,
+            training=mode == tf.estimator.ModeKeys.TRAIN
+        )
+
+    # Non linearity
+    net = tf.nn.relu(net)
 
     # Convolution layer 1
     # Input shape: [batch_size, 4, 4, 1]
@@ -93,11 +99,17 @@ def residual_block(in_net, filters, dropout_rate, mode):
       filters=filters,
       kernel_size=[3, 3],
       padding="same",
-      activation=tf.nn.relu)
+      activation=None)
 
-    # Add dropout operation
-    net = tf.layers.dropout(
-        inputs=net, rate=dropout_rate, training=mode == tf.estimator.ModeKeys.TRAIN)
+    if bn:
+        # Batch norm
+        net = tf.layers.batch_normalization(
+            inputs=net,
+            training=mode == tf.estimator.ModeKeys.TRAIN
+        )
+
+    # Non linearity
+    net = tf.nn.relu(net)
 
     # Add skip connection
     return in_net + net
@@ -119,7 +131,7 @@ def my_model(features, labels, mode, params):
 
     #for filters in params['conv_layers']:
     for res_block in range(params['residual_blocks']):
-        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode)
+        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode, params['bn'])
 
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, 16]
@@ -167,7 +179,12 @@ def my_model(features, labels, mode, params):
     assert mode == tf.estimator.ModeKeys.TRAIN
 
     optimizer = tf.train.AdagradOptimizer(params.get('learning_rate', 0.05))
-    train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+
+    # Add extra dependencies for batch normalisation
+    extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(extra_update_ops):
+        train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
 
 if __name__ == '__main__':
@@ -181,25 +198,27 @@ if __name__ == '__main__':
     FILE_TRAIN = args.train_input
     FILE_TEST = args.test_input
 
-    layers = 4
-    for learning_rate in [0.1]:
-     for dropout_rate in [0]:
+    layers = 10
+    dropout_rate = 0
+    for learning_rate in [0.01]:
+     for bn in [True]:
       for augment in [True]:
        for filters in [16]:
-        print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}".format(learning_rate, dropout_rate, layers, filters, augment))
+        print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}".format(learning_rate, dropout_rate, layers, filters, augment, bn))
 
         # Create a deep neural network regression classifier.
         # Build custom classifier
         classifier = tf.estimator.Estimator(
             model_fn=my_model,
-            model_dir='model_dir/{}_{}_{}_{}{}'.format(learning_rate, dropout_rate, layers, filters, '_a' if augment else ''), # Path to where checkpoints etc are stored
+            model_dir='model_dir/{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, layers, filters, '_a' if augment else '', '_bn' if bn else ''), # Path to where checkpoints etc are stored
             params={
                 'n_classes': 4,
                 'dropout_rate': dropout_rate,
                 'learning_rate': learning_rate,
                 'residual_blocks': layers,
-                'filters': 16,
+                'filters': filters,
                 'fc_layers': [128, 32],
+                'bn': bn,
             })
 
         for epoch in range(args.epochs):
