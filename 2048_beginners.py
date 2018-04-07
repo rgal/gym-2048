@@ -187,57 +187,57 @@ def my_model(features, labels, mode, params):
 
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
 
+def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers):
+    print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm))
+
+    # Create a deep neural network regression classifier.
+    # Build custom classifier
+    classifier = tf.estimator.Estimator(
+        model_fn=my_model,
+        model_dir='model_dir/{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
+        params={
+            'n_classes': 4,
+            'dropout_rate': dropout_rate,
+            'learning_rate': learning_rate,
+            'residual_blocks': residual_blocks,
+            'filters': filters,
+            'fc_layers': fc_layers,
+            'bn': batch_norm,
+        })
+
+    for epoch in range(epochs):
+        # Train our model, use the previously function my_input_fn
+        # Input to training is a file with training example
+        classifier.train(
+           input_fn=lambda: my_input_fn(training_file, True, 1, augment))
+
+        if epoch % 10 == 0:
+            print("Epoch: {}".format(epoch))
+            # Evaluate our model
+            # Return value will contain evaluation_metrics such as: loss & average_loss
+            evaluate_result = classifier.evaluate(
+               input_fn=lambda: my_input_fn(training_file, False, 4), name='train')
+            print("Evaluation results")
+            for key in evaluate_result:
+               print("   {}, was: {}".format(key, evaluate_result[key]))
+            evaluate_result = classifier.evaluate(
+               input_fn=lambda: my_input_fn(test_file, False, 4), name='test')
+            print("Evaluation results")
+            for key in evaluate_result:
+               print("   {}, was: {}".format(key, evaluate_result[key]))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--augment', default=False, action='store_true', help='augment data')
     parser.add_argument('-e', '--epochs', type=int, default=5, help='How many times to go through data')
     parser.add_argument('train_input', nargs='?', default='train.csv')
     parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
 
-    FILE_TRAIN = args.train_input
-    FILE_TEST = args.test_input
-
-    layers = 10
+    residual_blocks = 1
     dropout_rate = 0
-    for learning_rate in [0.01]:
-     for bn in [True]:
-      for augment in [True]:
-       for filters in [16]:
-        print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}".format(learning_rate, dropout_rate, layers, filters, augment, bn))
-
-        # Create a deep neural network regression classifier.
-        # Build custom classifier
-        classifier = tf.estimator.Estimator(
-            model_fn=my_model,
-            model_dir='model_dir/{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, layers, filters, '_a' if augment else '', '_bn' if bn else ''), # Path to where checkpoints etc are stored
-            params={
-                'n_classes': 4,
-                'dropout_rate': dropout_rate,
-                'learning_rate': learning_rate,
-                'residual_blocks': layers,
-                'filters': filters,
-                'fc_layers': [128, 32],
-                'bn': bn,
-            })
-
-        for epoch in range(args.epochs):
-            # Train our model, use the previously function my_input_fn
-            # Input to training is a file with training example
-            classifier.train(
-               input_fn=lambda: my_input_fn(FILE_TRAIN, True, 1, augment))
-
-            if epoch % 10 == 0:
-                print("Epoch: {}".format(epoch))
-                # Evaluate our model
-                # Return value will contain evaluation_metrics such as: loss & average_loss
-                evaluate_result = classifier.evaluate(
-                   input_fn=lambda: my_input_fn(FILE_TRAIN, False, 4), name='train')
-                print("Evaluation results")
-                for key in evaluate_result:
-                   print("   {}, was: {}".format(key, evaluate_result[key]))
-                evaluate_result = classifier.evaluate(
-                   input_fn=lambda: my_input_fn(FILE_TEST, False, 4), name='test')
-                print("Evaluation results")
-                for key in evaluate_result:
-                   print("   {}, was: {}".format(key, evaluate_result[key]))
+    learning_rate = 0.1
+    batch_norm = True
+    augment = True
+    filters = 4
+    fc_layers = [128, 32]
+    evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers)
