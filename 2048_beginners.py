@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import argparse
+import random
 import sys
 
 import tensorflow as tf
@@ -188,13 +189,13 @@ def my_model(features, labels, mode, params):
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
 
 def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers):
-    print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm))
+    print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}, fc: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers))
 
     # Create a deep neural network regression classifier.
     # Build custom classifier
     classifier = tf.estimator.Estimator(
         model_fn=my_model,
-        model_dir='model_dir/{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
+        model_dir='model_dir/{}_{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '-'.join(map(str, fc_layers)), '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
         params={
             'n_classes': 4,
             'dropout_rate': dropout_rate,
@@ -233,11 +234,12 @@ if __name__ == '__main__':
     parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
 
-    residual_blocks = 1
-    dropout_rate = 0
-    learning_rate = 0.1
     batch_norm = True
     augment = True
-    filters = 4
-    fc_layers = [128, 32]
-    evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers)
+    for m in range(25):
+        residual_blocks = random.randint(1, 10)
+        dropout_rate = random.random() * 0.5
+        learning_rate = 10 ** (random.random() * -4.0)
+        filters = 2 ** random.randint(2, 6)
+        fc_layers = [2 ** random.randint(4, 8), 2 ** random.randint(4, 8)]
+        evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers)
