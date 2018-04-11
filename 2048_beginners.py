@@ -12,7 +12,7 @@ import numpy as np
 
 import training_data
 
-def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False):
+def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
        parsed_line = tf.decode_csv(line, [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0]])
        features = parsed_line[0:16]
@@ -66,7 +66,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False)
        # Randomizes input using a window of 256 elements (read into memory)
        dataset = dataset.shuffle(buffer_size=256)
    dataset = dataset.repeat(repeat_count) # Repeats dataset this # times
-   dataset = dataset.batch(32)  # Batch size to use
+   dataset = dataset.batch(batch_size)  # Batch size to use
    iterator = dataset.make_one_shot_iterator()
    batch_features, batch_labels = iterator.get_next()
    return batch_features, batch_labels
@@ -188,14 +188,14 @@ def my_model(features, labels, mode, params):
 
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
 
-def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers):
-    print("Learning rate: {}, dropout, rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}, fc: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers))
+def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size):
+    print("Learning rate: {}, dropout rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}, fc: {}, batch_size: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size))
 
     # Create a deep neural network regression classifier.
     # Build custom classifier
     classifier = tf.estimator.Estimator(
         model_fn=my_model,
-        model_dir='model_dir/{}_{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '-'.join(map(str, fc_layers)), '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
+        model_dir='model_dir/{}_{}_{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '-'.join(map(str, fc_layers)), batch_size, '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
         params={
             'n_classes': 4,
             'dropout_rate': dropout_rate,
@@ -210,19 +210,19 @@ def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate
         # Train our model, use the previously function my_input_fn
         # Input to training is a file with training example
         classifier.train(
-           input_fn=lambda: my_input_fn(training_file, True, 1, augment))
+           input_fn=lambda: my_input_fn(training_file, True, 1, augment, batch_size))
 
         if epoch % 10 == 0:
             print("Epoch: {}".format(epoch))
             # Evaluate our model
             # Return value will contain evaluation_metrics such as: loss & average_loss
             evaluate_result = classifier.evaluate(
-               input_fn=lambda: my_input_fn(training_file, False, 4), name='train')
+               input_fn=lambda: my_input_fn(training_file, False, 4, False, batch_size), name='train')
             print("Evaluation results")
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
             evaluate_result = classifier.evaluate(
-               input_fn=lambda: my_input_fn(test_file, False, 4), name='test')
+               input_fn=lambda: my_input_fn(test_file, False, 4, False, batch_size), name='test')
             print("Evaluation results")
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
@@ -242,4 +242,5 @@ if __name__ == '__main__':
         learning_rate = 10 ** (random.random() * -4.0)
         filters = 2 ** random.randint(2, 6)
         fc_layers = [2 ** random.randint(4, 8), 2 ** random.randint(4, 8)]
-        evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers)
+        batch_size = 2 ** random.randint(5, 9)
+        evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size)
