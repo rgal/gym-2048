@@ -2,8 +2,9 @@
 
 from __future__ import print_function
 
-import os
 import argparse
+import csv
+import os
 import random
 import sys
 
@@ -206,26 +207,34 @@ def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate
             'bn': batch_norm,
         })
 
+    results = {}
     for epoch in range(epochs):
         # Train our model, use the previously function my_input_fn
         # Input to training is a file with training example
         classifier.train(
            input_fn=lambda: my_input_fn(training_file, True, 1, augment, batch_size))
 
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 or epoch == (epochs - 1):
             print("Epoch: {}".format(epoch))
             # Evaluate our model
             # Return value will contain evaluation_metrics such as: loss & average_loss
+            # Evaluate on training set
             evaluate_result = classifier.evaluate(
                input_fn=lambda: my_input_fn(training_file, False, 4, False, batch_size), name='train')
             print("Evaluation results")
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
+            results['training_loss'] = evaluate_result['loss']
+            results['training_accuracy'] = evaluate_result['accuracy']
+            # Evaluate on test set
             evaluate_result = classifier.evaluate(
                input_fn=lambda: my_input_fn(test_file, False, 4, False, batch_size), name='test')
             print("Evaluation results")
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
+            results['test_loss'] = evaluate_result['loss']
+            results['test_accuracy'] = evaluate_result['accuracy']
+    return results
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -236,11 +245,40 @@ if __name__ == '__main__':
 
     batch_norm = True
     augment = True
-    for m in range(25):
-        residual_blocks = random.randint(1, 10)
-        dropout_rate = random.random() * 0.5
-        learning_rate = 10 ** (random.random() * -4.0)
-        filters = 2 ** random.randint(2, 6)
-        fc_layers = [2 ** random.randint(4, 8), 2 ** random.randint(4, 8)]
-        batch_size = 2 ** random.randint(5, 9)
-        evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size)
+    dropout_rate = 0#random.random() * 0.5
+    batch_size = 32#2 ** random.randint(5, 9)
+    with open('hp_search.csv', 'w') as csvfile:
+        fieldnames = ['run',
+            'learning_rate',
+            'dropout_rate',
+            'residual_blocks',
+            'filters',
+            'augment',
+            'batch_norm',
+            'fc1',
+            'fc2',
+            'batch_size',
+            'training_loss',
+            'training_accuracy',
+            'test_loss',
+            'test_accuracy',
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for m in range(25):
+            residual_blocks = random.randint(1, 10)
+            learning_rate = 10 ** (random.random() * -4.0)
+            filters = 2 ** random.randint(2, 6)
+            fc_layers = [2 ** random.randint(6, 9), 2 ** random.randint(4, 9)]
+            results = evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size)
+            results['run'] = m
+            results['learning_rate'] = learning_rate
+            results['dropout_rate'] = dropout_rate
+            results['residual_blocks'] = residual_blocks
+            results['filters'] = filters
+            results['augment'] = augment
+            results['batch_norm'] = batch_norm
+            results['fc1'] = fc_layers[0]
+            results['fc2'] = fc_layers[1]
+            results['batch_size'] = batch_size
+            writer.writerow(results)
