@@ -11,23 +11,19 @@ class TestTrainingData(unittest.TestCase):
         # Test add without reward
         td = training_data.training_data()
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y(), np.empty([0, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
         td.add(np.ones([1, 4, 4]), 1)
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_reward(), np.empty([0, 1], dtype=np.int)))
 
         # Test add with reward
         td = training_data.training_data()
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y(), np.empty([0, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_reward(), np.empty([0, 1], dtype=np.int)))
         td.add(np.ones([1, 4, 4]), 1, 4)
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y(), np.array([[0, 1, 0, 0]], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_reward(), np.array([[4]], dtype=np.int)))
 
@@ -70,16 +66,11 @@ class TestTrainingData(unittest.TestCase):
             [[0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 4, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
             ], dtype=np.int)
-        expected_y = np.array([
-            [0, 0, 0, 1],
-            [0, 0, 1, 0]
-            ], dtype=np.int)
         expected_y_digit = np.array([
             [3],
             [2]
             ], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
-        self.assertTrue(np.array_equal(td.get_y(), expected_y))
         self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
 
     def test_rotate(self):
@@ -99,16 +90,11 @@ class TestTrainingData(unittest.TestCase):
             [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 4, 0, 0], [0, 2, 0, 0]]
             ], dtype=np.int)
-        expected_y = np.array([
-            [1, 0, 0, 0],
-            [0, 1, 0, 0]
-            ], dtype=np.int)
         expected_y_digit = np.array([
             [0],
             [1]
             ], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
-        self.assertTrue(np.array_equal(td.get_y(), expected_y))
         self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
 
     def test_augment(self):
@@ -129,16 +115,6 @@ class TestTrainingData(unittest.TestCase):
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
             [[1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
-        expected_y = np.array([
-            [0, 1, 0, 0],
-            [0, 0, 0, 1],
-            [0, 0, 1, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 1],
-            [0, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 1, 0]
             ], dtype=np.int)
         expected_y_digit = np.array([
             [1],
@@ -161,7 +137,6 @@ class TestTrainingData(unittest.TestCase):
             [4]
             ], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
-        self.assertTrue(np.array_equal(td.get_y(), expected_y))
         self.assertTrue(np.array_equal(td.get_y_digit(), expected_y_digit))
         self.assertTrue(np.array_equal(td.get_reward(), expected_reward))
 
@@ -175,9 +150,7 @@ class TestTrainingData(unittest.TestCase):
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
             ], dtype=np.int)
-        expected_y = np.array([[0, 1, 0, 0], [0, 0, 1, 0]], dtype=np.int)
         self.assertTrue(np.array_equal(td.get_x(), expected_x))
-        self.assertTrue(np.array_equal(td.get_y(), expected_y))
 
     def test_split(self):
         td = training_data.training_data()
