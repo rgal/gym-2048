@@ -53,6 +53,24 @@ class training_data(object):
         else:
             return self._x[n,:,:], self._y_digit[n,:]
 
+    def smooth_rewards(self, llambda=0.9):
+	"""Smooth reward values so that they don't just represent that action.
+         Relies on the data being still in game order."""
+        assert self.track_rewards()
+        items = self._reward.shape[0]
+        rewards = list(np.reshape(self._reward, (items)))
+        smoothed_rewards = list()
+        previous = None
+        rewards.reverse()
+        for e in rewards:
+            smoothed = e
+            if previous:
+                smoothed += llambda * previous
+            smoothed_rewards.append(smoothed)
+            previous = smoothed
+        smoothed_rewards.reverse()
+        self._reward = np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
+
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
         self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))

@@ -168,5 +168,29 @@ class TestTrainingData(unittest.TestCase):
         td = training_data.training_data()
         self.assertEqual(td.size(), 0)
 
+    def test_smooth_rewards(self):
+        # Set up training data
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 0, 4)
+        td.add(np.ones([1, 4, 4]), 1, 2)
+        td.add(np.ones([1, 4, 4]), 2, 16)
+        td.add(np.ones([1, 4, 4]), 3, 2)
+
+        # Test using default lambda value of 0.9
+        td2 = td.copy()
+        td2.smooth_rewards()
+        self.assertAlmostEqual(td2.get_n(0)[2], 20.218)
+        self.assertAlmostEqual(td2.get_n(1)[2], 18.02)
+        self.assertAlmostEqual(td2.get_n(2)[2], 17.8)
+        self.assertAlmostEqual(td2.get_n(3)[2], 2.0)
+
+        # Test using lambda value of 0, should have no effect on rewards
+        td2 = td.copy()
+        td2.smooth_rewards(llambda=0.0)
+        self.assertAlmostEqual(td2.get_n(0)[2], 4)
+        self.assertAlmostEqual(td2.get_n(1)[2], 2)
+        self.assertAlmostEqual(td2.get_n(2)[2], 16)
+        self.assertAlmostEqual(td2.get_n(3)[2], 2)
+
 if __name__ == '__main__':
     unittest.main()
