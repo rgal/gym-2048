@@ -54,7 +54,7 @@ class training_data(object):
             return self._x[n,:,:], self._y_digit[n,:]
 
     def smooth_rewards(self, llambda=0.9):
-	"""Smooth reward values so that they don't just represent that action.
+        """Smooth reward values so that they don't just represent that action.
          Relies on the data being still in game order."""
         assert self.track_rewards()
         items = self._reward.shape[0]
