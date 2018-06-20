@@ -11,7 +11,7 @@ class training_data(object):
     def __init__(self):
         self._x = np.empty([0, 4, 4], dtype=np.int)
         self._y_digit = np.zeros([0, 1], dtype=np.int)
-        self._reward = np.zeros([0, 1], dtype=np.int)
+        self._reward = np.zeros([0, 1], dtype=np.float)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -38,7 +38,7 @@ class training_data(object):
         self._y_digit = np.append(self._y_digit, y_digit, axis=0)
 
         if reward is not None:
-            r = np.zeros([1, 1], dtype=np.int)
+            r = np.zeros([1, 1], dtype=np.float)
             r[0, 0] = reward
             self._reward = np.append(self._reward, r, axis=0)
         else:
@@ -81,16 +81,20 @@ class training_data(object):
 
     def import_csv(self, filename):
         """Load data as CSV file"""
-        flat_data = np.loadtxt(filename, delimiter=',')
-        assert flat_data.shape[1] == 17 or flat_data.shape[1] == 18
+        flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', usecols=tuple(range(17)))
+        assert flat_data.shape[1] == 17
         items = flat_data.shape[0]
         self._x = np.reshape(flat_data[:,:16], (items, 4, 4))
         y_digits = flat_data[:,16].astype(int)
-        if flat_data.shape[1] == 18:
-            # Recorded rewards as well
-            self._reward = flat_data[:,17].astype(int)
-
         self._y_digit = np.reshape(y_digits, (items, 1))
+
+        # Load rewards, if present
+        try:
+            reward_data = np.loadtxt(filename, delimiter=',', usecols=17)
+            self._reward = reward_data.reshape(items, 1)
+        except IndexError:
+            pass
+
         self._check_lengths()
 
     def export_csv(self, filename):
@@ -102,10 +106,11 @@ class training_data(object):
             flat_data = np.concatenate((flat_data, self._reward), axis=1)
             # Should have flat 16 square board, one hot encoded direction and reward
             assert flat_data.shape[1] == 18
+            np.savetxt(filename, flat_data, fmt='%d,' * 17 + '%f')
         else:
             # Should have flat 16 square board and one hot encoded direction
             assert flat_data.shape[1] == 17
-        np.savetxt(filename, flat_data, fmt='%d', delimiter=',')
+            np.savetxt(filename, flat_data, fmt='%d,' * 16 + '%f')
 
     def dump(self):
         print(self._x)
