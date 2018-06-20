@@ -167,6 +167,8 @@ class TestTrainingData(unittest.TestCase):
     def test_size(self):
         td = training_data.training_data()
         self.assertEqual(td.size(), 0)
+        td.add(np.ones([1, 4, 4]), 0, 4)
+        self.assertEqual(td.size(), 1)
 
     def test_smooth_rewards(self):
         # Set up training data
