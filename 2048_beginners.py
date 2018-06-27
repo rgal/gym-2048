@@ -236,6 +236,7 @@ def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epochs', type=int, default=5, help='How many times to go through data')
+    parser.add_argument('-p', '--param-sets', type=int, default=1, help='How many different sets of hyperparameters to try')
     parser.add_argument('train_input', nargs='?', default='train.csv')
     parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
@@ -262,7 +263,7 @@ if __name__ == '__main__':
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for m in range(25):
+        for m in range(args.param_sets):
             residual_blocks = random.randint(1, 10)
             learning_rate = 10 ** (random.random() * -4.0)
             filters = 2 ** random.randint(2, 6)
