@@ -53,7 +53,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        #.skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
    if augment:
-       #augmented = dataset.map(hflip, num_parallel_calls=1)
+       augmented = dataset.map(hflip, num_parallel_calls=1)
        r90 = dataset.map(rotate90, num_parallel_calls=4)
        r180 = dataset.map(rotate180, num_parallel_calls=4)
        r270 = dataset.map(rotate270, num_parallel_calls=4)
