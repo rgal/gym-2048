@@ -13,4 +13,4 @@ install:
 # command to run tests
 script:
   - py.test
-  - python play.py
+  - python simple_rl_agent.py
