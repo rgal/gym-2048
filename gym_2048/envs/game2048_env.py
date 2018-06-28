@@ -36,22 +36,22 @@ class Game2048Env(gym.Env):
         # Members for gym implementation
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
-        self.observation_space = spaces.Box(0, 2**squares, (self.w * self.h, ))
+        self.observation_space = spaces.Box(0, 2**squares, (self.w * self.h, ), dtype=np.int)
         # Guess that the maximum reward is also 2**squares though you'll probably never get that.
         self.reward_range = (0., float(2**squares))
 
         # Initialise seed
-        self._seed()
+        self.seed()
 
         # Reset ready for a game
-        self._reset()
+        self.reset()
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     # Implement gym interface
-    def _step(self, action):
+    def step(self, action):
         """Perform one step of the game. This involves moving and adding a new tile."""
         logging.debug("Action {}".format(action))
         score = 0
@@ -75,7 +75,7 @@ class Game2048Env(gym.Env):
         return observation, reward, done, info
         # Return observation (board state), reward, done and info dict
 
-    def _reset(self):
+    def reset(self):
         self.Matrix = np.zeros((self.h, self.w), np.int)
         self.score = 0
 
@@ -85,7 +85,7 @@ class Game2048Env(gym.Env):
 
         return self.Matrix.flatten()
 
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         if close:
             return
         outfile = StringIO() if mode == 'ansi' else sys.stdout
