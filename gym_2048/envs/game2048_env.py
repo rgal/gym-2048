@@ -85,9 +85,7 @@ class Game2048Env(gym.Env):
 
         return self.Matrix.flatten()
 
-    def render(self, mode='human', close=False):
-        if close:
-            return
+    def render(self, mode='human'):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
