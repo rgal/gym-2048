@@ -8,15 +8,6 @@ import training_data
 
 class TestTrainingData(unittest.TestCase):
     def test_add(self):
-        # Test add without reward
-        td = training_data.training_data()
-        self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
-        td.add(np.ones([1, 4, 4]), 1)
-        self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_reward(), np.empty([0, 1], dtype=np.int)))
-
         # Test add with reward
         td = training_data.training_data()
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
@@ -27,19 +18,7 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
         self.assertTrue(np.allclose(td.get_reward(), np.array([[4]], dtype=np.float)))
 
-        # Test mixing causes assert
-        with self.assertRaises(Exception):
-            td.add(np.ones([1, 4, 4]), 1)
-
     def test_get_n(self):
-        # Test add without reward
-        td = training_data.training_data()
-        td.add(np.ones([4, 4], dtype=np.int), 1)
-        td.add(np.zeros([4, 4], dtype=np.int), 2)
-        (state, action) = td.get_n(1)
-        self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
-        self.assertEqual(action, 2)
-
         # Test get_n with reward
         td = training_data.training_data()
         td.add(np.ones([4, 4]), 1, 4)

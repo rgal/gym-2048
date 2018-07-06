@@ -18,8 +18,7 @@ class training_data(object):
 
     def _check_lengths(self):
         assert self._x.shape[0] == self._y_digit.shape[0]
-        if self._reward.shape[0]:
-            assert self._x.shape[0] == self._reward.shape[0]
+        assert self._x.shape[0] == self._reward.shape[0]
 
     def get_x(self):
         return self._x
@@ -30,33 +29,26 @@ class training_data(object):
     def get_reward(self):
         return self._reward
 
-    def add(self, board, action, reward=None):
+    def add(self, board, action, reward):
+        assert reward is not None
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
 
         y_digit = np.zeros([1, 1], dtype=np.int)
         y_digit[0, 0] = action
         self._y_digit = np.append(self._y_digit, y_digit, axis=0)
 
-        if reward is not None:
-            r = np.zeros([1, 1], dtype=np.float)
-            r[0, 0] = reward
-            self._reward = np.append(self._reward, r, axis=0)
-        else:
-            if self.track_rewards():
-                raise Exception("Expected reward to be added")
+        r = np.zeros([1, 1], dtype=np.float)
+        r[0, 0] = reward
+        self._reward = np.append(self._reward, r, axis=0)
         self._check_lengths()
 
     def get_n(self, n):
         """Get training sample number n"""
-        if self.track_rewards():
-            return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:]
-        else:
-            return self._x[n,:,:], self._y_digit[n,:]
+        return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:]
 
     def smooth_rewards(self, llambda=0.9):
         """Smooth reward values so that they don't just represent that action.
          Relies on the data being still in game order."""
-        assert self.track_rewards()
         items = self._reward.shape[0]
         rewards = list(np.reshape(self._reward, (items)))
         smoothed_rewards = list()
@@ -106,12 +98,9 @@ class training_data(object):
         y_digits = flat_data[:,16].astype(int)
         self._y_digit = np.reshape(y_digits, (items, 1))
 
-        # Load rewards, if present
-        try:
-            reward_data = np.loadtxt(filename, delimiter=',', usecols=17)
-            self._reward = reward_data.reshape(items, 1)
-        except IndexError:
-            pass
+        # Load rewards
+        reward_data = np.loadtxt(filename, delimiter=',', usecols=17)
+        self._reward = reward_data.reshape(items, 1)
 
         self._check_lengths()
 
@@ -120,15 +109,10 @@ class training_data(object):
         items = self.size()
         flat_x = np.reshape(self._x, (items, 16))
         flat_data = np.concatenate((flat_x, self._y_digit), axis=1)
-        if self.track_rewards():
-            flat_data = np.concatenate((flat_data, self._reward), axis=1)
-            # Should have flat 16 square board, one hot encoded direction and reward
-            assert flat_data.shape[1] == 18
-            np.savetxt(filename, flat_data, fmt='%d,' * 17 + '%f')
-        else:
-            # Should have flat 16 square board and one hot encoded direction
-            assert flat_data.shape[1] == 17
-            np.savetxt(filename, flat_data, fmt='%d,' * 16 + '%f')
+        flat_data = np.concatenate((flat_data, self._reward), axis=1)
+        # Should have flat 16 square board, direction and reward
+        assert flat_data.shape[1] == 18
+        np.savetxt(filename, flat_data, fmt='%d,' * 17 + '%f')
 
     def dump(self):
         print(self._x)
