@@ -180,18 +180,18 @@ class TestTrainingData(unittest.TestCase):
         # Test using default lambda value of 0.9
         td2 = td.copy()
         td2.smooth_rewards()
-        self.assertAlmostEqual(td2.get_n(0)[2], 20.218)
-        self.assertAlmostEqual(td2.get_n(1)[2], 18.02)
-        self.assertAlmostEqual(td2.get_n(2)[2], 17.8)
-        self.assertAlmostEqual(td2.get_n(3)[2], 2.0)
+        expected_reward = np.array([
+            [20.218], [18.02], [17.8], [2.0]
+            ], dtype=np.float)
+        self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
 
         # Test using lambda value of 0, should have no effect on rewards
         td2 = td.copy()
         td2.smooth_rewards(llambda=0.0)
-        self.assertAlmostEqual(td2.get_n(0)[2], 4)
-        self.assertAlmostEqual(td2.get_n(1)[2], 2)
-        self.assertAlmostEqual(td2.get_n(2)[2], 16)
-        self.assertAlmostEqual(td2.get_n(3)[2], 2)
+        expected_reward = np.array([
+            [4], [2], [16], [2]
+            ], dtype=np.float)
+        self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
 
 if __name__ == '__main__':
     unittest.main()
