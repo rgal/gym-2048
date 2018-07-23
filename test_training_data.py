@@ -3,6 +3,8 @@
 from __future__ import absolute_import
 import unittest
 import numpy as np
+import os
+import tempfile
 
 import training_data
 
@@ -192,6 +194,43 @@ class TestTrainingData(unittest.TestCase):
             [4], [2], [16], [2]
             ], dtype=np.float)
         self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
+
+    def test_save_restore(self):
+        # Set up training data
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 0, 4)
+        td.add(np.zeros([1, 4, 4]), 1, 2)
+        td.add(np.ones([1, 4, 4]), 2, 16)
+        td.add(np.zeros([1, 4, 4]), 3, 2)
+
+        f = tempfile.NamedTemporaryFile()
+        td.export_csv(f.name)
+
+        td2 = training_data.training_data()
+        td2.import_csv(f.name)
+
+        expected_x = np.array([
+            [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            ], dtype=np.int)
+        expected_y_digit = np.array([
+            [0],
+            [1],
+            [2],
+            [3]
+            ], dtype=np.int)
+        expected_reward = np.array([
+            [4],
+            [2],
+            [16],
+            [2]
+            ], dtype=np.float)
+        self.assertTrue(np.array_equal(td2.get_x(), expected_x))
+        self.assertTrue(np.array_equal(td2.get_y_digit(), expected_y_digit))
+        self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
+        os.remove(f.name)
 
 if __name__ == '__main__':
     unittest.main()
