@@ -86,9 +86,6 @@ class training_data(object):
     def size(self):
         return self._x.shape[0]
 
-    def track_rewards(self):
-        return self._reward.shape[0] > 0
-
     def import_csv(self, filename):
         """Load data as CSV file"""
         flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', usecols=tuple(range(17)))
@@ -117,8 +114,7 @@ class training_data(object):
     def dump(self):
         print(self._x)
         print(self._y_digit)
-        if self.track_rewards():
-            print(self._reward)
+        print(self._reward)
 
     def hflip(self):
         """Flip all the data horizontally"""
