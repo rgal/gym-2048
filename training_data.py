@@ -88,7 +88,7 @@ class training_data(object):
 
     def import_csv(self, filename):
         """Load data as CSV file"""
-        flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', usecols=tuple(range(17)))
+        flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=tuple(range(17)))
         assert flat_data.shape[1] == 17
         items = flat_data.shape[0]
         self._x = np.reshape(flat_data[:,:16], (items, 4, 4))
@@ -96,10 +96,19 @@ class training_data(object):
         self._y_digit = np.reshape(y_digits, (items, 1))
 
         # Load rewards
-        reward_data = np.loadtxt(filename, delimiter=',', usecols=17)
+        reward_data = np.loadtxt(filename, delimiter=',', skiprows=1, usecols=17)
         self._reward = reward_data.reshape(items, 1)
 
         self._check_lengths()
+
+    def construct_header(self):
+        header = list()
+        for m in range(1, 5):
+            for n in range(1, 5):
+                header.append('{}-{}'.format(m, n))
+        header.append('action')
+        header.append('reward')
+        return header
 
     def export_csv(self, filename):
         """Save data as CSV file"""
@@ -109,7 +118,9 @@ class training_data(object):
         flat_data = np.concatenate((flat_data, self._reward), axis=1)
         # Should have flat 16 square board, direction and reward
         assert flat_data.shape[1] == 18
-        np.savetxt(filename, flat_data, fmt='%d,' * 17 + '%f')
+        header = self.construct_header()
+
+        np.savetxt(filename, flat_data, comments='', fmt='%d,' * 17 + '%f', header=','.join(header))
 
     def dump(self):
         print(self._x)
