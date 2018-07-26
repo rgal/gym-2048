@@ -10,12 +10,7 @@ python:
 install:
   - pip install .
   - pip install -r requirements.txt
-  - pip install pytest-cov coveralls
 # command to run tests
 script:
-  - py.test --cov=training_data.py --cov=gym_2048/envs/game2048_env.py
+  - py.test
   - python simple_rl_agent.py
-after_success:
-  - if [[ $ENV == python=3.4* ]]; then
-        coveralls;
-    fi
