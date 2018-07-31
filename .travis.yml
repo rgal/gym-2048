@@ -8,12 +8,11 @@ python:
   #- "pypy-5.3.1"
 # command to install dependencies
 install:
-  - pip install .
   - pip install -r requirements.txt
   - pip install pytest-cov coveralls
 # command to run tests
 script:
-  - py.test --cov=training_data.py --cov=gym_2048/envs/game2048_env.py
+  - py.test --cov=training_data --cov=gym_2048 .
   - python simple_rl_agent.py
 after_success:
   - if [[ $ENV == python=3.4* ]]; then
