@@ -15,6 +15,4 @@ script:
   - py.test --cov=training_data --cov=gym_2048 .
   - python simple_rl_agent.py
 after_success:
-  - if [[ $ENV == python=3.4* ]]; then
-        coveralls;
-    fi
+  - coveralls
