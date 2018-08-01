@@ -50,7 +50,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        return rotate_board(feature, label, 3)
 
    dataset = (tf.data.TextLineDataset(file_path) # Read text file
-       #.skip(1) # Skip header row
+       .skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
    if augment:
        augmented = dataset.map(hflip, num_parallel_calls=1)
