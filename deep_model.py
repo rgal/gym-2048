@@ -41,14 +41,18 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
    dataset = (tf.data.TextLineDataset(file_path) # Read text file
        .skip(1) # Skip header row
        .map(decode_csv)) # Transform each elem by applying decode_csv fn
+
    if augment:
-       augmented = dataset.map(hflip, num_parallel_calls=1)
-       r90 = dataset.map(rotate90, num_parallel_calls=4)
-       r180 = dataset.map(rotate180, num_parallel_calls=4)
-       r270 = dataset.map(rotate270, num_parallel_calls=4)
+       parallel_map_calls = 4
+       augmented = dataset.map(hflip, num_parallel_calls=parallel_map_calls)
+       dataset = dataset.concatenate(augmented)
+       r90 = dataset.map(rotate90, num_parallel_calls=parallel_map_calls)
+       r180 = dataset.map(rotate180, num_parallel_calls=parallel_map_calls)
+       r270 = dataset.map(rotate270, num_parallel_calls=parallel_map_calls)
        dataset = dataset.concatenate(r90)
        dataset = dataset.concatenate(r180)
        dataset = dataset.concatenate(r270)
+
    if perform_shuffle:
        # Randomizes input using a window of 256 elements (read into memory)
        dataset = dataset.shuffle(buffer_size=256)
