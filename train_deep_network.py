@@ -4,14 +4,9 @@ from __future__ import print_function
 
 import argparse
 import csv
-import os
 import random
-import sys
 
 import tensorflow as tf
-import numpy as np
-
-import training_data
 
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
