@@ -88,6 +88,7 @@ if __name__ == '__main__':
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for m in range(args.param_sets):
+            print("Evaluating parameter set: ({}/{})".format(m, args.param_sets))
             residual_blocks = random.randint(1, 10)
             learning_rate = 10 ** (random.random() * -4.0)
             filters = 2 ** random.randint(2, 6)
