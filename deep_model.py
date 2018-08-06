@@ -170,7 +170,7 @@ def my_model(features, labels, mode, params):
     # Create training op.
     assert mode == tf.estimator.ModeKeys.TRAIN
 
-    optimizer = tf.train.AdagradOptimizer(params.get('learning_rate', 0.05))
+    optimizer = tf.train.AdamOptimizer(params.get('learning_rate', 0.05))
 
     # Add extra dependencies for batch normalisation
     extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
