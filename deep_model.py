@@ -123,7 +123,7 @@ def my_model(features, labels, mode, params):
 
     #for filters in params['conv_layers']:
     for res_block in range(params['residual_blocks']):
-        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode, params['bn'])
+        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode, params['batch_norm'])
 
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, 16]

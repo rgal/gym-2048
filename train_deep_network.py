@@ -10,23 +10,16 @@ import tensorflow as tf
 
 import deep_model
 
-def evaluate_model(training_file, test_file, epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size):
-    print("Learning rate: {}, dropout rate: {}, {} residual blocks, {} filters, augmenting {}, bn: {}, fc: {}, batch_size: {}".format(learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size))
+def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_params):
+    print("Learning rate: {}, dropout rate: {}, {} residual blocks, {} filters, bn: {}, fc: {}, augmenting {}, batch_size: {}".format(model_params['learning_rate'], model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], model_params['batch_norm'], model_params['fc_layers'], augment, batch_size))
 
     # Create a deep neural network regression classifier.
     # Build custom classifier
+    model_params['n_classes'] = 4
     classifier = tf.estimator.Estimator(
         model_fn=deep_model.my_model,
-        model_dir='model_dir/{}_{}_{}_{}_{}_{}{}{}'.format(learning_rate, dropout_rate, residual_blocks, filters, '-'.join(map(str, fc_layers)), batch_size, '_a' if augment else '', '_bn' if batch_norm else ''), # Path to where checkpoints etc are stored
-        params={
-            'n_classes': 4,
-            'dropout_rate': dropout_rate,
-            'learning_rate': learning_rate,
-            'residual_blocks': residual_blocks,
-            'filters': filters,
-            'fc_layers': fc_layers,
-            'bn': batch_norm,
-        })
+        model_dir='model_dir/{}_{}_{}_{}_{}_{}{}{}'.format(model_params['learning_rate'], model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), batch_size, '_a' if augment else '', '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored
+        params=model_params)
 
     results = {}
     for epoch in range(epochs):
@@ -89,19 +82,23 @@ if __name__ == '__main__':
         writer.writeheader()
         for m in range(args.param_sets):
             print("Evaluating parameter set: ({}/{})".format(m, args.param_sets))
-            residual_blocks = random.randint(1, 10)
-            learning_rate = 10 ** (random.random() * -4.0)
-            filters = 2 ** random.randint(2, 6)
-            fc_layers = [2 ** random.randint(6, 9), 2 ** random.randint(4, 9)]
-            results = evaluate_model(args.train_input, args.test_input, args.epochs, learning_rate, dropout_rate, residual_blocks, filters, augment, batch_norm, fc_layers, batch_size)
+            params = {
+                'learning_rate': 10 ** (random.random() * -4.0,
+                'dropout_rate': 0,
+                'residual_blocks': random.randint(1, 10),
+                'filters': 2 ** random.randint(2, 6),
+                'batch_norm': True,
+                'fc_layers': [2 ** random.randint(6, 9), 2 ** random.randint(4, 9)],
+            }
+            results = evaluate_model(args.train_input, args.test_input, args.epochs, augment, batch_size, params)
             results['run'] = m
-            results['learning_rate'] = learning_rate
-            results['dropout_rate'] = dropout_rate
-            results['residual_blocks'] = residual_blocks
-            results['filters'] = filters
+            results['learning_rate'] = params['learning_rate']
+            results['dropout_rate'] = params['dropout_rate']
+            results['residual_blocks'] = params['residual_blocks']
+            results['filters'] = params['filters']
+            results['batch_norm'] = params['batch_norm']
+            results['fc1'] = params['fc_layers'][0]
+            results['fc2'] = params['fc_layers'][1]
             results['augment'] = augment
-            results['batch_norm'] = batch_norm
-            results['fc1'] = fc_layers[0]
-            results['fc2'] = fc_layers[1]
             results['batch_size'] = batch_size
             writer.writerow(results)
