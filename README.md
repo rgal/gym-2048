@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/rgal/gym-2048.svg?branch=master)](https://travis-ci.org/rgal/gym-2048)
-[![Coverage Status](https://coveralls.io/repos/github/rgal/gym-2048/badge.png?branch=master)](https://coveralls.io/github/rgal/gym-2048?branch=master)
+[![Coverage Status](https://codecov.io/gh/rgal/gym-2048/branch/master/graph/badge.svg)](https://codecov.io/gh/rgal/gym-2048)
 
 # gym-2048
 
