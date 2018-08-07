@@ -9,12 +9,12 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install pytest-cov coveralls
+  - pip install pytest-cov codecov
 # command to run tests
 script:
   - py.test --cov=training_data --cov=gym_2048 .
   - python simple_rl_agent.py
 after_success:
   - if [[ $ENV == python=3.4* ]]; then
-        coveralls;
+        codecov;
     fi
