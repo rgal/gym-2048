@@ -81,7 +81,7 @@ if __name__ == '__main__':
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for m in range(args.param_sets):
-            print("Evaluating parameter set: ({}/{})".format(m, args.param_sets))
+            print("Evaluating parameter set: ({}/{})".format(m + 1, args.param_sets))
             params = {
                 'learning_rate': 10 ** (random.random() * -4.0,
                 'dropout_rate': 0,
