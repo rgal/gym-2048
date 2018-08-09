@@ -63,6 +63,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
    return batch_features, batch_labels
 
 def estimator(model_params):
+    model_params['n_classes'] = 4
     return tf.estimator.Estimator(
         model_fn=my_model,
         model_dir='model_dir/{}_{}_{}_{}_{}_{}'.format(model_params['learning_rate'], model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored

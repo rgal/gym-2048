@@ -15,7 +15,6 @@ def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_
 
     # Create a deep neural network regression classifier.
     # Build custom classifier
-    model_params['n_classes'] = 4
     classifier = deep_model.estimator(model_params)
 
     results = {}
