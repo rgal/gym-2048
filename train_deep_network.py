@@ -16,10 +16,7 @@ def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_
     # Create a deep neural network regression classifier.
     # Build custom classifier
     model_params['n_classes'] = 4
-    classifier = tf.estimator.Estimator(
-        model_fn=deep_model.my_model,
-        model_dir='model_dir/{}_{}_{}_{}_{}_{}{}{}'.format(model_params['learning_rate'], model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), batch_size, '_a' if augment else '', '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored
-        params=model_params)
+    classifier = deep_model.estimator(model_params)
 
     results = {}
     for epoch in range(epochs):
