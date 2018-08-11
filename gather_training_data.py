@@ -6,12 +6,14 @@ import argparse
 import numpy as np
 import os
 import pygame
+import tensorflow as tf
 
 import gym
 
 import gym_2048
 
 import training_data
+import deep_model
 
 grid_size = 70
 
@@ -19,7 +21,7 @@ class Exiting(Exception):
     def __init__(self):
         super(Exiting, self).__init__()
 
-def gather_training_data(env, seed=None):
+def gather_training_data(env, estimator, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
     data = training_data.training_data()
@@ -75,6 +77,13 @@ def gather_training_data(env, seed=None):
 
             pygame.display.update()
 
+            # Get predictions from model
+            predict_input_fn = tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((1,4,4,1)).astype(np.float32)}, num_epochs=1, shuffle=False)
+            prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
+            print(prediction['class_ids'])
+            print(prediction['logits'])
+            print(prediction['probabilities'])
+
             # Ask user for action
             while True:
                 # Loop waiting for valid input
@@ -128,7 +137,18 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((grid_size * 4, grid_size * 4), 0, 32)
     pygame.font.init()
 
-    data = gather_training_data(env, seed=args.seed)
+    # Load estimator
+    params = {
+        'learning_rate': 0.01,
+        'dropout_rate': 0,
+        'residual_blocks': 4,
+        'filters': 16,
+        'batch_norm': True,
+        'fc_layers': [512, 512],
+    }
+    estimator = deep_model.estimator(params)
+
+    data = gather_training_data(env, estimator, seed=args.seed)
 
     # Close the environment
     env.close()
