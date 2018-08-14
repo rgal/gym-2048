@@ -78,7 +78,7 @@ def gather_training_data(env, estimator, seed=None):
             pygame.display.update()
 
             # Get predictions from model
-            predict_input_fn = tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((1,4,4,1)).astype(np.float32)}, num_epochs=1, shuffle=False)
+            predict_input_fn = deep_model.numpy_predict_fn(observation)
             prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
             print(prediction['class_ids'])
             print(prediction['logits'])
