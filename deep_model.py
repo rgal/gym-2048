@@ -8,12 +8,13 @@ def numpy_predict_fn(observation):
 
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
-       parsed_line = tf.decode_csv(line, [[0] for i in range(17)])
+       parsed_line = tf.decode_csv(line, [[0] for i in range(17)] + [[0.0]])
        features = parsed_line[0:16]
        # Convert from list of tensors to one tensor
        features = tf.reshape(tf.cast(tf.stack(features), tf.float32), [4, 4, 1])
-       label = parsed_line[16]
-       return {'board': features}, {'action': label}
+       action = parsed_line[16]
+       reward = parsed_line[17]
+       return {'board': features}, {'action': action, 'reward': reward}
 
    def hflip(feature, label):
        image = feature['board']
@@ -21,7 +22,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        #tf.Print(flipped_image, [image, flipped_image], "Image and flipped left right")
        newlabel = tf.gather([0, 3, 2, 1], label['action'])
        #tf.Print(newlabel, [label['action'], newlabel], "Label and flipped left right")
-       return {'board': flipped_image}, {'action': newlabel}
+       return {'board': flipped_image}, {'action': newlabel, 'reward': label['reward']}
 
    def rotate_board(feature, label, k):
        image = feature['board']
@@ -31,7 +32,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        newlabel += k
        newlabel %= 4
        #tf.Print(newlabel, [label['action'], newlabel], "Label and rotated by k={}".format(k))
-       return {'board': rotated_image}, {'action': newlabel}
+       return {'board': rotated_image}, {'action': newlabel, 'reward': label['reward']}
 
    def rotate90(feature, label):
        return rotate_board(feature, label, 1)
