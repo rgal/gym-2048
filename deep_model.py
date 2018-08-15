@@ -13,25 +13,25 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        # Convert from list of tensors to one tensor
        features = tf.reshape(tf.cast(tf.stack(features), tf.float32), [4, 4, 1])
        label = parsed_line[16]
-       return {'board': features}, label
+       return {'board': features}, {'action': label}
 
    def hflip(feature, label):
        image = feature['board']
        flipped_image = tf.image.flip_left_right(image)
        #tf.Print(flipped_image, [image, flipped_image], "Image and flipped left right")
-       newlabel = tf.gather([0, 3, 2, 1], label)
-       #tf.Print(newlabel, [label, newlabel], "Label and flipped left right")
-       return {'board': flipped_image}, newlabel
+       newlabel = tf.gather([0, 3, 2, 1], label['action'])
+       #tf.Print(newlabel, [label['action'], newlabel], "Label and flipped left right")
+       return {'board': flipped_image}, {'action': newlabel}
 
    def rotate_board(feature, label, k):
        image = feature['board']
        rotated_image = tf.image.rot90(image, 4 - k)
        #tf.Print(rotated_image, [image, rotated_image], "Image and rotated by k={}".format(k))
-       newlabel = label
+       newlabel = label['action']
        newlabel += k
        newlabel %= 4
-       #tf.Print(newlabel, [label, newlabel], "Label and rotated by k={}".format(k))
-       return {'board': rotated_image}, newlabel
+       #tf.Print(newlabel, [label['action'], newlabel], "Label and rotated by k={}".format(k))
+       return {'board': rotated_image}, {'action': newlabel}
 
    def rotate90(feature, label):
        return rotate_board(feature, label, 1)
@@ -165,10 +165,11 @@ def my_model(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
     # Compute loss.
-    loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+    action_labels = labels['action']
+    loss = tf.losses.sparse_softmax_cross_entropy(labels=action_labels, logits=logits)
 
     # Compute evaluation metrics.
-    accuracy = tf.metrics.accuracy(labels=labels,
+    accuracy = tf.metrics.accuracy(labels=action_labels,
                                    predictions=predicted_classes,
                                    name='acc_op')
     metrics = {'accuracy': accuracy}
