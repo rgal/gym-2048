@@ -193,7 +193,8 @@ def train(k, seed=None, agent_seed=None):
     history = list()
     # Initialise S, A
     (action, best) = choose_action(env, observation, k, epsilon)
-    for t in range(1000):
+    illegal_count = 0
+    while 1:
         #env.render()
         #print(observation)
         #print "Action: {}".format(action)
@@ -203,11 +204,17 @@ def train(k, seed=None, agent_seed=None):
         next_observation, reward, done, info = env.step(action)
         #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
         # Record what we did in a particular state
+        if np.array_equal(observation, next_observation):
+            illegal_count += 1
+            if illegal_count > 100:
+                print("No progress for 100 turns, breaking out")
+                break
+        else:
+            illegal_count = 0
 
         history.append((tuple(observation), action, reward))
 
         if done:
-            #total_moves += (t + 1)
             break
 
         # Choose A' from S' using policy derived from Q
