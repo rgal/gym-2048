@@ -165,9 +165,25 @@ def my_model(features, labels, mode, params):
         }
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
-    # Compute loss.
-    action_labels = labels['action']
-    loss = tf.losses.sparse_softmax_cross_entropy(labels=action_labels, logits=logits)
+    # Compute loss on actions compared to records
+    action_labels = labels['action'] # Shape [batch_size, 1]
+    # Then calculate loss with softmax cross entropy
+    action_loss = tf.losses.sparse_softmax_cross_entropy(labels=action_labels, logits=logits)
+
+    # Compute loss based no rewards compared to those from environment
+    reward_labels = labels['reward'] # Shape [batch_size, 1]
+
+    # Only have reward from environment from one action so gather predicted
+    # rewards for those actions and calculate MSE compared to environment
+    batch_size = tf.shape(labels['action'])[0]
+    action_idx = tf.reshape(tf.range(batch_size),[-1, 1])
+    action_labels_reshaped = tf.reshape(labels['action'],[-1, 1])
+    action_reshaped = tf.reshape(tf.concat([action_idx, action_labels_reshaped],axis=1), [-1, 1, 2])
+    gathered_logits = tf.gather_nd(logits, action_reshaped)
+    reward_loss = tf.losses.mean_squared_error(tf.reshape(reward_labels, [-1, 1]), gathered_logits)
+
+    # Select loss (action or reward)
+    loss = reward_loss
 
     # Compute evaluation metrics.
     accuracy = tf.metrics.accuracy(labels=action_labels,
