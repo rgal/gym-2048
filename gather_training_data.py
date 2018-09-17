@@ -83,11 +83,13 @@ def gather_training_data(env, estimator, seed=None):
             print(prediction['class_ids'])
             print(prediction['logits'])
             print(prediction['probabilities'])
+
+            # Report predicted rewards for actions
             dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
-            dir_prob = [(dir_dict[i], p) for i, p in enumerate(list(prediction['probabilities']))]
-            dir_prob.sort(key=lambda x: x[1], reverse=True)
-            for direction, probability in dir_prob:
-                print('{}: {:.0f}%'.format(direction, probability * 100.0))
+            dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(prediction['logits']))]
+            dir_reward.sort(key=lambda x: x[1], reverse=True)
+            for direction, reward in dir_reward:
+                print('{}: {:.0f}'.format(direction, reward))
 
             # Ask user for action
             while True:
