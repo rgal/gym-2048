@@ -71,7 +71,7 @@ def estimator(model_params):
     model_params['n_classes'] = 4
     return tf.estimator.Estimator(
         model_fn=my_model,
-        model_dir='model_dir/{}_{}_{}_{}_{}_{}'.format(model_params['learning_rate'], model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored
+        model_dir='model_dir/{}_{}_{}_{}_{}'.format(model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored
         params=model_params)
 
 def residual_block(in_net, filters, dropout_rate, mode, bn=False):
