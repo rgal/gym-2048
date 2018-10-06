@@ -118,16 +118,30 @@ def residual_block(in_net, filters, dropout_rate, mode, bn=False):
     # Add skip connection
     return in_net + net
 
+def log2(x):
+    """Log to base 2"""
+    numerator = tf.log(x)
+    denominator = tf.log(tf.constant(2, dtype=numerator.dtype))
+    return numerator / denominator
+
 def my_model(features, labels, mode, params):
     """DNN with three hidden layers, and dropout of 0.1 probability."""
 
     l0 = features['board']
 
+    # Log2 of the board to help the network with the large numbers
+    # Add one if value is zero (to avoid infinity)
+    condition = tf.equal(l0, 0)
+    case_true = tf.ones(tf.shape(l0))
+    case_false = l0
+    adjusted = tf.where(condition, case_true, case_false)
+    ll0 = log2(adjusted)
+
     # Convolution layer 1
     # Input shape: [batch_size, 4, 4, 1]
     # Output shape: [batch_size, 4, 4, 16]
     block_inout = tf.layers.conv2d(
-      inputs=l0,
+      inputs=ll0,
       filters=params['filters'],
       kernel_size=[3, 3],
       padding="same",
