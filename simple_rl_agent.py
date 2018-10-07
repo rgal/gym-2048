@@ -13,8 +13,7 @@ def choose_action():
     return random.randint(0, 3)
 
 def train(seed=None, agent_seed=None):
-    """Train for one game. k is the knowledge which will be used, and added to.
-    seed (optional) specifies the seed for the game.
+    """seed (optional) specifies the seed for the game.
     agent_seed specifies the seed for the agent."""
     #print("Training")
     # Initialise seed for environment
@@ -32,6 +31,7 @@ def train(seed=None, agent_seed=None):
     # Initialise S, A
     action = choose_action()
     illegal_count = 0
+    total_reward = 0.0
     while 1:
         #env.render()
         #print(observation)
@@ -40,6 +40,7 @@ def train(seed=None, agent_seed=None):
         #print "Observation: {}".format(last_observation)
         # Take action, observe R, S'
         next_observation, reward, done, info = env.step(action)
+        total_reward += reward
         #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
         # Record what we did in a particular state
         if np.array_equal(observation, next_observation):
@@ -62,41 +63,7 @@ def train(seed=None, agent_seed=None):
         action = next_action
         #print("")
 
-def evaluate():
-    #print("Evaluating")
-    # Don't explore when evaluating, just use best actions
-
-    evaluation_episodes = 10
-
-    cr_vals = np.zeros(10)
-    crs = list()
-
-    for eval_episode in range(evaluation_episodes):
-        cumulative_reward = 0.
-        # Fix seed for environment so we are always evaluating the same game
-        env.seed(123 + eval_episode)
-        # Fix seed for agent so we are always making the same random choices when required
-        random.seed(456 + eval_episode)
-
-        observation = env.reset()
-        #env.render()
-
-        action = choose_action()
-        for t in range(1000):
-            next_observation, reward, done, info = env.step(action)
-            cumulative_reward += reward
-            if done:
-                break
-            # Choose A' from S' using policy derived from Q
-            next_action = choose_action()
-            observation = next_observation
-            action = next_action
-        #print("Score: {}".format(cumulative_reward))
-        crs.append(str(cumulative_reward))
-        cr_vals[eval_episode] = cumulative_reward
-    crs.append(str(cr_vals.mean()))
-    #print("Average score: {}".format(cr_vals.mean()))
-    return crs
+    return total_reward
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -108,14 +75,8 @@ if __name__ == '__main__':
     seen_states = dict()
 
     start = datetime.datetime.now()
-    print("Episodes,A,B,C,D,E,F,G,H,I,J,Average")
     for i_episode in range(args.episodes):
-        if (i_episode % args.reportfrequency) == 0:
-            # Evaluate how good our current knowledge is, with a number of games
-            s = evaluate()
-            print(','.join([str(i_episode)] + s))
-
-        train()
+        print(train())
 
     # Close the environment
     env.close()
