@@ -6,6 +6,9 @@ import tensorflow as tf
 def numpy_predict_fn(observation):
    return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((1,4,4,1)).astype(np.float32)}, num_epochs=1, shuffle=False)
 
+def numpy_train_fn(observation, action, reward):
+   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)}, y={'action': action.astype(np.int32), 'reward': reward}, num_epochs=1, shuffle=False)
+
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
        parsed_line = tf.decode_csv(line, [[0] for i in range(17)] + [[0.0]])
