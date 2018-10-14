@@ -171,6 +171,25 @@ class TestTrainingData(unittest.TestCase):
         td.add(np.ones([1, 4, 4]), 0, 4)
         self.assertEqual(td.size(), 1)
 
+    def test_log2_rewards(self):
+        # Set up training data
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 0, 0)
+        td.add(np.ones([1, 4, 4]), 1, 2)
+        td.add(np.ones([1, 4, 4]), 2, 4)
+        td.add(np.ones([1, 4, 4]), 3, 16)
+        td.add(np.ones([1, 4, 4]), 0, 75)
+        td.add(np.ones([1, 4, 4]), 1, 2048)
+        td.log2_rewards()
+        expected_reward = np.array([
+            [0], [1], [2], [4], [6.2288], [11]
+            ], dtype=np.float)
+        self.assertTrue(np.allclose(td.get_reward(), expected_reward))
+        expected_action = np.array([
+            [0], [1], [2], [3], [0], [1]
+            ], dtype=np.int)
+        self.assertTrue(np.allclose(td.get_y_digit(), expected_action))
+
     def test_smooth_rewards(self):
         # Set up training data
         td = training_data.training_data()
