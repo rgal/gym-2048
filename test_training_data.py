@@ -214,6 +214,19 @@ class TestTrainingData(unittest.TestCase):
             ], dtype=np.float)
         self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
 
+    def test_log2_rewards(self):
+        # Set up training data
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 1, 4)
+        td.add(np.ones([1, 4, 4]), 2, 4)
+        td.add(np.ones([1, 4, 4]), 3, 8)
+        td.add(np.ones([1, 4, 4]), 0, 16)
+        td.normalize_rewards()
+        expected_reward = np.array([
+            [-0.8165], [-0.8165], [0.], [1.633],
+            ], dtype=np.float)
+        self.assertTrue(np.allclose(td.get_reward(), expected_reward))
+
     def test_save_restore(self):
         # Set up training data
         td = training_data.training_data()
