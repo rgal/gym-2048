@@ -214,7 +214,7 @@ class TestTrainingData(unittest.TestCase):
             ], dtype=np.float)
         self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
 
-    def test_log2_rewards(self):
+    def test_normalize_rewards(self):
         # Set up training data
         td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 1, 4)
