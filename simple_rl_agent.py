@@ -85,11 +85,18 @@ def train(estimator, seed=None, agent_seed=None):
         print("")
 
     print("Took {} moves, Score: {}".format(moves_taken, total_reward))
-    scaled_reward = total_reward / 10000 - 1.0
-    print("Scaled reward: {}".format(scaled_reward))
     # Apply training to model using history of boards, actions and total reward
-    rreward = np.full((moves_taken, 1), scaled_reward, dtype=np.float)
-    train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), rreward)
+    data.log2_rewards()
+
+    # Smooth rewards and scale
+    #data.smooth_rewards()
+    #scaled_reward = data.get_reward() / 15.0 - 1.0
+
+    # Scale rewards without smoothing
+    scaled_reward = data.get_reward() / 6.0 - 1.0
+
+    #print("Scaled reward: {}".format(scaled_reward))
+    train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), scaled_reward)
     estimator.train(input_fn=train_input_fn)
     return total_reward
 
