@@ -98,7 +98,7 @@ def train(estimator, seed=None, agent_seed=None):
     #print("Scaled reward: {}".format(scaled_reward))
     train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), scaled_reward)
     estimator.train(input_fn=train_input_fn)
-    return total_reward
+    return data, total_reward
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -120,15 +120,19 @@ if __name__ == '__main__':
 
     start = datetime.datetime.now()
     scores = list()
+    all_data = training_data.training_data()
     for i_episode in range(args.episodes):
         print("Episode {}".format(i_episode))
-        score = train(estimator)
+        (data, score) = train(estimator)
         scores.append(score)
         print(score)
+        all_data.merge(data)
 
     print(scores)
     # Close the environment
     env.close()
+
+    all_data.export_csv('dat.csv')
 
     end = datetime.datetime.now()
     taken = end - start
