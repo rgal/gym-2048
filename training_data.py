@@ -49,7 +49,7 @@ class training_data(object):
     def log2_rewards(self):
         """log2 of reward values to keep them in a small range"""
         items = self._reward.shape[0]
-        rewards = list(np.reshape(self._reward, (items)))
+        rewards = np.reshape(self._reward, (items))
         log_rewards = np.ma.log(rewards) / np.ma.log(2)
         self._reward = np.reshape(np.array(log_rewards, np.float), (items, 1))
 
