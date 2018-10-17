@@ -140,11 +140,17 @@ def my_model(features, labels, mode, params):
     adjusted = tf.where(condition, case_true, case_false)
     ll0 = log2(adjusted)
 
+    # Batch normalize to get distribution closer to zero
+    ll0_bn = tf.layers.batch_normalization(
+        inputs=ll0,
+        training=mode == tf.estimator.ModeKeys.TRAIN
+    )
+
     # Convolution layer 1
     # Input shape: [batch_size, 4, 4, 1]
     # Output shape: [batch_size, 4, 4, 16]
     block_inout = tf.layers.conv2d(
-      inputs=ll0,
+      inputs=ll0_bn,
       filters=params['filters'],
       kernel_size=[3, 3],
       padding="same",
