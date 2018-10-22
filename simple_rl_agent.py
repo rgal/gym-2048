@@ -103,6 +103,7 @@ def train(estimator, seed=None, agent_seed=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--episodes', type=int, default=1)
+    parser.add_argument('--output', default='dat.csv')
     args = parser.parse_args()
 
     env = gym.make('2048-v0')
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     # Close the environment
     env.close()
 
-    all_data.export_csv('dat.csv')
+    all_data.export_csv(args.output)
 
     end = datetime.datetime.now()
     taken = end - start
