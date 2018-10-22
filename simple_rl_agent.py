@@ -26,7 +26,7 @@ def choose_action(estimator, observation, epsilon=0.9):
         print("Choosing random action: {}".format(chosen))
     return chosen
 
-def train(estimator, seed=None, agent_seed=None):
+def train(estimator, epsilon, seed=None, agent_seed=None):
     """Train estimator for one episode.
     seed (optional) specifies the seed for the game.
     agent_seed specifies the seed for the agent."""
@@ -45,7 +45,7 @@ def train(estimator, seed=None, agent_seed=None):
     data = training_data.training_data()
 
     # Initialise S, A
-    action = choose_action(estimator, observation)
+    action = choose_action(estimator, observation, epsilon)
 
     illegal_count = 0
     total_reward = 0.0
@@ -78,7 +78,7 @@ def train(estimator, seed=None, agent_seed=None):
             break
 
         # Choose A' from S' using policy derived from Q
-        next_action = choose_action(estimator, observation)
+        next_action = choose_action(estimator, observation, epsilon)
 
         observation = next_observation
         action = next_action
@@ -103,6 +103,7 @@ def train(estimator, seed=None, agent_seed=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--episodes', type=int, default=1)
+    parser.add_argument('--epsilon', type=float, default=0.9)
     parser.add_argument('--output', default='dat.csv')
     args = parser.parse_args()
 
@@ -124,7 +125,7 @@ if __name__ == '__main__':
     all_data = training_data.training_data()
     for i_episode in range(args.episodes):
         print("Episode {}".format(i_episode))
-        (data, score) = train(estimator)
+        (data, score) = train(estimator, args.epsilon)
         scores.append(score)
         print(score)
         all_data.merge(data)
