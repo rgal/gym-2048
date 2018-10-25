@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse
 import csv
+import json
 import random
 
 import tensorflow as tf
@@ -49,7 +50,7 @@ def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epochs', type=int, default=5, help='How many times to go through data')
-    parser.add_argument('-p', '--param-sets', type=int, default=1, help='How many different sets of hyperparameters to try')
+    parser.add_argument('-p', '--params', default='params.json', help='File defining hyperparameters to try')
     parser.add_argument('train_input', nargs='?', default='train.csv')
     parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
@@ -76,25 +77,18 @@ if __name__ == '__main__':
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for m in range(args.param_sets):
-            print("Evaluating parameter set: ({}/{})".format(m + 1, args.param_sets))
-            params = {
-                'learning_rate': 10 ** (random.random() * -4.0),
-                'dropout_rate': 0,
-                'residual_blocks': random.randint(1, 10),
-                'filters': 2 ** random.randint(2, 6),
-                'batch_norm': True,
-                'fc_layers': [2 ** random.randint(6, 9), 2 ** random.randint(4, 9)],
-            }
-            results = evaluate_model(args.train_input, args.test_input, args.epochs, augment, batch_size, params)
-            results['run'] = m
-            results['learning_rate'] = params['learning_rate']
-            results['dropout_rate'] = params['dropout_rate']
-            results['residual_blocks'] = params['residual_blocks']
-            results['filters'] = params['filters']
-            results['batch_norm'] = params['batch_norm']
-            results['fc1'] = params['fc_layers'][0]
-            results['fc2'] = params['fc_layers'][1]
-            results['augment'] = augment
-            results['batch_size'] = batch_size
-            writer.writerow(results)
+        # Import JSON definition of parameters to try
+        with open(args.params, 'r') as f:
+            params = json.load(f)
+
+        results = evaluate_model(args.train_input, args.test_input, args.epochs, augment, batch_size, params)
+        results['learning_rate'] = params['learning_rate']
+        results['dropout_rate'] = params['dropout_rate']
+        results['residual_blocks'] = params['residual_blocks']
+        results['filters'] = params['filters']
+        results['batch_norm'] = params['batch_norm']
+        results['fc1'] = params['fc_layers'][0]
+        results['fc2'] = params['fc_layers'][1]
+        results['augment'] = augment
+        results['batch_size'] = batch_size
+        writer.writerow(results)

@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import json
 import numpy as np
 import os
 import pygame
@@ -135,6 +136,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', '-o', default='data.csv', help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
+    parser.add_argument('-p', '--params', default='params.json', help='File defining hyperparameters to try')
     args = parser.parse_args()
     # Initialise environment
     env = gym.make('2048-v0')
@@ -144,15 +146,11 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((grid_size * 4, grid_size * 4), 0, 32)
     pygame.font.init()
 
+    # Load hyperparameters from JSON file
+    with open(args.params, 'r') as f:
+        params = json.load(f)
+
     # Load estimator
-    params = {
-        'learning_rate': 0.01,
-        'dropout_rate': 0,
-        'residual_blocks': 4,
-        'filters': 16,
-        'batch_norm': True,
-        'fc_layers': [512, 512],
-    }
     estimator = deep_model.estimator(params)
 
     data = gather_training_data(env, estimator, seed=args.seed)
