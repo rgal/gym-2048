@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import argparse
+import json
 import random
 import datetime
 import numpy as np
@@ -104,20 +105,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--episodes', type=int, default=1)
     parser.add_argument('--epsilon', type=float, default=0.9)
+    parser.add_argument('--params', '-p', default='params.json')
     parser.add_argument('--output', default='dat.csv')
     args = parser.parse_args()
 
     env = gym.make('2048-v0')
 
+    # Load hyperparameters from file
+    with open(args.params, 'r') as f:
+        params = json.load(f)
+
     # Load estimator
-    params = {
-        'learning_rate': 0.01,
-        'dropout_rate': 0,
-        'residual_blocks': 2,
-        'filters': 16,
-        'batch_norm': True,
-        'fc_layers': [512, 512],
-    }
     estimator = deep_model.estimator(params)
 
     start = datetime.datetime.now()
