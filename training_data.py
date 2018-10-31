@@ -70,12 +70,14 @@ class training_data(object):
         smoothed_rewards.reverse()
         self._reward = np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
 
-    def normalize_rewards(self):
+    def normalize_rewards(self, mean=None, sd=None):
         """Normalize rewards by subtracting mean and dividing by stdandard deviation"""
         items = self._reward.shape[0]
         rewards = np.reshape(self._reward, (items))
-        mean = np.mean(rewards)
-        sd = np.std(rewards)
+        if mean is None:
+            mean = np.mean(rewards)
+        if sd is None:
+            sd = np.std(rewards)
         norm_rewards = (rewards - mean) / sd
         self._reward = np.reshape(np.array(norm_rewards, np.float), (items, 1))
 

@@ -215,7 +215,7 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
 
     def test_normalize_rewards(self):
-        # Set up training data
+        # Test calculating mean and standard deviation
         td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 1, 4)
         td.add(np.ones([1, 4, 4]), 2, 4)
@@ -224,6 +224,17 @@ class TestTrainingData(unittest.TestCase):
         td.normalize_rewards()
         expected_reward = np.array([
             [-0.8165], [-0.8165], [0.], [1.633],
+            ], dtype=np.float)
+        self.assertTrue(np.allclose(td.get_reward(), expected_reward))
+        # Test specifying mean and standard deviation
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 1, 4)
+        td.add(np.ones([1, 4, 4]), 2, 4)
+        td.add(np.ones([1, 4, 4]), 3, 8)
+        td.add(np.ones([1, 4, 4]), 0, 16)
+        td.normalize_rewards(mean=8, sd=1)
+        expected_reward = np.array([
+            [-4.], [-4.], [0.], [8.],
             ], dtype=np.float)
         self.assertTrue(np.allclose(td.get_reward(), expected_reward))
 
