@@ -123,6 +123,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     env = gym.make('2048-v0')
+    env = env.unwrapped
+    env.set_illegal_move_reward(-1.)
 
     # Load hyperparameters from file
     with open(args.params, 'r') as f:
