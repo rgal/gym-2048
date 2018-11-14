@@ -28,7 +28,7 @@ class Game2048Env(gym.Env):
         self.size = 4
         self.w = self.size
         self.h = self.size
-        squares = self.size * self.size
+        self.squares = self.size * self.size
 
         # Maintain own idea of game score, separate from rewards
         self.score = 0
@@ -36,9 +36,8 @@ class Game2048Env(gym.Env):
         # Members for gym implementation
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
-        self.observation_space = spaces.Box(0, 2**squares, (self.w * self.h, ), dtype=np.int)
-        # Guess that the maximum reward is also 2**squares though you'll probably never get that.
-        self.reward_range = (0., float(2**squares))
+        self.observation_space = spaces.Box(0, 2**self.squares, (self.w * self.h, ), dtype=np.int)
+        self.set_illegal_move_reward(0.)
 
         # Initialise seed
         self.seed()
@@ -49,6 +48,14 @@ class Game2048Env(gym.Env):
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+
+    def set_illegal_move_reward(self, reward):
+        """Define the reward/penalty for performing an illegal move. Also need
+            to update the reward range for this."""
+        # Guess that the maximum reward is also 2**squares though you'll probably never get that.
+        # (assume that illegal move reward is the lowest value that can be returned
+        self.illegal_move_reward = reward
+        self.reward_range = (self.illegal_move_reward, float(2**self.squares))
 
     # Implement gym interface
     def step(self, action):
@@ -66,8 +73,7 @@ class Game2048Env(gym.Env):
         except IllegalMove as e:
             logging.debug("Illegal move")
             done = False
-            # No reward for illegal move
-            reward = 0.
+            reward = self.illegal_move_reward
 
         #print("Am I done? {}".format(done))
         observation = self.Matrix.flatten()
