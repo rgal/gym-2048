@@ -151,8 +151,6 @@ if __name__ == '__main__':
     # Close the environment
     env.close()
 
-    all_data.export_csv(args.output)
-
     end = datetime.datetime.now()
     taken = end - start
     print("{} episodes took {}. {:.1f} episodes per second".format(args.episodes, taken, args.episodes / taken.total_seconds()))
