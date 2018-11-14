@@ -13,15 +13,26 @@ import gym_2048
 import training_data
 import deep_model
 
+last_observation = None
+last_chosen = None
+
 def choose_action(estimator, observation, epsilon=0.9):
     """Choose best action from the esimator or random, based on epsilon"""
+    global last_observation
+    global last_chosen
     print(observation.reshape((4, 4)))
     if (random.uniform(0, 1) < epsilon):
+        if last_observation is not None and np.array_equal(last_observation, observation):
+            print("Returning cached best action: {}".format(last_chosen))
+            return last_chosen
         predict_input_fn = deep_model.numpy_predict_fn(observation)
         prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
         print(prediction['logits'])
         chosen = np.argmax(prediction['logits'])
         print("Choosing best action: {}".format(chosen))
+        # Update last chosen
+        last_chosen = chosen
+        last_observation = observation
     else:
         chosen = random.randint(0, 3)
         print("Choosing random action: {}".format(chosen))
