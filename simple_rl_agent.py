@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import argparse
+import csv
 import json
 import random
 import datetime
@@ -140,6 +141,12 @@ if __name__ == '__main__':
         all_data.merge(data)
 
     print(scores)
+    with open('scores.csv', 'w') as f:
+        w = csv.writer(f)
+        for s in scores:
+            w.writerow([s])
+
+    print("Average: {}".format(np.mean(scores)))
     # Close the environment
     env.close()
 
