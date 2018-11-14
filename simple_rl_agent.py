@@ -141,13 +141,13 @@ if __name__ == '__main__':
     for i_episode in range(args.episodes):
         print("Episode {}".format(i_episode))
         (data, total_reward, score, moves_taken, illegal_count) = train(estimator, args.epsilon)
-        scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count})
+        scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count, 'highest': env.highest()})
         #print(score)
         all_data.merge(data)
 
     print(scores)
     with open('scores.csv', 'w') as f:
-        w = csv.DictWriter(f, ['score', 'total_reward', 'moves', 'illegal_count'])
+        w = csv.DictWriter(f, ['score', 'total_reward', 'moves', 'illegal_count', 'highest'])
         w.writeheader()
         for s in scores:
             w.writerow(s)
