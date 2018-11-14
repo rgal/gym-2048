@@ -21,7 +21,6 @@ def choose_action(estimator, observation, epsilon=0.9):
     """Choose best action from the esimator or random, based on epsilon"""
     global last_observation
     global last_chosen
-    print(observation.reshape((4, 4)))
     if (random.uniform(0, 1) < epsilon):
         if last_observation is not None and np.array_equal(last_observation, observation):
             print("Returning cached best action: {}".format(last_chosen))
@@ -57,9 +56,6 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
     observation = env.reset()
     data = training_data.training_data()
 
-    # Initialise S, A
-    action = choose_action(estimator, observation, epsilon)
-
     illegal_count = 0
     total_reward = 0.0
     moves_taken = 0
@@ -70,13 +66,15 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         #last_observation = tuple(observation)
         #print "Observation: {}".format(last_observation)
         # Take action, observe R, S'
+        print(observation.reshape((4, 4)))
+        print("Score: {}".format(total_reward))
+        action = choose_action(estimator, observation, epsilon)
         next_observation, reward, done, info = env.step(action)
         total_reward += reward
-        print("Score: {}".format(total_reward))
         #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
         # Record what we did in a particular state
         if np.array_equal(observation, next_observation):
-            print("Illegal move selected")
+            print("Illegal move selected {}".format(illegal_count))
             illegal_count += 1
             if illegal_count > 100:
                 print("No progress for 100 turns, breaking out")
@@ -90,11 +88,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         if done:
             break
 
-        # Choose A' from S' using policy derived from Q
-        next_action = choose_action(estimator, observation, epsilon)
-
         observation = next_observation
-        action = next_action
         print("")
 
     print("Took {} moves, Score: {}".format(moves_taken, total_reward))
