@@ -65,6 +65,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
 
     illegal_count = 0
     total_reward = 0.0
+    total_illegals = 0
     moves_taken = 0
     while 1:
         #env.render()
@@ -82,6 +83,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         # Record what we did in a particular state
         if np.array_equal(observation, next_observation):
             print("Illegal move selected {}".format(illegal_count))
+            total_illegals += 1
             illegal_count += 1
             if illegal_count > 100:
                 print("No progress for 100 turns, breaking out")
@@ -112,7 +114,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
 
     train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), data.get_reward())
     estimator.train(input_fn=train_input_fn)
-    return data, total_reward
+    return data, total_reward, env.score, moves_taken, total_illegals
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -138,18 +140,19 @@ if __name__ == '__main__':
     all_data = training_data.training_data()
     for i_episode in range(args.episodes):
         print("Episode {}".format(i_episode))
-        (data, score) = train(estimator, args.epsilon)
-        scores.append(score)
+        (data, total_reward, score, moves_taken, illegal_count) = train(estimator, args.epsilon)
+        scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count})
         #print(score)
         all_data.merge(data)
 
     print(scores)
     with open('scores.csv', 'w') as f:
-        w = csv.writer(f)
+        w = csv.DictWriter(f, ['score', 'total_reward', 'moves', 'illegal_count'])
+        w.writeheader()
         for s in scores:
-            w.writerow([s])
+            w.writerow(s)
 
-    print("Average: {}".format(np.mean(scores)))
+    print("Average: {}".format(np.mean([s['score'] for s in scores])))
     # Close the environment
     env.close()
 
