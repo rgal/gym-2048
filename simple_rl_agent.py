@@ -17,6 +17,11 @@ import deep_model
 last_observation = None
 last_chosen = None
 
+def bar(value, minimum, maximum, size=20):
+   """Print a bar from minimum to value"""
+   sections = int(size * (value - minimum) / (maximum - minimum))
+   return '|' * sections
+
 def choose_action(estimator, observation, epsilon=0.9):
     """Choose best action from the esimator or random, based on epsilon"""
     global last_observation
@@ -28,6 +33,8 @@ def choose_action(estimator, observation, epsilon=0.9):
         predict_input_fn = deep_model.numpy_predict_fn(observation)
         prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
         print(prediction['logits'])
+        for i, v in enumerate(prediction['logits']):
+            print("Action: {} Quality: {}".format(i, bar(v, -3, +3)))
         chosen = np.argmax(prediction['logits'])
         print("Choosing best action: {}".format(chosen))
         # Update last chosen
@@ -131,7 +138,7 @@ if __name__ == '__main__':
         print("Episode {}".format(i_episode))
         (data, score) = train(estimator, args.epsilon)
         scores.append(score)
-        print(score)
+        #print(score)
         all_data.merge(data)
 
     print(scores)
