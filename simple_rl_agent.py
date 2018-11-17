@@ -22,11 +22,11 @@ def bar(value, minimum, maximum, size=20):
    sections = int(size * (value - minimum) / (maximum - minimum))
    return '|' * sections
 
-def choose_action(estimator, observation, epsilon=0.9):
+def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon"""
     global last_observation
     global last_chosen
-    if (random.uniform(0, 1) < epsilon):
+    if (random.uniform(0, 1) > epsilon):
         if last_observation is not None and np.array_equal(last_observation, observation):
             print("Returning cached best action: {}".format(last_chosen))
             return last_chosen
@@ -117,10 +117,10 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
     return data, total_reward, env.score, moves_taken, total_illegals
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--episodes', type=int, default=1)
-    parser.add_argument('--epsilon', type=float, default=0.9)
-    parser.add_argument('--params', '-p', default='params.json')
+    parser.add_argument('--epsilon', type=float, default=0.1, help="Probability of choosing random action instead of greedy")
+    parser.add_argument('--params', '-p', default='params.json', help="Parameters file")
     parser.add_argument('--output', default='dat.csv')
     args = parser.parse_args()
 
