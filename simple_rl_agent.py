@@ -79,7 +79,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         #print "Observation: {}".format(last_observation)
         # Take action, observe R, S'
         print(observation.reshape((4, 4)))
-        print("Score: {}".format(total_reward))
+        print("Score: {} Total reward: {}".format(env.score, total_reward))
         action = choose_action(estimator, observation, epsilon)
         next_observation, reward, done, info = env.step(action)
         total_reward += reward
