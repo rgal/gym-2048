@@ -22,6 +22,11 @@ def bar(value, minimum, maximum, size=20):
    sections = int(size * (value - minimum) / (maximum - minimum))
    return '|' * sections
 
+def get_prediction(observation):
+    predict_input_fn = deep_model.numpy_predict_fn(observation)
+    prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
+    return prediction['logits']
+
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon"""
     global last_observation
@@ -30,12 +35,11 @@ def choose_action(estimator, observation, epsilon=0.1):
         if last_observation is not None and np.array_equal(last_observation, observation):
             print("Returning cached best action: {}".format(last_chosen))
             return last_chosen
-        predict_input_fn = deep_model.numpy_predict_fn(observation)
-        prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
-        print(prediction['logits'])
-        for i, v in enumerate(prediction['logits']):
+        prediction = get_prediction(observation)
+        print(prediction)
+        for i, v in enumerate(prediction):
             print("Action: {} Quality: {}".format(i, bar(v, -3, +3)))
-        chosen = np.argmax(prediction['logits'])
+        chosen = np.argmax(prediction)
         print("Choosing best action: {}".format(chosen))
         # Update last chosen
         last_chosen = chosen
