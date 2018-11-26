@@ -14,9 +14,6 @@ import gym_2048
 import training_data
 import deep_model
 
-last_observation = None
-last_chosen = None
-
 def bar(value, minimum, maximum, size=20):
    """Print a bar from minimum to value"""
    sections = int(size * (value - minimum) / (maximum - minimum))
@@ -28,26 +25,19 @@ def get_prediction(observation):
     return prediction['logits']
 
 def choose_action(estimator, observation, epsilon=0.1):
-    """Choose best action from the esimator or random, based on epsilon"""
-    global last_observation
-    global last_chosen
+    """Choose best action from the esimator or random, based on epsilon
+       Return both the action id and the estimated quality."""
+    prediction = get_prediction(observation)
+    for i, v in enumerate(prediction):
+        print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
     if (random.uniform(0, 1) > epsilon):
-        if last_observation is not None and np.array_equal(last_observation, observation):
-            print("Returning cached best action: {}".format(last_chosen))
-            return last_chosen
-        prediction = get_prediction(observation)
-        print(prediction)
-        for i, v in enumerate(prediction):
-            print("Action: {} Quality: {}".format(i, bar(v, -3, +3)))
         chosen = np.argmax(prediction)
         print("Choosing best action: {}".format(chosen))
-        # Update last chosen
-        last_chosen = chosen
-        last_observation = observation
+        return chosen, np.max(prediction)
     else:
         chosen = random.randint(0, 3)
         print("Choosing random action: {}".format(chosen))
-    return chosen
+        return chosen, prediction[chosen]
 
 def train(estimator, epsilon, seed=None, agent_seed=None):
     """Train estimator for one episode.
@@ -64,60 +54,71 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         random.seed(agent_seed)
     else:
         random.seed()
-    observation = env.reset()
-    data = training_data.training_data()
 
     illegal_count = 0
     total_reward = 0.0
     total_illegals = 0
     moves_taken = 0
+
+    # Initialise S
+    state = env.reset()
+    # Choose A from S using policy derived from Q
+    (action, qual) = choose_action(estimator, state, epsilon)
     while 1:
-        #env.render()
-        #print(observation)
-        #print "Action: {}".format(action)
-        #last_observation = tuple(observation)
-        #print "Observation: {}".format(last_observation)
         # Take action, observe R, S'
-        print(observation.reshape((4, 4)))
-        print("Score: {} Total reward: {}".format(env.score, total_reward))
-        action = choose_action(estimator, observation, epsilon)
-        next_observation, reward, done, info = env.step(action)
+        next_state, reward, done, info = env.step(action)
+        print(next_state.reshape(4,4))
         total_reward += reward
-        #print "New Observation: {}, reward: {}, done: {}, info: {}".format(next_observation, reward, done, info)
-        # Record what we did in a particular state
-        if np.array_equal(observation, next_observation):
+        print("Score: {} Total reward: {}".format(env.score, total_reward))
+
+        # Choose A' from S' using policy derived from Q
+        (next_action, next_qual) = choose_action(estimator, next_state, epsilon)
+        # Q(S, A) <- Q(S, A) + alpha(R + gamma * Q(S', A') - Q(S, A)
+        # Set up the target value
+        gamma = 0.9
+        target = reward + gamma * (next_qual if not done else 0.)
+        # Create a short lived training_data instance to manage the data we're learning
+        data = training_data.training_data()
+        data.add(state, next_action, target)
+        # Mean and SD derived from supervised learning data
+        data.normalize_rewards(mean=175, sd=178)
+        # Augment data
+        #data.augment()
+        # Do the training
+        train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), data.get_reward())
+        estimator.train(input_fn=train_input_fn)
+
+
+        # Check for illegal moves
+        if np.array_equal(state, next_state):
             print("Illegal move selected {}".format(illegal_count))
             total_illegals += 1
             illegal_count += 1
-            if illegal_count > 100:
-                print("No progress for 100 turns, breaking out")
+            if illegal_count > 10:
+                print("No progress for 10 turns, breaking out")
                 break
         else:
             illegal_count = 0
 
-        data.add(observation, action, reward)
+        # Update values for our tracking
         moves_taken += 1
 
+
+
+        # S <- S'; A <- A'
+        state = next_state
+        action = next_action
+        qual = next_qual
+
+        # Exit if env says we're done
         if done:
             break
 
-        observation = next_observation
         print("")
 
     print("Took {} moves, Score: {}".format(moves_taken, total_reward))
-    # Apply training to model using history of boards, actions and total reward
-    data.smooth_rewards()
 
-    # Mean and SD derived from supervised learning data
-    data.normalize_rewards(mean=175, sd=178)
 
-    # Augment data
-    # This could make it harder to learn but will make more of the data we have
-    # and it is quicker to learn in larger batches
-    data.augment()
-
-    train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), data.get_reward())
-    estimator.train(input_fn=train_input_fn)
     return data, total_reward, env.score, moves_taken, total_illegals
 
 if __name__ == '__main__':
