@@ -36,7 +36,7 @@ def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
             results['training_loss'] = evaluate_result['loss']
-            results['training_accuracy'] = evaluate_result['accuracy']
+            #results['training_accuracy'] = evaluate_result['accuracy']
             # Evaluate on test set
             evaluate_result = classifier.evaluate(
                input_fn=lambda: deep_model.my_input_fn(test_file, False, 4, False, batch_size), name='test')
@@ -44,7 +44,7 @@ def evaluate_model(training_file, test_file, epochs, augment, batch_size, model_
             for key in evaluate_result:
                print("   {}, was: {}".format(key, evaluate_result[key]))
             results['test_loss'] = evaluate_result['loss']
-            results['test_accuracy'] = evaluate_result['accuracy']
+            #results['test_accuracy'] = evaluate_result['accuracy']
     return results
 
 if __name__ == '__main__':
@@ -71,9 +71,9 @@ if __name__ == '__main__':
             'fc2',
             'batch_size',
             'training_loss',
-            'training_accuracy',
+            #'training_accuracy',
             'test_loss',
-            'test_accuracy',
+            #'test_accuracy',
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
