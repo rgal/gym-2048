@@ -20,9 +20,10 @@ def bar(value, minimum, maximum, size=20):
    return '|' * sections
 
 def get_prediction(observation):
-    predict_input_fn = deep_model.numpy_predict_fn(observation)
-    prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
-    return prediction['logits']
+    predict_input_fn = deep_model.numpy_predict_fn(np.tile(observation, (4, 1)), np.arange(4))
+    prediction = estimator.predict(input_fn=predict_input_fn)
+    prediction_values = [np.asscalar(p['logits']) for p in prediction]
+    return prediction_values
 
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
