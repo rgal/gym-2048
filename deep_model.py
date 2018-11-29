@@ -4,10 +4,10 @@ import numpy as np
 import tensorflow as tf
 
 def numpy_predict_fn(observation):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)}, num_epochs=1, shuffle=False)
+   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32), 'action': action.astype(np.int32)}, num_epochs=1, shuffle=False)
 
 def numpy_train_fn(observation, action, reward):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)},
+   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32), 'action': action.astype(np.int32)},
        y={'action': action.astype(np.int32), 'reward': reward},
        batch_size=1024,
        num_epochs=1,
