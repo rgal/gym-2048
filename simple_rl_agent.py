@@ -81,8 +81,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
         # Create a short lived training_data instance to manage the data we're learning
         data = training_data.training_data()
         data.add(state, next_action, target)
-        # Mean and SD derived from supervised learning data
-        data.normalize_rewards(mean=175, sd=178)
+
         # Augment data
         #data.augment()
         # Do the training
