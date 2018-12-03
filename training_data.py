@@ -123,6 +123,16 @@ class training_data(object):
         b._check_lengths()
         return a, b
 
+    def sample(self, index_list):
+        indexes = np.asarray(index_list)
+        sample = training_data(self._record_next_action)
+        sample._x = self._x[indexes,:,:]
+        sample._y_digit = self._y_digit[indexes,:]
+        sample._reward = self._reward[indexes,:]
+        sample._next_x = self._next_x[indexes,:,:]
+        sample._check_lengths()
+        return sample
+
     def size(self):
         return self._x.shape[0]
 
