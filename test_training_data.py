@@ -211,6 +211,18 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(b.get_reward(), [[0]]))
         self.assertTrue(np.array_equal(b.get_next_x(), np.ones([1, 4, 4])))
 
+    def test_sample(self):
+        td = training_data.training_data(True)
+        td.add(np.zeros([1, 4, 4]), 0, 0, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 1, 1, np.ones([1, 4, 4]))
+        sample = td.sample([1])
+        self.assertEqual(sample.size(), 1)
+        self.assertIn(sample.get_y_digit(), [[[0]], [[1]]])
+        if sample.get_y_digit() == 0:
+            self.assertTrue(np.array_equal(sample.get_x(), np.zeros([1, 4, 4])))
+        if sample.get_y_digit() == 1:
+            self.assertTrue(np.array_equal(sample.get_x(), np.ones([1, 4, 4])))
+
     def test_size(self):
         td = training_data.training_data(True)
         self.assertEqual(td.size(), 0)
