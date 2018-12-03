@@ -147,12 +147,10 @@ class training_data(object):
 
     def hflip(self):
         """Flip all the data horizontally"""
-        inputs = self.get_x()
-        output_digits = self.get_y_digit()
-
         # Add horizontal flip of inputs and outputs
-        self._x = np.flip(inputs, 2)
+        self._x = np.flip(self.get_x(), 2)
 
+        output_digits = self.get_y_digit()
         # Swap directions 1 and 3
         temp = np.copy(output_digits)
         temp[temp == 1] = 33
