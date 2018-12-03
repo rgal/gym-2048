@@ -108,14 +108,13 @@ class training_data(object):
         """Load data as CSV file"""
         flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=tuple(range(17)))
         assert flat_data.shape[1] == 17
-        items = flat_data.shape[0]
-        self._x = np.reshape(flat_data[:,:16], (items, 4, 4))
+        self._x = np.reshape(flat_data[:,:16], (-1, 4, 4))
         y_digits = flat_data[:,16].astype(int)
-        self._y_digit = np.reshape(y_digits, (items, 1))
+        self._y_digit = np.reshape(y_digits, (-1, 1))
 
         # Load rewards
         reward_data = np.loadtxt(filename, delimiter=',', skiprows=1, usecols=17)
-        self._reward = reward_data.reshape(items, 1)
+        self._reward = reward_data.reshape(-1, 1)
 
         self._check_lengths()
 
