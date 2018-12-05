@@ -15,9 +15,9 @@ import training_data
 import deep_model
 
 def bar(value, minimum, maximum, size=20):
-   """Print a bar from minimum to value"""
-   sections = int(size * (value - minimum) / (maximum - minimum))
-   return '|' * sections
+    """Print a bar from minimum to value"""
+    sections = int(size * (value - minimum) / (maximum - minimum))
+    return '|' * sections
 
 def get_prediction(observation):
     predict_input_fn = deep_model.numpy_predict_fn(np.tile(observation, (4, 1)), np.arange(4))
@@ -31,7 +31,7 @@ def choose_action(estimator, observation, epsilon=0.1):
     prediction = get_prediction(observation)
     for i, v in enumerate(prediction):
         print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
-    if (random.uniform(0, 1) > epsilon):
+    if random.uniform(0, 1) > epsilon:
         chosen = np.argmax(prediction)
         print("Choosing best action: {}".format(chosen))
         return chosen, np.max(prediction)
@@ -68,7 +68,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
     while 1:
         # Take action, observe R, S'
         next_state, reward, done, info = env.step(action)
-        print(next_state.reshape(4,4))
+        print(next_state.reshape(4, 4))
         total_reward += reward
         print("Score: {} Total reward: {}".format(env.score, total_reward))
 
