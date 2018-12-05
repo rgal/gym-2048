@@ -25,6 +25,21 @@ def get_prediction(observation):
     prediction_values = [np.asscalar(p['logits']) for p in prediction]
     return prediction_values
 
+def get_maxq_per_state(states):
+    # States is (batch_size, 4, 4)
+    # Want to return (batch_size, 1) maximum Q
+    # Find batch size
+    batch_size =  states.shape[0]
+    states_all_actions = np.repeat(states, 4, axis=0)
+    action_values = np.tile(np.arange(4), (batch_size))
+    predict_input_fn = deep_model.numpy_predict_fn(states_all_actions, action_values)
+    prediction = estimator.predict(input_fn=predict_input_fn)
+    # Prediction is a generator of dicts
+    list_predictions = [np.asscalar(p['logits']) for p in prediction]
+    np_array_prediction_values = np.asarray(list_predictions).reshape((batch_size, 4))
+    qmax = np.amax(np_array_prediction_values, axis=1).reshape((batch_size, 1))
+    return qmax
+
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
@@ -40,7 +55,7 @@ def choose_action(estimator, observation, epsilon=0.1):
         print("Choosing random action: {}".format(chosen))
         return chosen, prediction[chosen]
 
-def train(estimator, epsilon, seed=None, agent_seed=None):
+def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
     """Train estimator for one episode.
     seed (optional) specifies the seed for the game.
     agent_seed specifies the seed for the agent."""
@@ -74,19 +89,53 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
 
         # Choose A' from S' using policy derived from Q
         (next_action, next_qual) = choose_action(estimator, next_state, epsilon)
-        # Q(S, A) <- Q(S, A) + alpha(R + gamma * Q(S', A') - Q(S, A)
-        # Set up the target value
-        gamma = 0.9
-        target = reward + gamma * (next_qual if not done else 0.)
-        # Create a short lived training_data instance to manage the data we're learning
-        data = training_data.training_data()
-        data.add(state, next_action, target)
+
+        # Add data to replay memory including immediate reward
+        replay_memory.add(state, next_action, reward, next_state)
 
         # Augment data
         #data.augment()
         # Do the training
-        train_input_fn = deep_model.numpy_train_fn(data.get_x(), data.get_y_digit(), data.get_reward())
-        estimator.train(input_fn=train_input_fn)
+        minibatch_size = 32
+        if replay_memory.size() >= minibatch_size:
+            # Train from minibatch from replay memory
+            sample_indexes = random.sample(range(replay_memory.size()), minibatch_size)
+            sample_data = replay_memory.sample(sample_indexes)
+
+
+            # Q(S, A) <- Q(S, A) + alpha(R + gamma * max(Q(S', A')) - Q(S, A)
+            # Set up the target value as reward (from replay memory) + gamma * max()
+            gamma = 0.9
+            sample_rewards = sample_data.get_reward() # (batch_size, 1)
+            sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
+            max_next_prediction = get_maxq_per_state(sample_next_states)
+
+
+            myu = 50.0
+            sigma = 50.0
+            # print("sample_rewards")
+            # print(sample_rewards)
+            # print("max_next_prediction")
+            # print(max_next_prediction)
+            # Max prediction comes out normalized so denormalize it
+            max_next_prediction = max_next_prediction * sigma + myu
+            # print("scaled up max_next_prediction")
+            # print(max_next_prediction)
+            # print("gamma * max_next_prediction")
+            # print(gamma * max_next_prediction)
+            target = sample_rewards + gamma * max_next_prediction
+            # print("target")
+            # print(target)
+            # Target all at game score scale, normalize to help training
+            target = (target - myu) / sigma
+            # print("normalized target")
+            # print(target)
+
+
+            train_input_fn = deep_model.numpy_train_fn(sample_data.get_x(), sample_data.get_y_digit(), target)
+            estimator.train(input_fn=train_input_fn)
+        else:
+            print("Not training, waiting for enough data {}".format(replay_memory.size()))
 
 
         # Check for illegal moves
@@ -119,7 +168,7 @@ def train(estimator, epsilon, seed=None, agent_seed=None):
     print("Took {} moves, Score: {}".format(moves_taken, total_reward))
 
 
-    return data, total_reward, env.score, moves_taken, total_illegals
+    return total_reward, env.score, moves_taken, total_illegals
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -142,13 +191,12 @@ if __name__ == '__main__':
 
     start = datetime.datetime.now()
     scores = list()
-    all_data = training_data.training_data()
+    replay_memory = training_data.training_data(True)
     for i_episode in range(args.episodes):
         print("Episode {}".format(i_episode))
-        (data, total_reward, score, moves_taken, illegal_count) = train(estimator, args.epsilon)
+        (total_reward, score, moves_taken, illegal_count) = train(estimator, args.epsilon, replay_memory)
         scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count, 'highest': env.highest()})
         #print(score)
-        all_data.merge(data)
 
     print(scores)
     with open('scores.csv', 'w') as f:
