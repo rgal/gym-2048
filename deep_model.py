@@ -208,13 +208,13 @@ def my_model(features, labels, mode, params):
 #    reward_loss = tf.losses.mean_squared_error(tf.reshape(reward_labels, [-1, 1]), gathered_logits)
 
     # Batch normalize to get distribution closer to zero
-    reward_bn = tf.layers.batch_normalization(
-        inputs=tf.reshape(labels['reward'], [-1, 1]),
-        training=mode == tf.estimator.ModeKeys.TRAIN
-    )
+#    reward_bn = tf.layers.batch_normalization(
+#        inputs=tf.reshape(labels['reward'], [-1, 1]),
+#        training=mode == tf.estimator.ModeKeys.TRAIN
+#    )
 
     # Calculate Q loss on the Q of the input action
-    q_loss = tf.losses.mean_squared_error(reward_bn, tf.reshape(logits, [-1, 1]))
+    q_loss = tf.losses.mean_squared_error(labels['reward'], tf.reshape(logits, [-1, 1]))
 
     # Select loss (action or reward)
     loss = q_loss
