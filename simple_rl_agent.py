@@ -173,7 +173,8 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--episodes', type=int, default=1)
-    parser.add_argument('--epsilon', type=float, default=0.1, help="Probability of choosing random action instead of greedy")
+    parser.add_argument('--epsilon', type=float, default=1, help="Probability of choosing random action instead of greedy")
+    parser.add_argument('--epsilon-decay', type=float, default=0.9, help="How much to decay epsilon per episode")
     parser.add_argument('--params', '-p', default='params.json', help="Parameters file")
     parser.add_argument('--output', default='dat.csv')
     args = parser.parse_args()
@@ -193,14 +194,15 @@ if __name__ == '__main__':
     scores = list()
     replay_memory = training_data.training_data(True)
     for i_episode in range(args.episodes):
-        print("Episode {}".format(i_episode))
-        (total_reward, score, moves_taken, illegal_count) = train(estimator, args.epsilon, replay_memory)
-        scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count, 'highest': env.highest()})
+        epsilon = max(args.epsilon * args.epsilon_decay ** i_episode, 0.1)
+        print("Episode {}, using epsilon {}".format(i_episode, epsilon))
+        (total_reward, score, moves_taken, illegal_count) = train(estimator, epsilon, replay_memory)
+        scores.append({'score': score, 'total_reward': total_reward, 'moves': moves_taken, 'illegal_count': illegal_count, 'highest': env.highest(), 'epsilon': epsilon})
         #print(score)
 
     print(scores)
     with open('scores.csv', 'w') as f:
-        w = csv.DictWriter(f, ['score', 'total_reward', 'moves', 'illegal_count', 'highest'])
+        w = csv.DictWriter(f, ['score', 'total_reward', 'moves', 'illegal_count', 'highest', 'epsilon'])
         w.writeheader()
         for s in scores:
             w.writerow(s)
