@@ -79,15 +79,12 @@ def gather_training_data(env, estimator, seed=None):
             pygame.display.update()
 
             # Get predictions from model
-            predict_input_fn = deep_model.numpy_predict_fn(observation)
-            prediction = list(estimator.predict(input_fn=predict_input_fn))[0]
-            print(prediction['class_ids'])
-            print(prediction['logits'])
-            print(prediction['probabilities'])
+            predictions = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4))).reshape((4))
+            print(predictions)
 
             # Report predicted rewards for actions
             dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
-            dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(prediction['logits']))]
+            dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
             dir_reward.sort(key=lambda x: x[1], reverse=True)
             for direction, reward in dir_reward:
                 print('{}: {:.0f}'.format(direction, reward))
