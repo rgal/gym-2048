@@ -51,6 +51,7 @@ class training_data(object):
         self._reward = np.append(self._reward, r, axis=0)
 
         if self._record_next_action:
+            assert next_board is not None
             self._next_x = np.append(self._next_x, np.reshape(next_board, (1, 4, 4)), axis=0)
 
         self._check_lengths()
