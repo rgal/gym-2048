@@ -19,41 +19,27 @@ def bar(value, minimum, maximum, size=20):
     sections = int(size * (value - minimum) / (maximum - minimum))
     return '|' * sections
 
-def get_prediction(observation):
-    predict_input_fn = deep_model.numpy_predict_fn(np.tile(observation, (4, 1)), np.arange(4))
-    prediction = estimator.predict(input_fn=predict_input_fn)
-    prediction_values = [np.asscalar(p['logits']) for p in prediction]
-    return prediction_values
-
-def get_maxq_per_state(states):
+def get_maxq_per_state(estimator, states):
     # States is (batch_size, 4, 4)
     # Want to return (batch_size, 1) maximum Q
-    # Find batch size
-    batch_size =  states.shape[0]
-    states_all_actions = np.repeat(states, 4, axis=0)
-    action_values = np.tile(np.arange(4), (batch_size))
-    predict_input_fn = deep_model.numpy_predict_fn(states_all_actions, action_values)
-    prediction = estimator.predict(input_fn=predict_input_fn)
-    # Prediction is a generator of dicts
-    list_predictions = [np.asscalar(p['logits']) for p in prediction]
-    np_array_prediction_values = np.asarray(list_predictions).reshape((batch_size, 4))
-    qmax = np.amax(np_array_prediction_values, axis=1).reshape((batch_size, 1))
+    qmax = np.amax(deep_model.get_predictions(estimator, states), axis=1).reshape((batch_size, 1))
     return qmax
 
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
-    prediction = get_prediction(observation)
-    for i, v in enumerate(prediction):
+    #prediction is a (1, 4) array
+    prediction_2d = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4)))
+    predictions = prediction_2d.reshape((4))
+    for i, v in enumerate(predictions):
         print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
     if random.uniform(0, 1) > epsilon:
-        chosen = np.argmax(prediction)
+        chosen = np.argmax(predictions)
         print("Choosing best action: {}".format(chosen))
-        return chosen, np.max(prediction)
     else:
         chosen = random.randint(0, 3)
         print("Choosing random action: {}".format(chosen))
-        return chosen, prediction[chosen]
+    return chosen, predictions[chosen]
 
 def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
     """Train estimator for one episode.
@@ -108,7 +94,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             gamma = 0.9
             sample_rewards = sample_data.get_reward() # (batch_size, 1)
             sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
-            max_next_prediction = get_maxq_per_state(sample_next_states)
+            max_next_prediction = get_maxq_per_state(estimator, sample_next_states)
 
 
             myu = 50.0

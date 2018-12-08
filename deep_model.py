@@ -3,6 +3,19 @@
 import numpy as np
 import tensorflow as tf
 
+def get_predictions(estimator, states):
+    """Get predictions for a number of states. States is (batch_size, 4, 4), returns numpy array of (batch_size, 4) with predictions for all actions."""
+    # Find batch size
+    batch_size =  states.shape[0]
+    states_all_actions = np.repeat(states, 4, axis=0)
+    action_values = np.tile(np.arange(4), (batch_size))
+    predict_input_fn = numpy_predict_fn(states_all_actions, action_values)
+    prediction = estimator.predict(input_fn=predict_input_fn)
+    # Prediction is a generator of dicts
+    list_predictions = [np.asscalar(p['logits']) for p in prediction]
+    np_array_prediction_values = np.asarray(list_predictions).reshape((batch_size, 4))
+    return np_array_prediction_values
+
 def numpy_predict_fn(observation, action):
    return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32), 'action': action.reshape((-1, )).astype(np.int32)}, num_epochs=1, shuffle=False)
 
