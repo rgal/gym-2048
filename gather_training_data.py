@@ -25,7 +25,7 @@ class Exiting(Exception):
 def gather_training_data(env, estimator, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
-    data = training_data.training_data()
+    data = training_data.training_data(True)
     # Initialise seed for environment
     if seed:
         env.seed(seed)
@@ -115,7 +115,7 @@ def gather_training_data(env, estimator, seed=None):
             if np.array_equal(observation, new_observation):
                 print("Suppressing recording of illegal move")
             else:
-                data.add(observation, action, reward)
+                data.add(observation, action, reward, new_observation)
             observation = new_observation
             print()
 
