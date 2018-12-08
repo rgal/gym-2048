@@ -22,7 +22,7 @@ def bar(value, minimum, maximum, size=20):
 def get_maxq_per_state(estimator, states):
     # States is (batch_size, 4, 4)
     # Want to return (batch_size, 1) maximum Q
-    qmax = np.amax(deep_model.get_predictions(estimator, states), axis=1).reshape((batch_size, 1))
+    qmax = np.amax(deep_model.get_predictions(estimator, states), axis=1).reshape((-1, 1))
     return qmax
 
 def choose_action(estimator, observation, epsilon=0.1):
