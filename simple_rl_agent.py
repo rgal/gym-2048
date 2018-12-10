@@ -28,18 +28,17 @@ def get_maxq_per_state(estimator, states):
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
-    #prediction is a (1, 4) array
-    prediction_2d = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4)))
-    predictions = prediction_2d.reshape((4))
-    for i, v in enumerate(predictions):
-        print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
     if random.uniform(0, 1) > epsilon:
+        prediction_2d = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4)))
+        predictions = prediction_2d.reshape((4))
+        for i, v in enumerate(predictions):
+            print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
         chosen = np.argmax(predictions)
         print("Choosing best action: {}".format(chosen))
     else:
         chosen = random.randint(0, 3)
         print("Choosing random action: {}".format(chosen))
-    return chosen, predictions[chosen]
+    return chosen
 
 def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
     """Train estimator for one episode.
@@ -65,7 +64,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
     # Initialise S
     state = env.reset()
     # Choose A from S using policy derived from Q
-    (action, qual) = choose_action(estimator, state, epsilon)
+    action = choose_action(estimator, state, epsilon)
     while 1:
         # Take action, observe R, S'
         next_state, reward, done, info = env.step(action)
@@ -74,7 +73,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
         print("Score: {} Total reward: {}".format(env.score, total_reward))
 
         # Choose A' from S' using policy derived from Q
-        (next_action, next_qual) = choose_action(estimator, next_state, epsilon)
+        next_action = choose_action(estimator, next_state, epsilon)
 
         # Add data to replay memory including immediate reward
         replay_memory.add(state, next_action, reward, next_state)
@@ -143,7 +142,6 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
         # S <- S'; A <- A'
         state = next_state
         action = next_action
-        qual = next_qual
 
         # Exit if env says we're done
         if done:
