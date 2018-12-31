@@ -3,6 +3,12 @@
 import numpy as np
 import tensorflow as tf
 
+def get_maxq_per_state(estimator, states):
+    # States is (batch_size, 4, 4)
+    # Want to return (batch_size, 1) maximum Q
+    qmax = np.amax(get_predictions(estimator, states), axis=1).reshape((-1, 1))
+    return qmax
+
 def get_predictions(estimator, states):
     """Get predictions for a number of states. States is (batch_size, 4, 4), returns numpy array of (batch_size, 4) with predictions for all actions."""
     # Find batch size

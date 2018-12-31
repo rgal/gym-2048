@@ -19,12 +19,6 @@ def bar(value, minimum, maximum, size=20):
     sections = int(size * (value - minimum) / (maximum - minimum))
     return '|' * sections
 
-def get_maxq_per_state(estimator, states):
-    # States is (batch_size, 4, 4)
-    # Want to return (batch_size, 1) maximum Q
-    qmax = np.amax(deep_model.get_predictions(estimator, states), axis=1).reshape((-1, 1))
-    return qmax
-
 def choose_action(estimator, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
@@ -93,7 +87,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             gamma = 0.9
             sample_rewards = sample_data.get_reward() # (batch_size, 1)
             sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
-            max_next_prediction = get_maxq_per_state(estimator, sample_next_states)
+            max_next_prediction = deep_model.get_maxq_per_state(estimator, sample_next_states)
 
 
             myu = 50.0

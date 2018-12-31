@@ -10,12 +10,6 @@ import numpy as np
 import training_data
 import deep_model
 
-def get_maxq_per_state(estimator, states):
-    # States is (batch_size, 4, 4)
-    # Want to return (batch_size, 1) maximum Q
-    qmax = np.amax(deep_model.get_predictions(estimator, states), axis=1).reshape((-1, 1))
-    return qmax
-
 def bar(value, minimum, maximum, size=20):
     """Print a bar from minimum to value"""
     sections = int(size * (value - minimum) / (maximum - minimum))
@@ -45,7 +39,7 @@ def train(estimator, replay_memory, gamma=0.9):
         # Set up the target value as reward (from replay memory) + gamma * max()
         sample_rewards = sample_data.get_reward() # (batch_size, 1)
         sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
-        max_next_prediction = get_maxq_per_state(estimator, sample_next_states)
+        max_next_prediction = deep_model.get_maxq_per_state(estimator, sample_next_states)
 
         myu = 10.0
         sigma = 10.0
