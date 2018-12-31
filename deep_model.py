@@ -24,7 +24,7 @@ def numpy_train_fn(observation, action, reward):
        y={'reward': reward},
        batch_size=1024,
        num_epochs=1,
-       shuffle=True)
+       shuffle=False)
 
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
