@@ -11,23 +11,20 @@ def get_maxq_per_state(estimator, states):
 
 def get_predictions(estimator, states):
     """Get predictions for a number of states. States is (batch_size, 4, 4), returns numpy array of (batch_size, 4) with predictions for all actions."""
-    # Find batch size
-    batch_size =  states.shape[0]
-    states_all_actions = np.repeat(states, 4, axis=0)
-    action_values = np.tile(np.arange(4), (batch_size))
-    predict_input_fn = numpy_predict_fn(states_all_actions, action_values)
+    predict_input_fn = numpy_predict_fn(states)
     prediction = estimator.predict(input_fn=predict_input_fn)
-    # Prediction is a generator of dicts
-    list_predictions = [np.asscalar(p['logits']) for p in prediction]
-    np_array_prediction_values = np.asarray(list_predictions).reshape((batch_size, 4))
+    list_predictions = [p['logits'] for p in prediction]
+    np_array_prediction_values = np.array(list_predictions)
     return np_array_prediction_values
 
-def numpy_predict_fn(observation, action):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32), 'action': action.reshape((-1, )).astype(np.int32)}, num_epochs=1, shuffle=False)
+def numpy_predict_fn(observation):
+   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)},
+       num_epochs=1,
+       shuffle=False)
 
 def numpy_train_fn(observation, action, reward):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32), 'action': action.reshape((-1, )).astype(np.int32)},
-       y={'reward': reward},
+   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)},
+       y={'action' : action.astype(np.int32), 'reward': reward},
        batch_size=1024,
        num_epochs=1,
        shuffle=False)
@@ -40,7 +37,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        features = tf.reshape(tf.cast(tf.stack(features), tf.float32), [4, 4, 1])
        action = parsed_line[16]
        reward = parsed_line[17]
-       return {'board': features, 'action': action}, {'action': action, 'reward': reward}
+       return {'board': features}, {'action': action, 'reward': reward}
 
    def hflip(feature, label):
        image = feature['board']
@@ -48,7 +45,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        #tf.Print(flipped_image, [image, flipped_image], "Image and flipped left right")
        new_action = tf.gather([0, 3, 2, 1], label['action'])
        #tf.Print(newlabel, [label['action'], newlabel], "Label and flipped left right")
-       return {'board': flipped_image, 'action': new_action}, {'action': new_action, 'reward': label['reward']}
+       return {'board': flipped_image}, {'action': new_action, 'reward': label['reward']}
 
    def rotate_board(feature, label, k):
        image = feature['board']
@@ -58,7 +55,7 @@ def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False,
        new_action += k
        new_action %= 4
        #tf.Print(new_action, [label['action'], new_action], "Label and rotated by k={}".format(k))
-       return {'board': rotated_image, 'action': new_action}, {'action': new_action, 'reward': label['reward']}
+       return {'board': rotated_image}, {'action': new_action, 'reward': label['reward']}
 
    def rotate90(feature, label):
        return rotate_board(feature, label, 1)
@@ -178,13 +175,7 @@ def my_model(features, labels, mode, params):
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, 16]
     # Output shape: [batch_size, 4 * 4 * 16]
-    net_out = tf.reshape(block_inout, [-1, 4 * 4 * params['filters']])
-
-    # Get actions to be used as inputs. This in encoded 0-3
-    action_inputs = features['action']
-
-    # Concatenate action inputs with the output of the convolutional network
-    net = tf.concat([net_out, tf.cast(tf.one_hot(action_inputs, 4), tf.float32)], 1)
+    net = tf.reshape(block_inout, [-1, 4 * 4 * params['filters']])
 
     for units in params['fc_layers']:
         # Fully connected layer
@@ -197,7 +188,7 @@ def my_model(features, labels, mode, params):
             inputs=net, rate=params['dropout_rate'], training=mode == tf.estimator.ModeKeys.TRAIN)
 
     # Compute logits (1 per class).
-    logits = tf.layers.dense(net, 1, activation=None)
+    logits = tf.layers.dense(net, params['n_classes'], activation=None)
 
     # Compute predictions.
     #predicted_classes = tf.argmax(logits, 1)
@@ -209,22 +200,22 @@ def my_model(features, labels, mode, params):
         }
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
-#    # Compute loss on actions compared to records
-#    action_labels = labels['action'] # Shape [batch_size, 1]
-#    # Then calculate loss with softmax cross entropy
-#    action_loss = tf.losses.sparse_softmax_cross_entropy(labels=action_labels, logits=logits)
-#
-#    # Compute loss based no rewards compared to those from environment
-#    reward_labels = labels['reward'] # Shape [batch_size, 1]
-#
-#    # Only have reward from environment from one action so gather predicted
-#    # rewards for those actions and calculate MSE compared to environment
-#    batch_size = tf.shape(labels['action'])[0]
-#    action_idx = tf.reshape(tf.range(batch_size),[-1, 1])
-#    action_labels_reshaped = tf.reshape(labels['action'],[-1, 1])
-#    action_reshaped = tf.reshape(tf.concat([action_idx, action_labels_reshaped],axis=1), [-1, 1, 2])
-#    gathered_logits = tf.gather_nd(logits, action_reshaped)
-#    reward_loss = tf.losses.mean_squared_error(tf.reshape(reward_labels, [-1, 1]), gathered_logits)
+    # Compute loss on actions compared to records
+    action_labels = labels['action'] # Shape [batch_size, 1]
+    # Then calculate loss with softmax cross entropy
+    action_loss = tf.losses.sparse_softmax_cross_entropy(labels=action_labels, logits=logits)
+
+    # Compute loss based no rewards compared to those from environment
+    reward_labels = labels['reward'] # Shape [batch_size, 1]
+
+    # Only have reward from environment from one action so gather predicted
+    # rewards for those actions and calculate MSE compared to environment
+    batch_size = tf.shape(labels['action'])[0]
+    action_idx = tf.reshape(tf.range(batch_size),[-1, 1])
+    action_labels_reshaped = tf.reshape(labels['action'],[-1, 1])
+    action_reshaped = tf.reshape(tf.concat([action_idx, action_labels_reshaped],axis=1), [-1, 1, 2])
+    gathered_logits = tf.gather_nd(logits, action_reshaped)
+    reward_loss = tf.losses.mean_squared_error(tf.reshape(reward_labels, [-1, 1]), gathered_logits)
 
     # Batch normalize to get distribution closer to zero
 #    reward_bn = tf.layers.batch_normalization(
@@ -233,10 +224,10 @@ def my_model(features, labels, mode, params):
 #    )
 
     # Calculate Q loss on the Q of the input action
-    q_loss = tf.losses.mean_squared_error(labels['reward'], tf.reshape(logits, [-1, 1]))
+    #q_loss = tf.losses.mean_squared_error(labels['reward'], tf.reshape(logits, [-1, 1]))
 
     # Select loss (action or reward)
-    loss = q_loss
+    loss = reward_loss
 
     # Compute evaluation metrics.
 #    accuracy = tf.metrics.accuracy(labels=action_labels,
