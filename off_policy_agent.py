@@ -25,7 +25,7 @@ def train(estimator, replay_memory, gamma=0.9):
         prediction_2d = deep_model.get_predictions(estimator, example)
         predictions = prediction_2d.reshape((4))
         for i, v in enumerate(predictions):
-            print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
+            print("Action: {} Quality: {: .3f} {}".format(i, v, bar(v, -3, +3)))
 
         # Do the training
         minibatch_size = 4

@@ -26,7 +26,7 @@ def choose_action(estimator, observation, epsilon=0.1):
         prediction_2d = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4)))
         predictions = prediction_2d.reshape((4))
         for i, v in enumerate(predictions):
-            print("Action: {} Quality: {:.3f} {}".format(i, v, bar(v, -3, +3)))
+            print("Action: {} Quality: {: .3f} {}".format(i, v, bar(v, -3, +3)))
         chosen = np.argmax(predictions)
         print("Choosing best action: {}".format(chosen))
     else:
