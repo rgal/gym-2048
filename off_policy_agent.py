@@ -10,10 +10,15 @@ import numpy as np
 import training_data
 import deep_model
 
-def bar(value, minimum, maximum, size=20):
-    """Print a bar from minimum to value"""
-    sections = int(size * (value - minimum) / (maximum - minimum))
-    return '|' * sections
+def bar(value, minimum, maximum, size=50):
+    """Print a bar from 0 to value, either side of 0.
+    e.g. -1, -1, 1, 3 would be |||
+         1, -1, 1, 3 would be    |||"""
+    sections = abs(int(size * (value) / (maximum - minimum)))
+    blanks = size / 2
+    if value <  0.:
+        blanks -= sections
+    return ' ' * blanks + '|' * sections
 
 def train(estimator, replay_memory, gamma=0.9):
     """Train estimator using replay_memory"""
