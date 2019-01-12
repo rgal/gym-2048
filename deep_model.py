@@ -148,7 +148,7 @@ def log2(x):
     return numerator / denominator
 
 def my_model(features, labels, mode, params):
-    """DNN with three hidden layers, and dropout of 0.1 probability."""
+    """Neural network model with configurable number of residual blocks follwed by fully connected layers"""
 
     l0 = features['board']
 
@@ -168,13 +168,14 @@ def my_model(features, labels, mode, params):
       padding="same",
       activation=tf.nn.relu)
 
-    #for filters in params['conv_layers']:
+    # Input to first block shape: [batch_size, 4, 4, 1]
+    # Input to subsequent blocks: [batch_size, 4, 4, filters]
     for res_block in range(params['residual_blocks']):
         block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode, params['batch_norm'])
 
     # Flatten into a batch of vectors
-    # Input shape: [batch_size, 4, 4, 16]
-    # Output shape: [batch_size, 4 * 4 * 16]
+    # Input shape: [batch_size, 4, 4, filters]
+    # Output shape: [batch_size, 4 * 4 * filters]
     net = tf.reshape(block_inout, [-1, 4 * 4 * params['filters']])
 
     for units in params['fc_layers']:
@@ -191,10 +192,8 @@ def my_model(features, labels, mode, params):
     logits = tf.layers.dense(net, params['n_classes'], activation=None)
 
     # Compute predictions.
-    #predicted_classes = tf.argmax(logits, 1)
     if mode == tf.estimator.ModeKeys.PREDICT:
         predictions = {
-            #'class_ids': predicted_classes[:, tf.newaxis],
             #'probabilities': tf.nn.softmax(logits),
             'logits': logits,
         }
@@ -251,5 +250,3 @@ def my_model(features, labels, mode, params):
         train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
 
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
-
-
