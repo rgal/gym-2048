@@ -20,11 +20,11 @@ def bar(value, minimum, maximum, size=50):
         blanks -= sections
     return ' ' * blanks + '|' * sections
 
-def train(estimator, replay_memory, gamma=0.9):
+def train(estimator, replay_memory, gamma=0.9, iterations=100, minibatch_size=64):
     """Train estimator using replay_memory"""
     #print("Training")
 
-    for i in range(1000):
+    for i in range(iterations):
         print("Iteration {}".format(i))
         example = np.array([[2, 0, 0, 2], [8, 8, 0, 0], [2, 16, 2, 0], [4, 4, 4, 4]]).reshape((1, 4, 4))
         prediction_2d = deep_model.get_predictions(estimator, example)
@@ -33,7 +33,6 @@ def train(estimator, replay_memory, gamma=0.9):
             print("Action: {} Quality: {: .3f} {}".format(i, v, bar(v, -3, +3)))
 
         # Do the training
-        minibatch_size = 4
         # Train from minibatch from replay memory
         #print(replay_memory.size())
         sample_indexes = random.sample(range(replay_memory.size()), minibatch_size)
@@ -78,6 +77,8 @@ def train(estimator, replay_memory, gamma=0.9):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input', '-i', default='data.csv', help="Data to learn from")
+    parser.add_argument('--iterations', type=int, default=100, help="How many iterations to train for")
+    parser.add_argument('--minibatch-size', '-m', default=64, help="Minibatch size")
     parser.add_argument('--params', '-p', default='params.json', help="Parameters file")
     parser.add_argument('--gamma', '-g', default=0.9, type=float, help="Gamma, discount factor for future rewards")
     args = parser.parse_args()
@@ -93,7 +94,7 @@ if __name__ == '__main__':
     replay_memory = training_data.training_data(True)
     replay_memory.import_csv(args.input)
     #replay_memory.augment()
-    train(estimator, replay_memory, args.gamma)
+    train(estimator, replay_memory, args.gamma, args.iterations, args.minibatch_size)
 
     end = datetime.datetime.now()
     taken = end - start
