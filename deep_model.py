@@ -150,23 +150,7 @@ def log2(x):
 def my_model(features, labels, mode, params):
     """Neural network model with configurable number of residual blocks follwed by fully connected layers"""
 
-    l0 = features['board']
-
-    # Batch normalize to get distribution closer to zero
-    l0_bn = tf.layers.batch_normalization(
-        inputs=l0,
-        training=mode == tf.estimator.ModeKeys.TRAIN
-    )
-
-    # Convolution layer 1
-    # Input shape: [batch_size, 4, 4, 1]
-    # Output shape: [batch_size, 4, 4, 16]
-    block_inout = tf.layers.conv2d(
-      inputs=l0_bn,
-      filters=params['filters'],
-      kernel_size=[3, 3],
-      padding="same",
-      activation=tf.nn.relu)
+    block_inout = features['board']
 
     # Input to first block shape: [batch_size, 4, 4, 1]
     # Input to subsequent blocks: [batch_size, 4, 4, filters]
