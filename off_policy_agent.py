@@ -98,7 +98,7 @@ if __name__ == '__main__':
     estimator = deep_model.estimator(params)
 
     start = datetime.datetime.now()
-    replay_memory = training_data.training_data(True)
+    replay_memory = training_data.training_data()
     replay_memory.import_csv(args.input)
     #replay_memory.augment()
     train(estimator, replay_memory, args.gamma, args.iterations, args.minibatch_size)

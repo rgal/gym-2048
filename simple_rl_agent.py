@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
     start = datetime.datetime.now()
     scores = list()
-    replay_memory = training_data.training_data(True)
+    replay_memory = training_data.training_data()
     for i_episode in range(args.episodes):
         epsilon = max(args.epsilon * args.epsilon_decay ** i_episode, 0.1)
         print("Episode {}, using epsilon {}".format(i_episode, epsilon))

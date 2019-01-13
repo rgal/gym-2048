@@ -15,35 +15,26 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
         self.assertTrue(np.allclose(td.get_reward(), np.empty([0, 1], dtype=np.float)))
-        td.add(np.ones([1, 4, 4]), 1, 4)
-        self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
-        self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
-        self.assertTrue(np.allclose(td.get_reward(), np.array([[4]], dtype=np.float)))
-        # Test add with next_x
-        td = training_data.training_data(True)
         self.assertTrue(np.array_equal(td.get_next_x(), np.empty([0, 4, 4], dtype=np.int)))
         td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]))
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
+        self.assertTrue(np.allclose(td.get_reward(), np.array([[4]], dtype=np.float)))
         self.assertTrue(np.array_equal(td.get_next_x(), np.zeros([1, 4, 4], dtype=np.int)))
 
     def test_get_n(self):
         # Test add without next_x
         td = training_data.training_data()
-        td.add(np.ones([4, 4]), 1, 4)
-        td.add(np.zeros([4, 4]), 2, 8)
-        (state, action, reward) = td.get_n(1)
-        self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
-        self.assertEqual(action, 2)
-        self.assertAlmostEqual(reward, 8)
-        # Test add with next_x
-        td = training_data.training_data(True)
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
         td.add(np.zeros([4, 4]), 2, 8, np.ones([4, 4]))
         (state, action, reward, next_state) = td.get_n(1)
+        self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
+        self.assertEqual(action, 2)
+        self.assertAlmostEqual(reward, 8)
         self.assertTrue(np.array_equal(next_state, np.ones([4, 4], dtype=np.int)))
 
     def test_hflip(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         board1 = np.array([[1, 1, 0, 0],
                            [0, 0, 0, 0],
                            [0, 0, 0, 0],
@@ -77,7 +68,7 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.allclose(td.get_next_x(), expected_next_x))
 
     def test_rotate(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         board1 = np.array([[1, 1, 0, 0],
                            [0, 0, 0, 0],
                            [0, 0, 0, 0],
@@ -111,7 +102,7 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_next_x(), expected_next_x))
 
     def test_augment(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         initial_board = np.array([[1, 1, 0, 0],
                                   [0, 0, 0, 0],
                                   [0, 0, 0, 0],
@@ -169,9 +160,9 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_next_x(), expected_next_x))
 
     def test_merge(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 1, 16, np.zeros([1, 4, 4]))
-        td2 = training_data.training_data(True)
+        td2 = training_data.training_data()
         td2.add(np.zeros([1, 4, 4]), 2, 0, np.ones([1, 4, 4]))
         td.merge(td2)
         expected_x = np.array([
@@ -196,9 +187,9 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td.get_next_x(), expected_next_x))
 
     def test_split(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 1, 16, np.zeros([1, 4, 4]))
-        td2 = training_data.training_data(True)
+        td2 = training_data.training_data()
         td2.add(np.zeros([1, 4, 4]), 2, 0, np.ones([1, 4, 4]))
         td.merge(td2)
         a, b = td.split()
@@ -212,7 +203,7 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(b.get_next_x(), np.ones([1, 4, 4])))
 
     def test_sample(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         td.add(np.zeros([1, 4, 4]), 0, 0, np.zeros([1, 4, 4]))
         td.add(np.ones([1, 4, 4]), 1, 1, np.ones([1, 4, 4]))
         sample = td.sample([1])
@@ -224,7 +215,7 @@ class TestTrainingData(unittest.TestCase):
             self.assertTrue(np.array_equal(sample.get_x(), np.ones([1, 4, 4])))
 
     def test_size(self):
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         self.assertEqual(td.size(), 0)
         td.add(np.ones([1, 4, 4]), 0, 4, np.zeros([1, 4, 4]))
         self.assertEqual(td.size(), 1)
@@ -232,12 +223,12 @@ class TestTrainingData(unittest.TestCase):
     def test_log2_rewards(self):
         # Set up training data
         td = training_data.training_data()
-        td.add(np.ones([1, 4, 4]), 0, 0)
-        td.add(np.ones([1, 4, 4]), 1, 2)
-        td.add(np.ones([1, 4, 4]), 2, 4)
-        td.add(np.ones([1, 4, 4]), 3, 16)
-        td.add(np.ones([1, 4, 4]), 0, 75)
-        td.add(np.ones([1, 4, 4]), 1, 2048)
+        td.add(np.ones([1, 4, 4]), 0, 0, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 1, 2, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 2, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 3, 16, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 0, 75, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 1, 2048, np.zeros([1, 4, 4]))
         td.log2_rewards()
         expected_reward = np.array([
             [0], [1], [2], [4], [6.2288], [11]
@@ -251,10 +242,10 @@ class TestTrainingData(unittest.TestCase):
     def test_smooth_rewards(self):
         # Set up training data
         td = training_data.training_data()
-        td.add(np.ones([1, 4, 4]), 0, 4)
-        td.add(np.ones([1, 4, 4]), 1, 2)
-        td.add(np.ones([1, 4, 4]), 2, 16)
-        td.add(np.ones([1, 4, 4]), 3, 2)
+        td.add(np.ones([1, 4, 4]), 0, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 1, 2, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 3, 2, np.zeros([1, 4, 4]))
 
         # Test using default lambda value of 0.9
         td2 = td.copy()
@@ -275,10 +266,10 @@ class TestTrainingData(unittest.TestCase):
     def test_normalize_rewards(self):
         # Test calculating mean and standard deviation
         td = training_data.training_data()
-        td.add(np.ones([1, 4, 4]), 1, 4)
-        td.add(np.ones([1, 4, 4]), 2, 4)
-        td.add(np.ones([1, 4, 4]), 3, 8)
-        td.add(np.ones([1, 4, 4]), 0, 16)
+        td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 2, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 3, 8, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 0, 16, np.zeros([1, 4, 4]))
         td.normalize_rewards()
         expected_reward = np.array([
             [-0.8165], [-0.8165], [0.], [1.633],
@@ -286,10 +277,10 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.allclose(td.get_reward(), expected_reward))
         # Test specifying mean and standard deviation
         td = training_data.training_data()
-        td.add(np.ones([1, 4, 4]), 1, 4)
-        td.add(np.ones([1, 4, 4]), 2, 4)
-        td.add(np.ones([1, 4, 4]), 3, 8)
-        td.add(np.ones([1, 4, 4]), 0, 16)
+        td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 2, 4, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 3, 8, np.zeros([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 0, 16, np.zeros([1, 4, 4]))
         td.normalize_rewards(mean=8, sd=1)
         expected_reward = np.array([
             [-4.], [-4.], [0.], [8.],
@@ -298,7 +289,7 @@ class TestTrainingData(unittest.TestCase):
 
     def test_save_restore(self):
         # Set up training data
-        td = training_data.training_data(True)
+        td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 0, 4, np.zeros([1, 4, 4]))
         td.add(np.zeros([1, 4, 4]), 1, 2, np.ones([1, 4, 4]))
         td.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]))
@@ -307,7 +298,7 @@ class TestTrainingData(unittest.TestCase):
         f = tempfile.NamedTemporaryFile()
         td.export_csv(f.name)
 
-        td2 = training_data.training_data(True)
+        td2 = training_data.training_data()
         td2.import_csv(f.name)
 
         expected_x = np.array([

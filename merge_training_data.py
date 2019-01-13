@@ -12,10 +12,10 @@ if __name__ == '__main__':
     parser.add_argument('input', nargs='+', help="Specify input files to merge")
     args = parser.parse_args()
 
-    data = training_data.training_data(True)
+    data = training_data.training_data()
 
     for i in args.input:
-        di = training_data.training_data(True)
+        di = training_data.training_data()
         di.import_csv(i)
         data.merge(di)
 

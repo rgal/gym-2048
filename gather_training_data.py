@@ -25,7 +25,7 @@ class Exiting(Exception):
 def gather_training_data(env, estimator, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
-    data = training_data.training_data(True)
+    data = training_data.training_data()
     # Initialise seed for environment
     if seed:
         env.seed(seed)
