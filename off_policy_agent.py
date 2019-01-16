@@ -49,6 +49,7 @@ def train(estimator, replay_memory, gamma=0.9, iterations=100, minibatch_size=64
         # Set up the target value as reward (from replay memory) + gamma * max()
         sample_rewards = sample_data.get_reward() # (batch_size, 1)
         sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
+        sample_done = sample_data.get_done() # (batch_size, 1)
         max_next_prediction = deep_model.get_maxq_per_state(estimator, sample_next_states)
 
         # print("sample_rewards")
@@ -56,12 +57,12 @@ def train(estimator, replay_memory, gamma=0.9, iterations=100, minibatch_size=64
         # print("max_next_prediction")
         # print(max_next_prediction)
         # Max prediction comes out normalized so denormalize it
-        max_next_prediction = max_next_prediction * reward_sigma + reward_myu
+        max_next_prediction = (max_next_prediction * reward_sigma) + reward_myu
         # print("scaled up max_next_prediction")
         # print(max_next_prediction)
         # print("gamma * max_next_prediction")
         # print(gamma * max_next_prediction)
-        target = sample_rewards + gamma * max_next_prediction
+        target = sample_rewards + gamma * max_next_prediction * np.invert(sample_done)
         #print(sample_rewards)
         # print("target")
         # print(target)

@@ -87,6 +87,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             gamma = 0.9
             sample_rewards = sample_data.get_reward() # (batch_size, 1)
             sample_next_states = sample_data.get_next_x() # (batch_size, 4, 4)
+            sample_done = sample_data.get_done() # (batch_size, 1)
             max_next_prediction = deep_model.get_maxq_per_state(estimator, sample_next_states)
 
 
@@ -97,12 +98,12 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             # print("max_next_prediction")
             # print(max_next_prediction)
             # Max prediction comes out normalized so denormalize it
-            max_next_prediction = max_next_prediction * sigma + myu
+            max_next_prediction = (max_next_prediction * sigma) + myu
             # print("scaled up max_next_prediction")
             # print(max_next_prediction)
             # print("gamma * max_next_prediction")
             # print(gamma * max_next_prediction)
-            target = sample_rewards + gamma * max_next_prediction
+            target = sample_rewards + gamma * max_next_prediction * np.invert(sample_done)
             # print("target")
             # print(target)
             # Target all at game score scale, normalize to help training
