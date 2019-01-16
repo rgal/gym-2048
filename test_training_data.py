@@ -10,24 +10,24 @@ import training_data
 
 class TestTrainingData(unittest.TestCase):
     def test_add(self):
-        # Test add without next_x
         td = training_data.training_data()
         self.assertTrue(np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int)))
         self.assertTrue(np.allclose(td.get_reward(), np.empty([0, 1], dtype=np.float)))
         self.assertTrue(np.array_equal(td.get_next_x(), np.empty([0, 4, 4], dtype=np.int)))
-        td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]))
+        self.assertTrue(np.array_equal(td.get_done(), np.empty([0, 1], dtype=np.bool)))
+        td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]), True)
         self.assertTrue(np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int)))
         self.assertTrue(np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int)))
         self.assertTrue(np.allclose(td.get_reward(), np.array([[4]], dtype=np.float)))
         self.assertTrue(np.array_equal(td.get_next_x(), np.zeros([1, 4, 4], dtype=np.int)))
+        self.assertTrue(np.array_equal(td.get_done(), np.array([[1]], dtype=np.bool)))
 
     def test_get_n(self):
-        # Test add without next_x
         td = training_data.training_data()
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
         td.add(np.zeros([4, 4]), 2, 8, np.ones([4, 4]))
-        (state, action, reward, next_state) = td.get_n(1)
+        (state, action, reward, next_state, done) = td.get_n(1)
         self.assertTrue(np.array_equal(state, np.zeros([4, 4], dtype=np.int)))
         self.assertEqual(action, 2)
         self.assertAlmostEqual(reward, 8)

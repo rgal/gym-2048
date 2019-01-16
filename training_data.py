@@ -13,6 +13,7 @@ class training_data(object):
         self._y_digit = np.zeros([0, 1], dtype=np.int)
         self._reward = np.zeros([0, 1], dtype=np.float)
         self._next_x = np.empty([0, 4, 4], dtype=np.int)
+        self._done = np.empty([0, 1], dtype=np.bool)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -20,7 +21,8 @@ class training_data(object):
     def _check_lengths(self):
         assert self._x.shape[0] == self._y_digit.shape[0]
         assert self._x.shape[0] == self._reward.shape[0]
-        assert self._next_x.shape[0] == self._reward.shape[0]
+        assert self._x.shape[0] == self._next_x.shape[0]
+        assert self._x.shape[0] == self._done.shape[0]
 
     def get_x(self):
         return self._x
@@ -34,7 +36,10 @@ class training_data(object):
     def get_next_x(self):
         return self._next_x
 
-    def add(self, board, action, reward, next_board=None):
+    def get_done(self):
+        return self._done
+
+    def add(self, board, action, reward, next_board=None, done=False):
         assert reward is not None
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
 
@@ -48,11 +53,15 @@ class training_data(object):
 
         self._next_x = np.append(self._next_x, np.reshape(next_board, (1, 4, 4)), axis=0)
 
+        done_array = np.zeros([1, 1], dtype=np.bool)
+        done_array[0, 0] = done
+        self._done = np.append(self._done, done_array, axis=0)
+
         self._check_lengths()
 
     def get_n(self, n):
         """Get training sample number n"""
-        return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:], self._next_x[n,:,:]
+        return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:], self._next_x[n,:,:], self._done[n,:]
 
     def log2_rewards(self):
         """log2 of reward values to keep them in a small range"""
@@ -94,6 +103,7 @@ class training_data(object):
         self._y_digit = np.concatenate((self._y_digit, other.get_y_digit()))
         self._reward = np.concatenate((self._reward, other.get_reward()))
         self._next_x = np.concatenate((self._next_x, other.get_next_x()))
+        self._done = np.concatenate((self._done, other.get_done()))
         self._check_lengths()
 
     def split(self, split=0.5):
@@ -108,6 +118,8 @@ class training_data(object):
         b._reward = self._reward[splitpoint:,:]
         a._next_x = self._next_x[:splitpoint,:,:]
         b._next_x = self._next_x[splitpoint:,:,:]
+        a._done = self._done[:splitpoint,:]
+        b._done = self._done[splitpoint:,:]
         a._check_lengths()
         b._check_lengths()
         return a, b
@@ -119,6 +131,7 @@ class training_data(object):
         sample._y_digit = self._y_digit[indexes,:]
         sample._reward = self._reward[indexes,:]
         sample._next_x = self._next_x[indexes,:,:]
+        sample._done = self._done[indexes,:]
         sample._check_lengths()
         return sample
 
@@ -143,6 +156,10 @@ class training_data(object):
         flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=tuple(range(18, 34)))
         self._next_x = np.reshape(flat_data, (-1, 4, 4))
 
+        # Load dones
+        done_data = np.loadtxt(filename, dtype=np.bool, delimiter=',', skiprows=1, usecols=34)
+        self._done = done_data.reshape(-1, 1)
+
         self._check_lengths()
 
     def construct_header(self):
@@ -155,6 +172,7 @@ class training_data(object):
         for m in range(1, 5):
             for n in range(1, 5):
                 header.append('next {}-{}'.format(m, n))
+        header.append('done')
         return header
 
     def export_csv(self, filename):
@@ -169,9 +187,11 @@ class training_data(object):
         flat_data = np.concatenate((flat_data, flat_next_x), axis=1)
         assert flat_data.shape[1] == 34
 
+        flat_data = np.concatenate((flat_data, self._done), axis=1)
+
         header = self.construct_header()
 
-        fformat = '%d,' * 17 + '%f' + ',%d' * 16
+        fformat = '%d,' * 17 + '%f,' + '%d,' * 16 + '%i'
         np.savetxt(filename, flat_data, comments='', fmt=fformat, header=','.join(header))
 
     def dump(self):
@@ -179,6 +199,7 @@ class training_data(object):
         print(self._y_digit)
         print(self._reward)
         print(self._next_x)
+        print(self._done)
 
     def hflip(self):
         """Flip all the data horizontally"""
