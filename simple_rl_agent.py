@@ -50,6 +50,11 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
     else:
         random.seed()
 
+    board_myu = 1.9
+    board_sigma = 4.2
+    reward_myu = 50.0
+    reward_sigma = 50.0
+
     illegal_count = 0
     total_reward = 0.0
     total_illegals = 0
@@ -81,7 +86,6 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             sample_indexes = random.sample(range(replay_memory.size()), minibatch_size)
             sample_data = replay_memory.sample(sample_indexes)
 
-
             # Q(S, A) <- Q(S, A) + alpha(R + gamma * max(Q(S', A')) - Q(S, A)
             # Set up the target value as reward (from replay memory) + gamma * max()
             gamma = 0.9
@@ -90,15 +94,12 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             sample_done = sample_data.get_done() # (batch_size, 1)
             max_next_prediction = deep_model.get_maxq_per_state(estimator, sample_next_states)
 
-
-            myu = 50.0
-            sigma = 50.0
             # print("sample_rewards")
             # print(sample_rewards)
             # print("max_next_prediction")
             # print(max_next_prediction)
             # Max prediction comes out normalized so denormalize it
-            max_next_prediction = (max_next_prediction * sigma) + myu
+            max_next_prediction = (max_next_prediction * reward_sigma) + reward_myu
             # print("scaled up max_next_prediction")
             # print(max_next_prediction)
             # print("gamma * max_next_prediction")
@@ -107,12 +108,13 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
             # print("target")
             # print(target)
             # Target all at game score scale, normalize to help training
-            target = (target - myu) / sigma
+            target = (target - reward_myu) / reward_sigma
             # print("normalized target")
             # print(target)
 
-
-            train_input_fn = deep_model.numpy_train_fn(sample_data.get_x(), sample_data.get_y_digit(), target)
+            states = sample_data.get_x()
+            scaled_states = (states - board_myu) / board_sigma
+            train_input_fn = deep_model.numpy_train_fn(scaled_states, sample_data.get_y_digit(), target)
             estimator.train(input_fn=train_input_fn)
         else:
             print("Not training, waiting for enough data {}".format(replay_memory.size()))
