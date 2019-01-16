@@ -115,7 +115,7 @@ def gather_training_data(env, estimator, seed=None):
             if np.array_equal(observation, new_observation):
                 print("Suppressing recording of illegal move")
             else:
-                data.add(observation, action, reward, new_observation)
+                data.add(observation, action, reward, new_observation, done)
             observation = new_observation
             print()
 

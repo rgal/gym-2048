@@ -70,7 +70,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
         next_action = choose_action(estimator, next_state, epsilon)
 
         # Add data to replay memory including immediate reward
-        replay_memory.add(state, next_action, reward, next_state)
+        replay_memory.add(state, next_action, reward, next_state, done)
 
         # Augment data
         #data.augment()
