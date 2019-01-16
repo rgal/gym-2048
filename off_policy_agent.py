@@ -85,7 +85,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input', '-i', default='data.csv', help="Data to learn from")
     parser.add_argument('--iterations', type=int, default=100, help="How many iterations to train for")
-    parser.add_argument('--minibatch-size', '-m', default=64, help="Minibatch size")
+    parser.add_argument('--minibatch-size', '-m', type=int, default=64, help="Minibatch size")
     parser.add_argument('--params', '-p', default='params.json', help="Parameters file")
     parser.add_argument('--gamma', '-g', default=0.9, type=float, help="Gamma, discount factor for future rewards")
     args = parser.parse_args()
