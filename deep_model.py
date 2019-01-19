@@ -135,11 +135,13 @@ def residual_block(in_net, filters, dropout_rate, mode, bn=False):
             training=mode == tf.estimator.ModeKeys.TRAIN
         )
 
+    # Skip connection
+    net = net + in_net
+
     # Non linearity
     net = tf.nn.relu(net)
 
-    # Add skip connection
-    return in_net + net
+    return net
 
 def log2(x):
     """Log to base 2"""
