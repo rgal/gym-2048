@@ -97,10 +97,10 @@ def estimator(model_params):
         model_dir='model_dir/{}_{}_{}_{}_{}'.format(model_params['dropout_rate'], model_params['residual_blocks'], model_params['filters'], '-'.join(map(str, model_params['fc_layers'])), '_bn' if model_params['batch_norm'] else ''), # Path to where checkpoints etc are stored
         params=model_params)
 
-def residual_block(in_net, filters, dropout_rate, mode, bn=False):
+def residual_block(in_net, filters, mode, bn=False):
     # Convolution layer 1
-    # Input shape: [batch_size, 4, 4, 1]
-    # Output shape: [batch_size, 4, 4, 16]
+    # Input shape: [batch_size, 4, 4, filters]
+    # Output shape: [batch_size, 4, 4, filters]
     net = tf.layers.conv2d(
       inputs=in_net,
       filters=filters,
@@ -119,8 +119,8 @@ def residual_block(in_net, filters, dropout_rate, mode, bn=False):
     net = tf.nn.relu(net)
 
     # Convolution layer 1
-    # Input shape: [batch_size, 4, 4, 1]
-    # Output shape: [batch_size, 4, 4, 16]
+    # Input shape: [batch_size, 4, 4, filters]
+    # Output shape: [batch_size, 4, 4, filters]
     net = tf.layers.conv2d(
       inputs=net,
       filters=filters,
@@ -157,7 +157,7 @@ def my_model(features, labels, mode, params):
     # Input to first block shape: [batch_size, 4, 4, 1]
     # Input to subsequent blocks: [batch_size, 4, 4, filters]
     for res_block in range(params['residual_blocks']):
-        block_inout = residual_block(block_inout, params['filters'], params['dropout_rate'], mode, params['batch_norm'])
+        block_inout = residual_block(block_inout, params['filters'], mode, params['batch_norm'])
 
     # Flatten into a batch of vectors
     # Input shape: [batch_size, 4, 4, filters]
