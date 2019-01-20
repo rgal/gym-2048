@@ -143,6 +143,29 @@ def residual_block(in_net, filters, mode, bn=False):
 
     return net
 
+def convolutional_block(in_net, filters, mode, bn=False):
+    # Convolution layer 1
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, filters]
+    net = tf.layers.conv2d(
+      inputs=in_net,
+      filters=filters,
+      kernel_size=[3, 3],
+      padding="same",
+      activation=None)
+
+    if bn:
+        # Batch norm
+        net = tf.layers.batch_normalization(
+            inputs=net,
+            training=mode == tf.estimator.ModeKeys.TRAIN
+        )
+
+    # Non linearity
+    net = tf.nn.relu(net)
+
+    return net
+
 def log2(x):
     """Log to base 2"""
     numerator = tf.log(x)
@@ -152,10 +175,14 @@ def log2(x):
 def my_model(features, labels, mode, params):
     """Neural network model with configurable number of residual blocks follwed by fully connected layers"""
 
-    block_inout = features['board']
+    l0 = features['board']
 
-    # Input to first block shape: [batch_size, 4, 4, 1]
-    # Input to subsequent blocks: [batch_size, 4, 4, filters]
+    # Input shape: [batch_size, 4, 4, 1]
+    # Output shape: [batch_size, 4, 4, filters]
+    block_inout = convolutional_block(l0, params['filters'], mode, params['batch_norm'])
+
+    # Input shape: [batch_size, 4, 4, filters]
+    # Output shape: [batch_size, 4, 4, filters]
     for res_block in range(params['residual_blocks']):
         block_inout = residual_block(block_inout, params['filters'], mode, params['batch_norm'])
 
