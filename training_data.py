@@ -72,14 +72,19 @@ class training_data(object):
 
     def smooth_rewards(self, llambda=0.9):
         """Smooth reward values so that they don't just represent that action.
-         Relies on the data being still in game order."""
+           Relies on the data being still in game order. done indicates end
+           of episode."""
         items = self._reward.shape[0]
         rewards = list(np.reshape(self._reward, (items)))
+        done_list = list(np.reshape(self._done, (items)))
         smoothed_rewards = list()
         previous = None
         rewards.reverse()
-        for e in rewards:
-            smoothed = e
+        done_list.reverse()
+        for i, r in enumerate(rewards):
+            smoothed = r
+            if done_list[i]:
+                previous = None
             if previous:
                 smoothed += llambda * previous
             smoothed_rewards.append(smoothed)
