@@ -307,11 +307,12 @@ class TestTrainingData(unittest.TestCase):
         td.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]))
         td.add(np.zeros([1, 4, 4]), 3, 2, np.ones([1, 4, 4]))
 
-        f = tempfile.NamedTemporaryFile()
-        td.export_csv(f.name)
+        temp_dir = tempfile.mkdtemp()
+        temp_filename = os.path.join(temp_dir, 'data.csv')
+        td.export_csv(temp_filename)
 
         td2 = training_data.training_data()
-        td2.import_csv(f.name)
+        td2.import_csv(temp_filename)
 
         expected_x = np.array([
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
@@ -341,7 +342,8 @@ class TestTrainingData(unittest.TestCase):
         self.assertTrue(np.array_equal(td2.get_y_digit(), expected_y_digit))
         self.assertTrue(np.allclose(td2.get_reward(), expected_reward))
         self.assertTrue(np.array_equal(td2.get_next_x(), expected_next_x))
-        os.remove(f.name)
+        os.remove(temp_filename)
+        os.rmdir(temp_dir)
 
 if __name__ == '__main__':
     unittest.main()
