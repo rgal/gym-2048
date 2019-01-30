@@ -55,9 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('test_input', nargs='?', default='test.csv')
     args = parser.parse_args()
 
-    batch_norm = True
     augment = True
-    dropout_rate = 0#random.random() * 0.5
     batch_size = 32#2 ** random.randint(5, 9)
     with open('hp_search.csv', 'w') as csvfile:
         fieldnames = ['run',
