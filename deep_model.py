@@ -31,7 +31,7 @@ def numpy_train_fn(observation, action, reward):
 
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
-       parsed_line = tf.decode_csv(line, [[0] for i in range(17)] + [[0.0]])
+       parsed_line = tf.decode_csv(line, [[0] for i in range(16)] + [0] + [[0.0]] + [[0] for i in range(16)] + [0])
        features = parsed_line[0:16]
        # Convert from list of tensors to one tensor
        features = tf.reshape(tf.cast(tf.stack(features), tf.float32), [4, 4, 1])
