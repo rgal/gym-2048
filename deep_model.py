@@ -11,23 +11,33 @@ def get_maxq_per_state(estimator, states):
 
 def get_predictions(estimator, states):
     """Get predictions for a number of states. States is (batch_size, 4, 4), returns numpy array of (batch_size, 4) with predictions for all actions."""
-    predict_input_fn = numpy_predict_fn(states)
+    predict_input_fn = lambda: numpy_predict_fn(states)
     prediction = estimator.predict(input_fn=predict_input_fn)
     list_predictions = [p['logits'] for p in prediction]
     np_array_prediction_values = np.array(list_predictions)
     return np_array_prediction_values
 
+def decode_predict(observation):
+    features = tf.reshape(tf.cast(observation, tf.float32), [-1, 4, 4, 1])
+    return {'board': features}, {}
+
 def numpy_predict_fn(observation):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)},
-       num_epochs=1,
-       shuffle=False)
+   dataset = tf.data.Dataset.from_tensor_slices(observation).map(decode_predict)
+   iterator = dataset.make_one_shot_iterator()
+   batch_features = iterator.get_next()
+   return batch_features
+
+def decode_train(observation, action, reward):
+    features = tf.reshape(tf.cast(observation, tf.float32), [-1, 4, 4, 1])
+    action_int32 = tf.cast(action, tf.int32)
+    return {'board': features}, {'action': action_int32, 'reward': reward}
 
 def numpy_train_fn(observation, action, reward):
-   return tf.estimator.inputs.numpy_input_fn(x={'board': observation.reshape((-1,4,4,1)).astype(np.float32)},
-       y={'action' : action.astype(np.int32), 'reward': reward},
-       batch_size=1024,
-       num_epochs=1,
-       shuffle=False)
+   dataset = tf.data.Dataset.from_tensor_slices((observation, action, reward)).map(decode_train)
+   dataset.batch(1024)
+   iterator = dataset.make_one_shot_iterator()
+   batch_features, batch_labels = iterator.get_next()
+   return batch_features, batch_labels
 
 def my_input_fn(file_path, perform_shuffle=False, repeat_count=1, augment=False, batch_size=32):
    def decode_csv(line):
