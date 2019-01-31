@@ -114,7 +114,7 @@ def train(estimator, epsilon, replay_memory, seed=None, agent_seed=None):
 
             states = sample_data.get_x()
             scaled_states = (states - board_myu) / board_sigma
-            train_input_fn = deep_model.numpy_train_fn(scaled_states, sample_data.get_y_digit(), target)
+            train_input_fn = lambda: deep_model.numpy_train_fn(scaled_states, sample_data.get_y_digit(), target)
             estimator.train(input_fn=train_input_fn)
         else:
             print("Not training, waiting for enough data {}".format(replay_memory.size()))

@@ -76,8 +76,8 @@ def train(estimator, replay_memory, gamma=0.9, iterations=100, minibatch_size=64
         #print(target)
         states = sample_data.get_x()
         scaled_states = (states - board_myu) / board_sigma
-        #train_input_fn = deep_model.numpy_train_fn(sample_data.get_x(), sample_data.get_y_digit(), target)
-        train_input_fn = deep_model.numpy_train_fn(scaled_states, sample_data.get_y_digit(), target)
+        #train_input_fn = lambda: deep_model.numpy_train_fn(sample_data.get_x(), sample_data.get_y_digit(), target)
+        train_input_fn = lambda: deep_model.numpy_train_fn(scaled_states, sample_data.get_y_digit(), target)
         estimator.train(input_fn=train_input_fn)
 
         print("")
