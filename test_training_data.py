@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import absolute_import
+
 import numpy as np
 import os
+import pytest
 import tempfile
 
 import training_data
@@ -29,7 +31,7 @@ class TestTrainingData():
         (state, action, reward, next_state, done) = td.get_n(1)
         assert np.array_equal(state, np.zeros([4, 4], dtype=np.int))
         assert action == 2
-        assert round(abs(reward-8), 7) == 0
+        assert reward == pytest.approx(8.)
         assert np.array_equal(next_state, np.ones([4, 4], dtype=np.int))
 
     def test_hflip(self):
