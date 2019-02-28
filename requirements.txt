@@ -1,4 +1,4 @@
-gym==0.10.11
+gym
 numpy
 pytest
 tensorflow
