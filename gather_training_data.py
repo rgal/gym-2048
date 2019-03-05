@@ -64,7 +64,7 @@ def gather_training_data(env, estimator, seed=None):
             myfont = pygame.font.SysFont('Tahome', 30)
             for i, o, in enumerate(observation):
                  x = i % 4
-                 y = i / 4
+                 y = i // 4
                  if o:
                      pygame.draw.rect(screen, tile_colour_map[o], (x * grid_size, y * grid_size, grid_size, grid_size))
                      text = myfont.render(str(o), False, white)
