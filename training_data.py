@@ -29,6 +29,13 @@ class training_data(object):
     def get_y_digit(self):
         return self._y_digit
 
+    def get_y_one_hot(self):
+        entries = self.size()
+        one_hot = np.zeros((entries, 4))
+        flat_y = np.reshape(self._y_digit, (-1, ))
+        one_hot[np.arange(entries), flat_y] = 1
+        return one_hot
+
     def get_reward(self):
         return self._reward
 

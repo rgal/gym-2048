@@ -24,6 +24,20 @@ class TestTrainingData():
         assert np.array_equal(td.get_next_x(), np.zeros([1, 4, 4], dtype=np.int))
         assert np.array_equal(td.get_done(), np.array([[1]], dtype=np.bool))
 
+    def test_get_y_one_hot(self):
+        td = training_data.training_data()
+        td.add(np.ones([4, 4]), 0, 4, np.zeros([4, 4]))
+        td.add(np.zeros([4, 4]), 1, 8, np.ones([4, 4]))
+        td.add(np.zeros([4, 4]), 3, 8, np.ones([4, 4]))
+        td.add(np.zeros([4, 4]), 2, 8, np.ones([4, 4]))
+        expected_y_one_hot = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0]
+            ], dtype=np.int)
+        assert np.array_equal(td.get_y_one_hot(), expected_y_one_hot)
+
     def test_get_n(self):
         td = training_data.training_data()
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
