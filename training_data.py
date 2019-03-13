@@ -98,6 +98,19 @@ class training_data(object):
         smoothed_rewards.reverse()
         self._reward = np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
 
+    def normalize_boards(self, mean=None, sd=None):
+        """Normalize boards by subtracting mean and dividing by stdandard deviation"""
+        items = self.size()
+        boards = self._x
+        if mean is None:
+            mean = np.mean(boards)
+        if sd is None:
+            sd = np.std(boards)
+        norm_boards = (boards - mean) / sd
+        self._x = norm_boards
+        norm_next_boards = (self._next_x - mean) / sd
+        self._next_x = norm_next_boards
+
     def normalize_rewards(self, mean=None, sd=None):
         """Normalize rewards by subtracting mean and dividing by stdandard deviation"""
         items = self.size()

@@ -314,6 +314,36 @@ class TestTrainingData():
             ], dtype=np.float)
         assert np.allclose(td.get_reward(), expected_reward)
 
+    def test_normalize_boards(self):
+        # Test calculating mean and standard deviation
+        td = training_data.training_data()
+        td.add(np.full((1, 4, 4), 4), 1, 4, np.full((1, 4, 4), 8))
+        td.add(np.full((1, 4, 4), 8), 2, 4, np.full((1, 4, 4), 16))
+        td.add(np.full((1, 4, 4), 16), 3, 4, np.full((1, 4, 4), 32))
+        td.add(np.full((1, 4, 4), 32), 4, 4, np.full((1, 4, 4), 64))
+        td.normalize_boards()
+        mean = 15.
+        sd = 10.7238052947636
+        a = (4. - mean) / sd
+        b = (8. - mean) / sd
+        c = (16. - mean) / sd
+        d = (32. - mean) / sd
+        e = (64. - mean) / sd
+        expected_x = np.array([
+            [[a, a, a, a], [a, a, a, a], [a, a, a, a], [a, a, a, a]],
+            [[b, b, b, b], [b, b, b, b], [b, b, b, b], [b, b, b, b]],
+            [[c, c, c, c], [c, c, c, c], [c, c, c, c], [c, c, c, c]],
+            [[d, d, d, d], [d, d, d, d], [d, d, d, d], [d, d, d, d]]
+            ], dtype=np.float)
+        assert np.allclose(td.get_x(), expected_x)
+        expected_next_x = np.array([
+            [[b, b, b, b], [b, b, b, b], [b, b, b, b], [b, b, b, b]],
+            [[c, c, c, c], [c, c, c, c], [c, c, c, c], [c, c, c, c]],
+            [[d, d, d, d], [d, d, d, d], [d, d, d, d], [d, d, d, d]],
+            [[e, e, e, e], [e, e, e, e], [e, e, e, e], [e, e, e, e]]
+            ], dtype=np.float)
+        assert np.allclose(td.get_next_x(), expected_next_x)
+
     def test_save_restore(self):
         # Set up training data
         td = training_data.training_data()
