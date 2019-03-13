@@ -30,10 +30,10 @@ class training_data(object):
         return self._y_digit
 
     def get_y_one_hot(self):
-        entries = self.size()
-        one_hot = np.zeros((entries, 4))
+        items = self.size()
+        one_hot = np.zeros((items, 4))
         flat_y = np.reshape(self._y_digit, (-1, ))
-        one_hot[np.arange(entries), flat_y] = 1
+        one_hot[np.arange(items), flat_y] = 1
         return one_hot
 
     def get_reward(self):
@@ -71,7 +71,7 @@ class training_data(object):
 
     def log2_rewards(self):
         """log2 of reward values to keep them in a small range"""
-        items = self._reward.shape[0]
+        items = self.size()
         rewards = np.reshape(self._reward, (items))
         log_rewards = np.ma.log(rewards) / np.ma.log(2)
         self._reward = np.reshape(np.array(log_rewards, np.float), (items, 1))
@@ -80,7 +80,7 @@ class training_data(object):
         """Smooth reward values so that they don't just represent that action.
            Relies on the data being still in game order. done indicates end
            of episode."""
-        items = self._reward.shape[0]
+        items = self.size()
         rewards = list(np.reshape(self._reward, (items)))
         done_list = list(np.reshape(self._done, (items)))
         smoothed_rewards = list()
@@ -100,7 +100,7 @@ class training_data(object):
 
     def normalize_rewards(self, mean=None, sd=None):
         """Normalize rewards by subtracting mean and dividing by stdandard deviation"""
-        items = self._reward.shape[0]
+        items = self.size()
         rewards = np.reshape(self._reward, (items))
         if mean is None:
             mean = np.mean(rewards)
