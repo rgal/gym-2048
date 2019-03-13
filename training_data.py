@@ -101,13 +101,13 @@ class training_data(object):
     def normalize_rewards(self, mean=None, sd=None):
         """Normalize rewards by subtracting mean and dividing by stdandard deviation"""
         items = self.size()
-        rewards = np.reshape(self._reward, (items))
+        rewards = self._reward
         if mean is None:
             mean = np.mean(rewards)
         if sd is None:
             sd = np.std(rewards)
         norm_rewards = (rewards - mean) / sd
-        self._reward = np.reshape(np.array(norm_rewards, np.float), (items, 1))
+        self._reward = norm_rewards
 
     def merge(self, other):
         self._x = np.concatenate((self._x, other.get_x()))
