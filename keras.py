@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+"""Simple keras supervised learning model"""
+
+from __future__ import print_function
+
+import sys
+
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers
+
+import training_data
+
+if __name__ == '__main__':
+  print(tf.VERSION)
+  print(tf.keras.__version__)
+  
+  inputs = 16
+  outputs = 4
+  filters = 256
+  
+  model = tf.keras.Sequential()
+  # Seems like this wants flat input, fine, we'll reshape it
+  model.add(layers.Reshape((4, 4, 1), input_shape=(inputs,)))
+  
+  conv_layers = 2
+  for i in range(conv_layers):
+    model.add(layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation('relu'))
+  
+  # Output shape will be 16x16
+  model.add(layers.Reshape((inputs * filters,)))
+  model.add(layers.Dense(64, activation='relu'))
+  model.add(layers.Dense(64, activation='relu'))
+  model.add(layers.Dense(outputs, activation='softmax'))
+  
+  model.summary()
+  
+  model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+          loss='categorical_crossentropy',
+          metrics=['accuracy'])
+  
+  td = training_data.training_data()
+  td.import_csv(sys.argv[1])
+  td.augment()
+  td.normalize_boards()
+  # Flatten board
+  data = np.reshape(td.get_x(), (-1, 16))
+  labels = td.get_y_one_hot()
+  
+  model.fit(data, labels, epochs=10, batch_size=32,
+          validation_split=0.2)
+  
