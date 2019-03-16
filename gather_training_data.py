@@ -4,6 +4,8 @@ from __future__ import print_function
 
 import argparse
 import json
+import time
+
 import numpy as np
 import pygame
 
@@ -129,7 +131,7 @@ def gather_training_data(env, estimator, seed=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', '-o', default='data.csv', help="Set the output file name")
+    parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     parser.add_argument('-p', '--params', default='params.json', help='File defining hyperparameters to try')
     args = parser.parse_args()
