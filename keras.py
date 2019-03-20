@@ -9,6 +9,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
 
 import training_data
 
@@ -50,6 +51,20 @@ if __name__ == '__main__':
   data = np.reshape(td.get_x(), (-1, 16))
   labels = td.get_y_one_hot()
   
-  model.fit(data, labels, epochs=10, batch_size=32,
-          validation_split=0.2)
-  
+  # Add tensorboard
+  tensorboard = TensorBoard(log_dir='./logs',
+    histogram_freq=0,
+    write_graph=True,
+    write_images=True)
+
+  # Set early stopping
+  early_stopping = EarlyStopping(monitor='val_loss',
+                              min_delta=0,
+                              patience=2,
+                              verbose=0, mode='auto')
+  model.fit(data,
+    labels,
+    epochs=10,
+    batch_size=32,
+    validation_split=0.2,
+    callbacks=[tensorboard, early_stopping])
