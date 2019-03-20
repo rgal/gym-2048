@@ -12,6 +12,7 @@ install:
   - pip install -r test-requirements.txt
 # command to run tests
 script:
+  - python setup.py check
   - py.test --cov=training_data --cov=gym_2048 .
   - python simple_rl_agent.py
 after_success:
