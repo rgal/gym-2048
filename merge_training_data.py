@@ -9,6 +9,7 @@ import training_data
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', '-o', default='data.csv', help="Specify the output file name")
+    parser.add_argument('--min-high-tile', '-m', type=int, default=1024, help="Specify the minimum highest tile for a game to be merged")
     parser.add_argument('input', nargs='+', help="Specify input files to merge")
     args = parser.parse_args()
 
@@ -17,6 +18,11 @@ if __name__ == '__main__':
     for i in args.input:
         di = training_data.training_data()
         di.import_csv(i)
-        data.merge(di)
+        high_tile = di.get_highest_tile()
+        if high_tile >= args.min_high_tile:
+          data.merge(di)
+        else:
+          print("Rejecting {} as highest tile ({}) was less than minimum".format(i, high_tile))
 
+    print("Combined data has {} samples".format(data.size()))
     data.export_csv(args.output)
