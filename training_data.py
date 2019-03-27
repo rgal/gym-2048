@@ -73,6 +73,10 @@ class training_data(object):
         """Calculate total reward over all training data, regardless of game ends."""
         return np.sum(self.get_reward())
 
+    def get_highest_tile(self):
+        """Get the highest tile on any board. Check the next board as that could be higher."""
+        return np.max(self.get_next_x())
+
     def log2_rewards(self):
         """log2 of reward values to keep them in a small range"""
         items = self.size()

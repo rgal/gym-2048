@@ -46,6 +46,12 @@ class TestTrainingData():
         td.add(np.zeros([4, 4]), 2, 32, np.ones([4, 4]))
         assert td.get_total_reward() == 60
 
+    def test_get_highest_tile(self):
+        td = training_data.training_data()
+        td.add(np.full((4, 4), 1), 0, 4, np.full((4, 4), 2))
+        td.add(np.full((4, 4), 2), 0, 4, np.full((4, 4), 4))
+        assert td.get_highest_tile() == 4
+
     def test_get_n(self):
         td = training_data.training_data()
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
