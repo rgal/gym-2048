@@ -69,6 +69,10 @@ class training_data(object):
         """Get training sample number n"""
         return self._x[n,:,:], self._y_digit[n,:], self._reward[n,:], self._next_x[n,:,:], self._done[n,:]
 
+    def get_total_reward(self):
+        """Calculate total reward over all training data, regardless of game ends."""
+        return np.sum(self.get_reward())
+
     def log2_rewards(self):
         """log2 of reward values to keep them in a small range"""
         items = self.size()

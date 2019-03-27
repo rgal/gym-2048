@@ -38,6 +38,14 @@ class TestTrainingData():
             ], dtype=np.int)
         assert np.array_equal(td.get_y_one_hot(), expected_y_one_hot)
 
+    def test_get_total_reward(self):
+        td = training_data.training_data()
+        td.add(np.ones([4, 4]), 0, 4, np.zeros([4, 4]))
+        td.add(np.zeros([4, 4]), 1, 8, np.ones([4, 4]))
+        td.add(np.zeros([4, 4]), 3, 16, np.ones([4, 4]))
+        td.add(np.zeros([4, 4]), 2, 32, np.ones([4, 4]))
+        assert td.get_total_reward() == 60
+
     def test_get_n(self):
         td = training_data.training_data()
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
