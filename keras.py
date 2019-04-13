@@ -79,6 +79,21 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
     return total_reward, moves_taken, total_illegals
 
 
+def evaluate_model(model, env, epsilon):
+  scores = []
+  tt_reward = 0
+  max_t_reward = 0.
+  for i_episode in range(evaluation_episodes):
+    print("Episode {}, using epsilon {}".format(i_episode, epsilon))
+    (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
+    print("Total reward {}, moves taken {} illegals {}".format(total_reward, moves_taken, total_illegals))
+    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken})
+    tt_reward += total_reward
+    max_t_reward = max(max_t_reward, total_reward)
+
+  print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
+  print(scores)
+
 if __name__ == '__main__':
   print(tf.VERSION)
   print(tf.keras.__version__)
@@ -128,19 +143,7 @@ if __name__ == '__main__':
   env = gym.make('2048-v0')
   env = env.unwrapped
 
-  scores = []
-  tt_reward = 0
-  max_t_reward = 0.
-  for i_episode in range(evaluation_episodes):
-    print("Episode {}, using epsilon {}".format(i_episode, epsilon))
-    (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
-    print("Total reward {}, moves taken {} illegals {}".format(total_reward, moves_taken, total_illegals))
-    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken})
-    tt_reward += total_reward
-    max_t_reward = max(max_t_reward, total_reward)
-  
-  print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
-  print(scores)
+  evaluate_model(model, env, epsilon)
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
@@ -160,16 +163,4 @@ if __name__ == '__main__':
     validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
-  scores = []
-  tt_reward = 0
-  max_t_reward = 0.
-  for i_episode in range(evaluation_episodes):
-    print("Episode {}, using epsilon {}".format(i_episode, epsilon))
-    (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
-    print("Total reward {}, moves taken {} illegals {}".format(total_reward, moves_taken, total_illegals))
-    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken})
-    tt_reward += total_reward
-    max_t_reward = max(max_t_reward, total_reward)
-
-  print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
-  print(scores)
+  evaluate_model(model, env, epsilon)
