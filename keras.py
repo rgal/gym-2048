@@ -79,7 +79,10 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
     return total_reward, moves_taken, total_illegals
 
 
-def evaluate_model(model, env, epsilon):
+def evaluate_model(model, epsilon):
+  env = gym.make('2048-v0')
+  env = env.unwrapped
+
   scores = []
   tt_reward = 0
   max_t_reward = 0.
@@ -93,6 +96,7 @@ def evaluate_model(model, env, epsilon):
 
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
   print(scores)
+  env.close()
 
 if __name__ == '__main__':
   print(tf.VERSION)
@@ -140,10 +144,7 @@ if __name__ == '__main__':
   evaluation_episodes = 10
 
   # Evaluate
-  env = gym.make('2048-v0')
-  env = env.unwrapped
-
-  evaluate_model(model, env, epsilon)
+  evaluate_model(model, epsilon)
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
@@ -163,4 +164,4 @@ if __name__ == '__main__':
     validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
-  evaluate_model(model, env, epsilon)
+  evaluate_model(model, epsilon)
