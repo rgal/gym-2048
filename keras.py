@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+import csv
 import random
 import sys
 
@@ -79,7 +80,7 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
     return total_reward, moves_taken, total_illegals
 
 
-def evaluate_model(model, epsilon):
+def evaluate_model(model, epsilon, label='eval'):
   env = gym.make('2048-v0')
   env = env.unwrapped
 
@@ -96,6 +97,11 @@ def evaluate_model(model, epsilon):
 
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
   print(scores)
+  with open('scores_{}.csv'.format(label), 'wb') as f:
+    writer = csv.writer(f)
+    for s in scores:
+      writer.writerow([s['total_reward']])
+
   env.close()
 
 if __name__ == '__main__':
@@ -141,10 +147,10 @@ if __name__ == '__main__':
   labels = td.get_y_one_hot()
 
   epsilon = 0.1
-  evaluation_episodes = 10
+  evaluation_episodes = 100
 
   # Evaluate
-  evaluate_model(model, epsilon)
+  evaluate_model(model, epsilon, 'pretraining')
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
@@ -164,4 +170,4 @@ if __name__ == '__main__':
     validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
-  evaluate_model(model, epsilon)
+  evaluate_model(model, epsilon, 'trained_0_1')
