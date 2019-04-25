@@ -126,8 +126,7 @@ if __name__ == '__main__':
   model.add(layers.BatchNormalization())
   model.add(layers.Activation('relu'))
 
-  # Output shape will be 16
-  model.add(layers.Reshape((inputs,)))
+  model.add(layers.Flatten())
   model.add(layers.Dense(64, activation='relu'))
   model.add(layers.Dense(64, activation='relu'))
   model.add(layers.Dense(outputs, activation='softmax'))
