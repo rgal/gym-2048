@@ -132,9 +132,10 @@ if __name__ == '__main__':
   model.add(layers.Dense(outputs, activation='softmax'))
   
   model.summary()
+
   
   model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-          loss='categorical_crossentropy',
+          loss='sparse_categorical_crossentropy',
           metrics=['accuracy'])
   
   td = training_data.training_data()
@@ -143,7 +144,7 @@ if __name__ == '__main__':
   td.normalize_boards()
   # Flatten board
   data = np.reshape(td.get_x(), (-1, 16))
-  labels = td.get_y_one_hot()
+  labels = td.get_y_digit()
 
   epsilon = 0.1
   evaluation_episodes = 100
