@@ -117,18 +117,18 @@ if __name__ == '__main__':
 
   inputs = 16
   outputs = 4
-  filters = 256
-  
+  filters = 64
+
   model = tf.keras.Sequential()
   # Seems like this wants flat input, fine, we'll reshape it
   model.add(layers.Reshape((4, 4, 1), input_shape=(inputs,)))
-  
-  conv_layers = 2
+
+  conv_layers = 8
   for i in range(conv_layers):
     model.add(layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same'))
     model.add(layers.BatchNormalization())
     model.add(layers.Activation('relu'))
-  
+
   model.add(layers.Conv2D(filters=1, kernel_size=(1, 1), padding='same'))
   model.add(layers.BatchNormalization())
   model.add(layers.Activation('relu'))
@@ -137,14 +137,13 @@ if __name__ == '__main__':
   model.add(layers.Dense(64, activation='relu'))
   model.add(layers.Dense(64, activation='relu'))
   model.add(layers.Dense(outputs, activation='softmax'))
-  
+
   model.summary()
 
-  
   model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
           loss='sparse_categorical_crossentropy',
           metrics=['accuracy'])
-  
+
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
   td.augment()
@@ -163,12 +162,12 @@ if __name__ == '__main__':
   # Set early stopping
   early_stopping = EarlyStopping(monitor='val_loss',
                               min_delta=0,
-                              patience=2,
+                              patience=3,
                               verbose=0, mode='auto')
   model.fit(data,
     labels,
     epochs=10,
-    batch_size=32,
+    batch_size=128,
     validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
