@@ -21,7 +21,8 @@ import training_data
 def choose_action(model, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
-    predictions = model.predict(np.reshape(observation, (-1, 16)))
+    normalised_observation = (observation - 64.) / 188.
+    predictions = model.predict(np.reshape(normalised_observation, (-1, 16)))
     #print(predictions)
     if random.uniform(0, 1) > epsilon:
         chosen = np.argmax(predictions)
@@ -141,7 +142,8 @@ if __name__ == '__main__':
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
   td.augment()
-  td.normalize_boards()
+  #td.normalize_boards()
+  td.normalize_boards(64., 188.)
   # Flatten board
   data = np.reshape(td.get_x(), (-1, 16))
   labels = td.get_y_digit()
