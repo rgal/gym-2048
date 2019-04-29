@@ -172,4 +172,6 @@ if __name__ == '__main__':
     validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
+  model.save('model.hdf5')
+
   evaluate_model(model, epsilon, 'trained_0_1')
