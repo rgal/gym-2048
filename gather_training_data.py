@@ -8,13 +8,12 @@ import time
 
 import numpy as np
 import pygame
+import tensorflow as tf
 
 import gym
 
 import gym_2048
-
 import training_data
-import deep_model
 
 grid_size = 70
 
@@ -22,7 +21,7 @@ class Exiting(Exception):
     def __init__(self):
         super(Exiting, self).__init__()
 
-def gather_training_data(env, estimator, seed=None):
+def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
     data = training_data.training_data()
@@ -78,16 +77,19 @@ def gather_training_data(env, estimator, seed=None):
 
             pygame.display.update()
 
-            # Get predictions from model
-            predictions = deep_model.get_predictions(estimator, observation.reshape((1, 4, 4))).reshape((4))
-            print(predictions)
+            ## Get predictions from model
+            if model:
+                normalised_observation = (observation - 64.) / 188.
+                predictions = model.predict(np.reshape(normalised_observation, (-1, 16))).reshape((4))
+                #print(predictions)
 
-            # Report predicted rewards for actions
-            dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
-            dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
-            dir_reward.sort(key=lambda x: x[1], reverse=True)
-            for direction, reward in dir_reward:
-                print('{}: {:.0f}'.format(direction, reward))
+                # Report predicted rewards for actions
+                dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
+                dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
+                dir_reward.sort(key=lambda x: x[1], reverse=True)
+                print(dir_reward)
+                for direction, reward in dir_reward:
+                    print('{}: {:.3f}'.format(direction, reward))
 
             # Ask user for action
             while True:
@@ -131,6 +133,7 @@ def gather_training_data(env, estimator, seed=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--input', '-i', default=None, help="Input trained model to get predictions from (optional)")
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     parser.add_argument('-p', '--params', default='params.json', help='File defining hyperparameters to try')
@@ -147,10 +150,13 @@ if __name__ == '__main__':
     with open(args.params, 'r') as f:
         params = json.load(f)
 
-    # Load estimator
-    estimator = deep_model.estimator(params)
+    # Load model
+    if args.input:
+        model = tf.keras.models.load_model(args.input)
+    else:
+        model = None
 
-    data = gather_training_data(env, estimator, seed=args.seed)
+    data = gather_training_data(env, model, seed=args.seed)
 
     # Close the environment
     env.close()
