@@ -99,16 +99,19 @@ def evaluate_model(model, epsilon, label='eval'):
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
   print(scores)
   with open('scores_{}.csv'.format(label), 'wb') as f:
-    writer = csv.writer(f)
+    fieldnames = ['total_reward', 'highest', 'moves']
+
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
     for s in scores:
-      writer.writerow([s['total_reward']])
+      writer.writerow(s)
 
   env.close()
 
 if __name__ == '__main__':
   print(tf.VERSION)
   print(tf.keras.__version__)
-  
+
   inputs = 16
   outputs = 4
   filters = 64
