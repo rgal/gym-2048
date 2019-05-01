@@ -108,13 +108,7 @@ def evaluate_model(model, epsilon, label='eval'):
 if __name__ == '__main__':
   print(tf.VERSION)
   print(tf.keras.__version__)
-
-  epsilon = 0.1
-  evaluation_episodes = 100
-
-  # Evaluate
-  evaluate_model(model, epsilon, 'pretraining')
-
+  
   inputs = 16
   outputs = 4
   filters = 64
@@ -152,6 +146,12 @@ if __name__ == '__main__':
   # Flatten board
   data = np.reshape(td.get_x(), (-1, 16))
   labels = td.get_y_digit()
+
+  epsilon = 0.1
+  evaluation_episodes = 100
+
+  # Evaluate
+  evaluate_model(model, epsilon, 'pretraining')
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
