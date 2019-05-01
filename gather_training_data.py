@@ -81,6 +81,7 @@ def gather_training_data(env, model, seed=None):
             if model:
                 normalised_observation = (observation - 64.) / 188.
                 predictions = model.predict(np.reshape(normalised_observation, (-1, 16))).reshape((4))
+                predicted_action = np.argmax(predictions)
                 #print(predictions)
 
                 # Report predicted rewards for actions
@@ -107,6 +108,10 @@ def gather_training_data(env, model, seed=None):
                         break
                     if event.key == pygame.K_q:
                         raise Exiting
+                    if model and (event.key == pygame.K_a):
+                        # Auto-select best action according to model
+                        action = predicted_action
+                        break
                 if event.type == pygame.QUIT:
                     raise Exiting
             # Read and discard the keyup event
