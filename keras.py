@@ -22,14 +22,14 @@ def choose_action(model, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
     normalised_observation = (observation - 64.) / 188.
-    predictions = model.predict(np.reshape(normalised_observation, (-1, 16)))
+    predictions = np.reshape(model.predict(np.reshape(normalised_observation, (-1, 16))), (4, ))
     #print(predictions)
     if random.uniform(0, 1) > epsilon:
         chosen = np.argmax(predictions)
         #print("Choosing best action: {}".format(chosen))
     else:
-        # Could change this to do based on probabilities
-        chosen = random.randint(0, 3)
+        # Choose random action weighted by predictions
+        chosen = np.random.choice(4, 1, p=predictions)
         #print("Choosing random action: {}".format(chosen))
     return chosen
 
