@@ -110,8 +110,8 @@ class Game2048Env(gym.Env):
         else:
             val = 2
         empties = self.empties()
-        assert empties
-        empty_idx = self.np_random.choice(len(empties))
+        assert empties.shape[0]
+        empty_idx = self.np_random.choice(empties.shape[0])
         empty = empties[empty_idx]
         logging.debug("Adding %s at %s", val, (empty[0], empty[1]))
         self.set(empty[0], empty[1], val)
@@ -125,13 +125,8 @@ class Game2048Env(gym.Env):
         self.Matrix[x, y] = val
 
     def empties(self):
-        """Return a list of tuples of the location of empty squares."""
-        empties = list()
-        for y in range(self.h):
-            for x in range(self.w):
-                if self.get(x, y) == 0:
-                    empties.append((x, y))
-        return empties
+        """Return a 2d numpy array with the location of empty squares."""
+        return np.argwhere(self.Matrix == 0)
 
     def highest(self):
         """Report the highest tile on the board."""
