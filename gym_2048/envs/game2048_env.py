@@ -104,11 +104,9 @@ class Game2048Env(gym.Env):
     # Implement 2048 game
     def add_tile(self):
         """Add a tile, probably a 2 but maybe a 4"""
-        val = 0
-        if self.np_random.random_sample() > 0.8:
-            val = 4
-        else:
-            val = 2
+        possible_tiles = np.array([2, 4])
+        tile_probabilities = np.array([0.8, 0.2])
+        val = self.np_random.choice(possible_tiles, 1, p=tile_probabilities)[0]
         empties = self.empties()
         assert empties.shape[0]
         empty_idx = self.np_random.choice(empties.shape[0])
