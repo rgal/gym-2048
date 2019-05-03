@@ -88,7 +88,6 @@ def gather_training_data(env, model, seed=None):
                 dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
                 dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
                 dir_reward.sort(key=lambda x: x[1], reverse=True)
-                print(dir_reward)
                 for direction, reward in dir_reward:
                     print('{}: {:.3f}'.format(direction, reward))
 
