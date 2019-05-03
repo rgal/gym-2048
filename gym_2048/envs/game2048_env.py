@@ -135,11 +135,7 @@ class Game2048Env(gym.Env):
 
     def highest(self):
         """Report the highest tile on the board."""
-        highest = 0
-        for y in range(self.h):
-            for x in range(self.w):
-                highest = max(highest, self.get(x, y))
-        return highest
+        return np.max(self.Matrix)
 
     def move(self, direction, trial=False):
         """Perform one move of the game. Shift things to one side then,
