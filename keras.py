@@ -65,6 +65,10 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
         total_reward += reward
         #print("Score: {} Total reward: {}".format(env.score, total_reward))
 
+        # Count illegal moves
+        if np.array_equal(state, next_state):
+            total_illegals += 1
+
         # Update values for our tracking
         moves_taken += 1
 
@@ -92,14 +96,14 @@ def evaluate_model(model, epsilon, label='eval'):
     print("Episode {}, using epsilon {}".format(i_episode, epsilon))
     (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
     print("Total reward {}, moves taken {} illegals {}".format(total_reward, moves_taken, total_illegals))
-    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken})
+    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken, 'illegal_moves': total_illegals})
     tt_reward += total_reward
     max_t_reward = max(max_t_reward, total_reward)
 
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
   print(scores)
   with open('scores_{}.csv'.format(label), 'wb') as f:
-    fieldnames = ['total_reward', 'highest', 'moves']
+    fieldnames = ['total_reward', 'highest', 'moves', 'illegal_moves']
 
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader()
