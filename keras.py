@@ -93,15 +93,14 @@ def evaluate_model(model, epsilon, label='eval'):
   tt_reward = 0
   max_t_reward = 0.
   for i_episode in range(evaluation_episodes):
-    print("Episode {}, using epsilon {}".format(i_episode, epsilon))
     (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
-    print("Total reward {}, moves taken {} illegals {}".format(total_reward, moves_taken, total_illegals))
+    print("Episode {}, using epsilon {}, total reward {}, moves taken {} illegals {}".format(i_episode, epsilon, total_reward, moves_taken, total_illegals))
     scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken, 'illegal_moves': total_illegals})
     tt_reward += total_reward
     max_t_reward = max(max_t_reward, total_reward)
 
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
-  print(scores)
+  #print(scores)
   with open('scores_{}.csv'.format(label), 'wb') as f:
     fieldnames = ['total_reward', 'highest', 'moves', 'illegal_moves']
 
