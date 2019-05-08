@@ -101,10 +101,10 @@ def evaluate_model(model, epsilon, label='eval'):
 
   print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
   #print(scores)
-  with open('scores_{}.csv'.format(label), 'wb') as f:
+  with open('scores_{}.csv'.format(label), 'w') as f:
     fieldnames = ['total_reward', 'highest', 'moves', 'illegal_moves']
 
-    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
     writer.writeheader()
     for s in scores:
       writer.writerow(s)
