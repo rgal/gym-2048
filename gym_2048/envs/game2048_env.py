@@ -105,7 +105,7 @@ class Game2048Env(gym.Env):
     def add_tile(self):
         """Add a tile, probably a 2 but maybe a 4"""
         possible_tiles = np.array([2, 4])
-        tile_probabilities = np.array([0.8, 0.2])
+        tile_probabilities = np.array([0.9, 0.1])
         val = self.np_random.choice(possible_tiles, 1, p=tile_probabilities)[0]
         empties = self.empties()
         assert empties.shape[0]
