@@ -144,7 +144,6 @@ if __name__ == '__main__':
     parser.add_argument('--input', '-i', default=None, help="Input trained model to get predictions from (optional)")
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
-    parser.add_argument('-p', '--params', default='params.json', help='File defining hyperparameters to try')
     args = parser.parse_args()
     # Initialise environment
     env = gym.make('2048-v0')
@@ -153,10 +152,6 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((grid_size * 4, grid_size * 4), 0, 32)
     pygame.font.init()
-
-    # Load hyperparameters from JSON file
-    with open(args.params, 'r') as f:
-        params = json.load(f)
 
     # Load model
     if args.input:
