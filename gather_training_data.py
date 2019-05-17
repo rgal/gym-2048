@@ -6,11 +6,10 @@ import argparse
 import json
 import time
 
+import gym
 import numpy as np
 import pygame
 import tensorflow as tf
-
-import gym
 
 import gym_2048
 import training_data
