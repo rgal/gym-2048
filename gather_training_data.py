@@ -5,6 +5,7 @@ from __future__ import print_function
 import argparse
 import json
 import time
+import random
 
 import gym
 import numpy as np
@@ -109,6 +110,10 @@ def gather_training_data(env, model, seed=None):
                     if model and (event.key == pygame.K_a):
                         # Auto-select best action according to model
                         action = predicted_action
+                        break
+                    if event.key == pygame.K_r:
+                        # Randomly select action
+                        action = random.choice([0, 1, 2, 3])
                         break
                 if event.type == pygame.QUIT:
                     raise Exiting
