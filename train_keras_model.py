@@ -170,6 +170,22 @@ if __name__ == '__main__':
 
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
+  #td.augment()
+  x = td.get_x()
+  print(td.size())
+  unique_x, x_indices, x_inverse, x_counts = np.unique(x, axis=0, return_index=True, return_inverse=True, return_counts=True)
+  print(unique_x)
+  print(len(unique_x))
+  print(x_indices)
+  print(x_inverse)
+  print(len(x_inverse))
+  print(x_counts)
+  print(np.amax(x_counts))
+  #print(dict(zip(unique_x, x_counts)))
+  for i in range(np.amax(x_counts) + 1):
+    print("{} boards with {} copies".format(np.count_nonzero(x_counts ==i), i))
+  sys.exit(0)
+
   td.shuffle()
   (training, validation) = td.split(0.8)
   training.augment()
@@ -184,7 +200,7 @@ if __name__ == '__main__':
   evaluation_episodes = 10
 
   # Evaluate
-  evaluate_model(model, epsilon, 'pretraining')
+  #evaluate_model(model, epsilon, 'pretraining')
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
@@ -213,3 +229,4 @@ if __name__ == '__main__':
   print(confusion)
 
   evaluate_model(model, epsilon, 'trained_0_1')
+
