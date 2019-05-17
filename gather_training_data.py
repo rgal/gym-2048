@@ -11,6 +11,11 @@ import gym
 import numpy as np
 import pygame
 import tensorflow as tf
+import matplotlib
+matplotlib.use("Agg")
+
+import matplotlib.backends.backend_agg as agg
+import matplotlib.pyplot as plt
 
 import gym_2048
 import training_data
@@ -20,6 +25,21 @@ grid_size = 70
 class Exiting(Exception):
     def __init__(self):
         super(Exiting, self).__init__()
+
+def get_bar_chart(predictions, width, height):
+    dpi = 100.
+    fig = plt.figure(figsize=[width / dpi, height / dpi], # Inches
+                       dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
+                       )
+    ax = fig.gca()
+    ax.set_ylim([0, 1])
+    ax.bar(['up', 'right', 'down', 'left'], predictions)
+
+    canvas = agg.FigureCanvasAgg(fig)
+    canvas.draw()
+    renderer = canvas.get_renderer()
+    raw_data = renderer.tostring_rgb()
+    return raw_data
 
 def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
@@ -75,8 +95,6 @@ def gather_training_data(env, model, seed=None):
                      screen.blit(text, (x * grid_size + grid_size / 2 - text_rect.width / 2,
                          y * grid_size + grid_size / 2 - text_rect.height / 2))
 
-            pygame.display.update()
-
             ## Get predictions from model
             if model:
                 normalised_observation = (observation - 64.) / 188.
@@ -90,6 +108,15 @@ def gather_training_data(env, model, seed=None):
                 dir_reward.sort(key=lambda x: x[1], reverse=True)
                 for direction, reward in dir_reward:
                     print('{}: {:.3f}'.format(direction, reward))
+
+                chart_height = 280
+                chart_width = 280
+                raw_data = get_bar_chart(predictions, chart_height, chart_width)
+
+                surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
+                screen.blit(surf, (280,0))
+
+            pygame.display.update()
 
             # Ask user for action
             while True:
@@ -148,17 +175,20 @@ if __name__ == '__main__':
     # Initialise environment
     env = gym.make('2048-v0')
 
-    # Initialise pygame for detecting keypresses
-    pygame.init()
-    screen = pygame.display.set_mode((grid_size * 4, grid_size * 4), 0, 32)
-    pygame.font.init()
-
     # Load model
     if args.input:
         model = tf.keras.models.load_model(args.input)
     else:
         model = None
 
+    # Initialise pygame for detecting keypresses
+    pygame.init()
+    height = 4 * grid_size
+    width = 4 * grid_size
+    if model:
+        width = 8 * grid_size
+    screen = pygame.display.set_mode((width, height), 0, 32)
+    pygame.font.init()
     data = gather_training_data(env, model, seed=args.seed)
 
     # Close the environment
