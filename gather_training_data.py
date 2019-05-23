@@ -200,4 +200,5 @@ if __name__ == '__main__':
 
     print("Got {} data values".format(data.size()))
 
-    data.export_csv(args.output)
+    if data.size():
+        data.export_csv(args.output)
