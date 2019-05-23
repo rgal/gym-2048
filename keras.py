@@ -112,8 +112,8 @@ def evaluate_model(model, epsilon, label='eval'):
   env.close()
 
 if __name__ == '__main__':
-  print(tf.VERSION)
-  print(tf.keras.__version__)
+  print("Tensorflow version: {}".format(tf.__version__))
+  print("Tensorflow keras version: {}".format(tf.keras.__version__))
 
   inputs = 16
   outputs = 4
