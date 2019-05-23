@@ -15,14 +15,16 @@ if __name__ == '__main__':
 
     data = training_data.training_data()
 
+    accepted_input_files = 0
     for i in args.input:
         di = training_data.training_data()
         di.import_csv(i)
         high_tile = di.get_highest_tile()
         if high_tile >= args.min_high_tile:
           data.merge(di)
+          accepted_input_files += 1
         else:
           print("Rejecting {} as highest tile ({}) was less than minimum".format(i, high_tile))
 
-    print("Combined data has {} samples".format(data.size()))
+    print("Combined data has {} samples from {} files".format(data.size(), accepted_input_files))
     data.export_csv(args.output)
