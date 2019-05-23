@@ -119,6 +119,7 @@ def gather_training_data(env, model, seed=None):
             pygame.display.update()
 
             # Ask user for action
+            record_action = False
             while True:
                 # Loop waiting for valid input
                 event = pygame.event.wait()
@@ -131,6 +132,7 @@ def gather_training_data(env, model, seed=None):
                     }
                     if event.key in key_action_map:
                         action = key_action_map[event.key]
+                        record_action = True
                         break
                     if event.key == pygame.K_q:
                         raise Exiting
@@ -144,15 +146,17 @@ def gather_training_data(env, model, seed=None):
                         break
                 if event.type == pygame.QUIT:
                     raise Exiting
-            # Read and discard the keyup event
-            print("Read action {}".format(action))
 
-            # Add this data to the data collection
+            print("Selected action {}".format(action))
+
+            # Add this data to the data collection if manually entered and not illegal
             new_observation, reward, done, info = env.step(action)
-            if np.array_equal(observation, new_observation):
-                print("Suppressing recording of illegal move")
-            else:
+            illegal_move = np.array_equal(observation, new_observation)
+            if record_action and not illegal_move:
                 data.add(observation, action, reward, new_observation, done)
+            else:
+                print("Not recording move")
+
             observation = new_observation
             print()
 
