@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import matplotlib
-import matplotlib.pyplot as plt
+#import matplotlib
+#import matplotlib.pyplot as plt
 
 import tensorflow as tf
 
@@ -155,8 +155,8 @@ for _ in range(num_iterations):
     returns.append(avg_return)
 
 steps = range(0, num_iterations + 1, eval_interval)
-plt.plot(steps, returns)
-plt.ylabel('Average Return')
-plt.xlabel('Step')
-plt.ylim(top=250)
-plt.savefig('out.png')
+#plt.plot(steps, returns)
+#plt.ylabel('Average Return')
+#plt.xlabel('Step')
+#plt.ylim(top=250)
+#plt.savefig('out.png')
