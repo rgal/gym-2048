@@ -146,12 +146,15 @@ if __name__ == '__main__':
 
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
-  td.augment()
-  #td.normalize_boards()
   td.normalize_boards(64., 188.)
+  (training, validation) = td.split(0.8)
+  training.augment()
+
   # Flatten board
-  data = np.reshape(td.get_x(), (-1, 16))
-  labels = td.get_y_digit()
+  training_data = np.reshape(training.get_x(), (-1, 16))
+  training_labels = training.get_y_digit()
+  validation_data = np.reshape(validation.get_x(), (-1, 16))
+  validation_labels = validation.get_y_digit()
 
   epsilon = 0.1
   evaluation_episodes = 100
@@ -170,11 +173,11 @@ if __name__ == '__main__':
                               min_delta=0,
                               patience=3,
                               verbose=0, mode='auto')
-  model.fit(data,
-    labels,
+  model.fit(training_data,
+    training_labels,
+    validation_data=(validation_data, validation_labels),
     epochs=10,
     batch_size=128,
-    validation_split=0.2,
     callbacks=[tensorboard, early_stopping])
 
   model.save('model.hdf5')
