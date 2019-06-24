@@ -129,13 +129,11 @@ if __name__ == '__main__':
     model.add(layers.BatchNormalization())
     model.add(layers.Activation('relu'))
 
-  model.add(layers.Conv2D(filters=1, kernel_size=(1, 1), padding='same'))
+  model.add(layers.Conv2D(filters=2, kernel_size=(1, 1), padding='same'))
   model.add(layers.BatchNormalization())
   model.add(layers.Activation('relu'))
 
   model.add(layers.Flatten())
-  model.add(layers.Dense(64, activation='relu'))
-  model.add(layers.Dense(64, activation='relu'))
   model.add(layers.Dense(outputs, activation='softmax'))
 
   model.summary()
