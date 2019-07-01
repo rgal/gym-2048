@@ -10,7 +10,7 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
 
 import gym
@@ -115,27 +115,34 @@ if __name__ == '__main__':
   print("Tensorflow version: {}".format(tf.__version__))
   print("Tensorflow keras version: {}".format(tf.keras.__version__))
 
-  inputs = 16
+  num_inputs = 16
   outputs = 4
   filters = 64
 
-  model = tf.keras.Sequential()
-  # Seems like this wants flat input, fine, we'll reshape it
-  model.add(layers.Reshape((4, 4, 1), input_shape=(inputs,)))
+  # Functional API model
+  inputs = layers.Input(shape=(num_inputs,))
+  x = layers.Reshape((4, 4, 1))(inputs)
 
-  conv_layers = 8
-  for i in range(conv_layers):
-    model.add(layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same'))
-    model.add(layers.BatchNormalization())
-    model.add(layers.Activation('relu'))
+  res_blocks = 4
+  for i in range(res_blocks):
+    # x at the start of a block
+    temp_x = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same')(x)
+    temp_x = layers.BatchNormalization()(temp_x)
+    temp_x = layers.Activation('relu')(temp_x)
+    temp_x = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same')(temp_x)
+    temp_x = layers.BatchNormalization()(temp_x)
+    x = layers.add([x, temp_x])
+    x = layers.Activation('relu')(x)
 
-  model.add(layers.Conv2D(filters=2, kernel_size=(1, 1), padding='same'))
-  model.add(layers.BatchNormalization())
-  model.add(layers.Activation('relu'))
+  x = layers.Conv2D(filters=2, kernel_size=(1, 1), padding='same')(x)
+  x = layers.BatchNormalization()(x)
+  x = layers.Activation('relu')(x)
 
-  model.add(layers.Flatten())
-  model.add(layers.Dense(outputs, activation='softmax'))
+  x = layers.Flatten()(x)
+  predictions = layers.Dense(outputs, activation='softmax')(x)
+  model = models.Model(inputs=inputs, outputs=predictions)
 
+  # Summarise
   model.summary()
 
   model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
