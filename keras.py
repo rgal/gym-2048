@@ -123,6 +123,12 @@ if __name__ == '__main__':
   inputs = layers.Input(shape=(num_inputs,))
   x = layers.Reshape((4, 4, 1))(inputs)
 
+  # Initial convolutional block
+  x = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same')(x)
+  x = layers.BatchNormalization()(x)
+  x = layers.Activation('relu')(x)
+
+  # residual blocks
   res_blocks = 4
   for i in range(res_blocks):
     # x at the start of a block
@@ -134,12 +140,14 @@ if __name__ == '__main__':
     x = layers.add([x, temp_x])
     x = layers.Activation('relu')(x)
 
+  # policy head
   x = layers.Conv2D(filters=2, kernel_size=(1, 1), padding='same')(x)
   x = layers.BatchNormalization()(x)
   x = layers.Activation('relu')(x)
-
   x = layers.Flatten()(x)
   predictions = layers.Dense(outputs, activation='softmax')(x)
+
+  # Create model
   model = models.Model(inputs=inputs, outputs=predictions)
 
   # Summarise
