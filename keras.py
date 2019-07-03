@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 
 import gym
 
@@ -111,6 +112,12 @@ def evaluate_model(model, epsilon, label='eval'):
 
   env.close()
 
+def top2_acc(labels, logits):
+  return top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=2)
+
+def top3_acc(labels, logits):
+  return top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
+
 if __name__ == '__main__':
   print("Tensorflow version: {}".format(tf.__version__))
   print("Tensorflow keras version: {}".format(tf.keras.__version__))
@@ -155,7 +162,7 @@ if __name__ == '__main__':
 
   model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
           loss='sparse_categorical_crossentropy',
-          metrics=['accuracy'])
+          metrics=['accuracy', top2_acc, top3_acc])
 
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
