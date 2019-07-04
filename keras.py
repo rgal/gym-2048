@@ -118,14 +118,7 @@ def top2_acc(labels, logits):
 def top3_acc(labels, logits):
   return top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
 
-if __name__ == '__main__':
-  print("Tensorflow version: {}".format(tf.__version__))
-  print("Tensorflow keras version: {}".format(tf.keras.__version__))
-
-  num_inputs = 16
-  outputs = 4
-  filters = 64
-
+def build_model(num_inputs=16, outputs=4, filters=64, residual_blocks=4):
   # Functional API model
   inputs = layers.Input(shape=(num_inputs,))
   x = layers.Reshape((4, 4, 1))(inputs)
@@ -136,8 +129,7 @@ if __name__ == '__main__':
   x = layers.Activation('relu')(x)
 
   # residual blocks
-  res_blocks = 4
-  for i in range(res_blocks):
+  for i in range(residual_blocks):
     # x at the start of a block
     temp_x = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same')(x)
     temp_x = layers.BatchNormalization()(temp_x)
@@ -155,7 +147,18 @@ if __name__ == '__main__':
   predictions = layers.Dense(outputs, activation='softmax')(x)
 
   # Create model
-  model = models.Model(inputs=inputs, outputs=predictions)
+  return models.Model(inputs=inputs, outputs=predictions)
+
+if __name__ == '__main__':
+  print("Tensorflow version: {}".format(tf.__version__))
+  print("Tensorflow keras version: {}".format(tf.keras.__version__))
+
+  num_inputs = 16
+  outputs = 4
+  filters = 64
+  residual_blocks = 4
+
+  model = build_model(num_inputs, outputs, filters, residual_blocks)
 
   # Summarise
   model.summary()
