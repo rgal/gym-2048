@@ -170,6 +170,7 @@ if __name__ == '__main__':
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
   td.normalize_boards(64., 188.)
+  td.shuffle()
   (training, validation) = td.split(0.8)
   training.augment()
 
