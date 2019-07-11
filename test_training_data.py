@@ -404,6 +404,25 @@ class TestTrainingData():
         os.remove(temp_filename)
         os.rmdir(temp_dir)
 
+    def test_shuffle(self):
+        td = training_data.training_data()
+        n = 5
+        for i in range(n):
+            # Use "is odd" for done
+            td.add(np.full((1, 4, 4), i), i, i, np.full((1, 4, 4), i), (i % 2) == 1)
+        td.shuffle()
+        for i in range(n):
+            # Find where this has been shuffled too
+            index_of_val = np.asscalar(np.where(td.get_y_digit() == i)[0])
+
+            # Check that all parts of this equal i
+            arrays = td.get_n(index_of_val)
+            for a in arrays:
+                if a.dtype is np.dtype(np.bool):
+                    assert((a == ((i % 2) == 1)).all())
+                else:
+                    assert((a == i).all())
+
 if __name__ == '__main__':
     import pytest
     pytest.main()

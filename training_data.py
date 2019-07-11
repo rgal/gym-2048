@@ -276,3 +276,13 @@ class training_data(object):
         self.merge(k3)
 
         self._check_lengths()
+
+    def shuffle(self):
+        """Shuffle data."""
+        self._check_lengths()
+        p = np.random.permutation(len(self._x))
+        self._x = self._x[p]
+        self._y_digit = self._y_digit[p]
+        self._reward = self._reward[p]
+        self._next_x = self._next_x[p]
+        self._done = self._done[p]
