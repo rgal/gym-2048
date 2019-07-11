@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
-from tensorflow.keras.metrics import top_k_categorical_accuracy
+from tensorflow.keras.metrics import sparse_top_k_categorical_accuracy
 
 import gym
 
@@ -113,10 +113,10 @@ def evaluate_model(model, epsilon, label='eval'):
   env.close()
 
 def top2_acc(labels, logits):
-  return top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=2)
+  return sparse_top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=2)
 
 def top3_acc(labels, logits):
-  return top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
+  return sparse_top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
 
 def build_model(num_inputs=16, outputs=4, filters=64, residual_blocks=4):
   # Functional API model
