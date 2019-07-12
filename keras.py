@@ -206,4 +206,10 @@ if __name__ == '__main__':
 
   model.save('model.hdf5')
 
+  # Report on training
+  predictions = model.predict(validation_data)
+  confusion = tf.math.confusion_matrix(validation_labels, np.argmax(predictions, axis=1))
+  print("Confusion matrix (labels on left, predictions across the top)")
+  print(confusion)
+
   evaluate_model(model, epsilon, 'trained_0_1')
