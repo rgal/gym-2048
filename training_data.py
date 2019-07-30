@@ -84,8 +84,8 @@ class training_data(object):
         log_rewards = np.ma.log(rewards) / np.ma.log(2)
         self._reward = np.reshape(np.array(log_rewards, np.float), (items, 1))
 
-    def smooth_rewards(self, llambda=0.9):
-        """Smooth reward values so that they don't just represent that action.
+    def get_lambda_return(self, llambda=0.9):
+        """Calculate lambda return from rewards.
            Relies on the data being still in game order. done indicates end
            of episode."""
         items = self.size()
@@ -104,7 +104,7 @@ class training_data(object):
             smoothed_rewards.append(smoothed)
             previous = smoothed
         smoothed_rewards.reverse()
-        self._reward = np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
+        return np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
 
     def normalize_boards(self, mean=None, sd=None):
         """Normalize boards by subtracting mean and dividing by stdandard deviation"""
