@@ -27,4 +27,4 @@ if __name__ == '__main__':
           print("Rejecting {} as highest tile ({}) was less than minimum".format(i, high_tile))
 
     print("Combined data has {} samples from {} files".format(data.size(), accepted_input_files))
-    data.export_csv(args.output)
+    data.export_csv(args.output, add_returns=True)

@@ -194,7 +194,7 @@ class training_data(object):
 
         self._check_lengths()
 
-    def construct_header(self):
+    def construct_header(self, add_returns=False):
         header = list()
         for m in range(1, 5):
             for n in range(1, 5):
@@ -205,9 +205,11 @@ class training_data(object):
             for n in range(1, 5):
                 header.append('next {}-{}'.format(m, n))
         header.append('done')
+        if add_returns:
+            header.append('return')
         return header
 
-    def export_csv(self, filename):
+    def export_csv(self, filename, add_returns=False):
         """Save data as CSV file"""
         items = self.size()
         flat_x = np.reshape(self._x, (items, 16))
@@ -221,9 +223,13 @@ class training_data(object):
 
         flat_data = np.concatenate((flat_data, self._done), axis=1)
 
-        header = self.construct_header()
+        if add_returns:
+            flat_data = np.concatenate((flat_data, self.get_lambda_return()), axis=1)
+        header = self.construct_header(add_returns)
 
         fformat = '%d,' * 17 + '%f,' + '%d,' * 16 + '%i'
+        if add_returns:
+            fformat += ',%f'
         np.savetxt(filename, flat_data, comments='', fmt=fformat, header=','.join(header))
 
     def dump(self):
