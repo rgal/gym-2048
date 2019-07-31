@@ -19,11 +19,27 @@ import gym
 import gym_2048
 import training_data
 
+def stack(flat, layers=16):
+  larray = []
+  for i in range(1, layers + 1):
+    ii = 2 ** i
+    layer = np.copy(flat)
+    layer[layer != ii] = 0
+    layer[layer == ii] = 1
+    #print("Layer")
+    #print(layer)
+    #print(layer.shape)
+    larray.append(layer)
+
+  newstack = np.stack(larray, axis=-1)
+  return newstack
+
+
 def choose_action(model, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
-    normalised_observation = (observation - 64.) / 188.
-    predictions = np.reshape(model.predict(np.reshape(normalised_observation, (-1, 16))), (4, ))
+    normalised_observation = stack(observation)
+    predictions = np.reshape(model.predict(np.reshape(normalised_observation, (-1, 256))), (4, ))
     #print(predictions)
     if random.uniform(0, 1) > epsilon:
         chosen = np.argmax(predictions)
@@ -118,10 +134,10 @@ def top2_acc(labels, logits):
 def top3_acc(labels, logits):
   return sparse_top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
 
-def build_model(num_inputs=16, outputs=4, filters=64, residual_blocks=4):
+def build_model(board_size=4, board_layers=16, outputs=4, filters=64, residual_blocks=4):
   # Functional API model
-  inputs = layers.Input(shape=(num_inputs,))
-  x = layers.Reshape((4, 4, 1))(inputs)
+  inputs = layers.Input(shape=(board_size * board_size * board_layers,))
+  x = layers.Reshape((board_size, board_size, board_layers))(inputs)
 
   # Initial convolutional block
   x = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same')(x)
@@ -153,12 +169,14 @@ if __name__ == '__main__':
   print("Tensorflow version: {}".format(tf.__version__))
   print("Tensorflow keras version: {}".format(tf.keras.__version__))
 
-  num_inputs = 16
+  board_size = 4
+  board_squares = board_size * board_size
+  board_layers = 16 # Layers of game board to represent different numbers
   outputs = 4
-  filters = 64
+  filters = 32
   residual_blocks = 4
 
-  model = build_model(num_inputs, outputs, filters, residual_blocks)
+  model = build_model(board_size, board_layers, outputs, filters, residual_blocks)
 
   # Summarise
   model.summary()
@@ -169,19 +187,18 @@ if __name__ == '__main__':
 
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
-  td.normalize_boards(64., 188.)
   td.shuffle()
   (training, validation) = td.split(0.8)
   training.augment()
 
   # Flatten board
-  training_data = np.reshape(training.get_x(), (-1, 16))
+  training_data = np.reshape(stack(training.get_x()).astype('float'), (-1, board_size * board_size * board_layers))
   training_labels = training.get_y_digit()
-  validation_data = np.reshape(validation.get_x(), (-1, 16))
+  validation_data = np.reshape(stack(validation.get_x()).astype('float'), (-1, board_size * board_size * board_layers))
   validation_labels = validation.get_y_digit()
 
   epsilon = 0.1
-  evaluation_episodes = 100
+  evaluation_episodes = 10
 
   # Evaluate
   evaluate_model(model, epsilon, 'pretraining')
