@@ -84,8 +84,8 @@ class training_data(object):
         log_rewards = np.ma.log(rewards) / np.ma.log(2)
         self._reward = np.reshape(np.array(log_rewards, np.float), (items, 1))
 
-    def get_lambda_return(self, llambda=0.9):
-        """Calculate lambda return from rewards.
+    def get_discounted_return(self, gamma=0.9):
+        """Calculate discounted return from rewards.
            Relies on the data being still in game order. done indicates end
            of episode."""
         items = self.size()
@@ -100,7 +100,7 @@ class training_data(object):
             if done_list[i]:
                 previous = None
             if previous:
-                smoothed += llambda * previous
+                smoothed += gamma * previous
             smoothed_rewards.append(smoothed)
             previous = smoothed
         smoothed_rewards.reverse()
@@ -224,7 +224,7 @@ class training_data(object):
         flat_data = np.concatenate((flat_data, self._done), axis=1)
 
         if add_returns:
-            flat_data = np.concatenate((flat_data, self.get_lambda_return()), axis=1)
+            flat_data = np.concatenate((flat_data, self.get_discounted_return()), axis=1)
         header = self.construct_header(add_returns)
 
         fformat = '%d,' * 17 + '%f,' + '%d,' * 16 + '%i'

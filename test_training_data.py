@@ -268,7 +268,7 @@ class TestTrainingData():
             ], dtype=np.int)
         assert np.allclose(td.get_y_digit(), expected_action)
 
-    def test_get_lambda_return(self):
+    def test_get_discounted_return(self):
         # Set up training data
         td = training_data.training_data()
         td.add(np.ones([1, 4, 4]), 0, 4, np.zeros([1, 4, 4]))
@@ -276,21 +276,21 @@ class TestTrainingData():
         td.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]))
         td.add(np.ones([1, 4, 4]), 3, 2, np.zeros([1, 4, 4]))
 
-        # Test using default lambda value of 0.9
+        # Test using default gamma value of 0.9
         td2 = td.copy()
-        lambda_return = td2.get_lambda_return()
-        expected_reward = np.array([
+        discounted_return = td2.get_discounted_return()
+        expected_return = np.array([
             [20.218], [18.02], [17.8], [2.0]
             ], dtype=np.float)
-        assert np.allclose(lambda_return, expected_reward)
+        assert np.allclose(discounted_return, expected_return)
 
-        # Test using lambda value of 0, should have no effect on rewards
+        # Test using gamma value of 0, should have no effect on rewards
         td2 = td.copy()
-        lambda_return = td2.get_lambda_return(llambda=0.0)
-        expected_reward = np.array([
+        discounted_return = td2.get_discounted_return(gamma=0.0)
+        expected_return = np.array([
             [4], [2], [16], [2]
             ], dtype=np.float)
-        assert np.allclose(lambda_return, expected_reward)
+        assert np.allclose(discounted_return, expected_return)
 
         # Test end of episode
         td3 = training_data.training_data()
@@ -298,11 +298,11 @@ class TestTrainingData():
         td3.add(np.ones([1, 4, 4]), 1, 2, np.zeros([1, 4, 4]), True)
         td3.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]), False)
         td3.add(np.ones([1, 4, 4]), 3, 2, np.zeros([1, 4, 4]), True)
-        lambda_return = td3.get_lambda_return()
-        expected_reward = np.array([
+        discounted_return = td3.get_discounted_return()
+        expected_return = np.array([
             [5.8], [2.0], [17.8], [2.0]
             ], dtype=np.float)
-        assert np.allclose(lambda_return, expected_reward)
+        assert np.allclose(discounted_return, expected_return)
 
     def test_normalize_rewards(self):
         # Test calculating mean and standard deviation
