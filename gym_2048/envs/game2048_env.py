@@ -20,6 +20,21 @@ def pairwise(iterable):
 class IllegalMove(Exception):
     pass
 
+def stack(flat, layers=16):
+  larray = []
+  for i in range(1, layers + 1):
+    ii = 2 ** i
+    layer = np.copy(flat)
+    layer[layer != ii] = 0
+    layer[layer == ii] = 1
+    #print("Layer")
+    #print(layer)
+    #print(layer.shape)
+    larray.append(layer)
+
+  newstack = np.stack(larray, axis=-1)
+  return newstack
+
 class Game2048Env(gym.Env):
     metadata = {'render.modes': ['human', 'ansi']}
 
@@ -78,7 +93,7 @@ class Game2048Env(gym.Env):
         #print("Am I done? {}".format(done))
         observation = self.Matrix.flatten()
         info = dict()
-        return observation, reward, done, info
+        return stack(observation), reward, done, info
         # Return observation (board state), reward, done and info dict
 
     def reset(self):
@@ -89,7 +104,7 @@ class Game2048Env(gym.Env):
         self.add_tile()
         self.add_tile()
 
-        return self.Matrix.flatten()
+        return stack(self.Matrix.flatten())
 
     def render(self, mode='human'):
         outfile = StringIO() if mode == 'ansi' else sys.stdout

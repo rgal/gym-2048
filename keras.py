@@ -19,27 +19,10 @@ import gym
 import gym_2048
 import training_data
 
-def stack(flat, layers=16):
-  larray = []
-  for i in range(1, layers + 1):
-    ii = 2 ** i
-    layer = np.copy(flat)
-    layer[layer != ii] = 0
-    layer[layer == ii] = 1
-    #print("Layer")
-    #print(layer)
-    #print(layer.shape)
-    larray.append(layer)
-
-  newstack = np.stack(larray, axis=-1)
-  return newstack
-
-
 def choose_action(model, observation, epsilon=0.1):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
-    normalised_observation = stack(observation)
-    predictions = np.reshape(model.predict(np.reshape(normalised_observation, (-1, 256))), (4, ))
+    predictions = np.reshape(model.predict(np.reshape(observation, (-1, 256))), (4, ))
     #print(predictions)
     if random.uniform(0, 1) > epsilon:
         chosen = np.argmax(predictions)
