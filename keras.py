@@ -192,9 +192,9 @@ if __name__ == '__main__':
   training.augment()
 
   # Flatten board
-  training_data = np.reshape(stack(training.get_x()).astype('float'), (-1, board_size * board_size * board_layers))
+  training_data = np.reshape(training.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
   training_labels = training.get_y_digit()
-  validation_data = np.reshape(stack(validation.get_x()).astype('float'), (-1, board_size * board_size * board_layers))
+  validation_data = np.reshape(validation.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
   validation_labels = validation.get_y_digit()
 
   epsilon = 0.1

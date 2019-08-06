@@ -5,6 +5,18 @@ from __future__ import print_function
 import copy
 import numpy as np
 
+def stack(flat, layers=16):
+  larray = []
+  for i in range(1, layers + 1):
+    ii = 2 ** i
+    layer = np.copy(flat)
+    layer[layer != ii] = 0
+    layer[layer == ii] = 1
+    larray.append(layer)
+
+  newstack = np.stack(larray, axis=-1)
+  return newstack
+
 class training_data(object):
 
     def __init__(self):
@@ -25,6 +37,9 @@ class training_data(object):
 
     def get_x(self):
         return self._x
+
+    def get_x_stacked(self):
+        return stack(self._x)
 
     def get_y_digit(self):
         return self._y_digit
