@@ -41,6 +41,14 @@ def get_bar_chart(predictions, width, height):
     raw_data = renderer.tostring_rgb()
     return raw_data
 
+def unstack(stacked, layers=16):
+  """Convert 16, 16 stacked board state (4, 4 flattened and 16 layers of
+     numbers). Doesn't work for 4,4 boards."""
+  for i in range(layers):
+    stacked[:,i] *= 2 ** (i + 1)
+  flat = np.sum(stacked, axis=1)
+  return flat
+
 def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
@@ -51,6 +59,7 @@ def gather_training_data(env, model, seed=None):
     else:
         env.seed()
     observation = env.reset()
+    observation = unstack(observation)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -97,8 +106,7 @@ def gather_training_data(env, model, seed=None):
 
             ## Get predictions from model
             if model:
-                normalised_observation = (observation - 64.) / 188.
-                predictions = model.predict(np.reshape(normalised_observation, (-1, 16))).reshape((4))
+                predictions = model.predict(np.reshape(observation, (-1, 16))).reshape((4))
                 predicted_action = np.argmax(predictions)
                 #print(predictions)
 
@@ -151,6 +159,8 @@ def gather_training_data(env, model, seed=None):
 
             # Add this data to the data collection if manually entered and not illegal
             new_observation, reward, done, info = env.step(action)
+            # For now just unstack the stacked state
+            new_observation = unstack(new_observation)
             illegal_move = np.array_equal(observation, new_observation)
             if record_action and not illegal_move:
                 data.add(observation, action, reward, new_observation, done)
@@ -181,7 +191,7 @@ if __name__ == '__main__':
 
     # Load model
     if args.input:
-        model = tf.keras.models.load_model(args.input)
+        model = tf.keras.models.load_weights(args.input)
     else:
         model = None
 
