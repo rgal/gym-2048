@@ -51,7 +51,8 @@ class Game2048Env(gym.Env):
         # Members for gym implementation
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
-        self.observation_space = spaces.Box(0, 2**self.squares, (self.w * self.h, ), dtype=np.int)
+        layers = self.squares
+        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
         self.set_illegal_move_reward(0.)
 
         # Initialise seed
