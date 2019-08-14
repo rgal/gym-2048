@@ -42,11 +42,10 @@ def get_bar_chart(predictions, width, height):
     return raw_data
 
 def unstack(stacked, layers=16):
-  """Convert 16, 16 stacked board state (4, 4 flattened and 16 layers of
-     numbers). Doesn't work for 4,4 boards."""
+  """Convert a single 4, 4, 16 stacked board state into flat 4, 4 board."""
   for i in range(layers):
-    stacked[:,i] *= 2 ** (i + 1)
-  flat = np.sum(stacked, axis=1)
+    stacked[:,:,i] *= 2 ** (i + 1)
+  flat = np.sum(stacked, axis=2)
   return flat
 
 def gather_training_data(env, model, seed=None):
@@ -90,9 +89,9 @@ def gather_training_data(env, model, seed=None):
             # Board
             pygame.draw.rect(screen, grey, (0, 0, grid_size * 4, grid_size * 4))
             myfont = pygame.font.SysFont('Tahome', 30)
-            for i, o, in enumerate(observation):
-                 x = i % 4
-                 y = i // 4
+            for y in range(4):
+              for x in range(4):
+                 o = observation[y][x]
                  if o:
                      pygame.draw.rect(screen, tile_colour_map[o], (x * grid_size, y * grid_size, grid_size, grid_size))
                      text = myfont.render(str(o), False, white)

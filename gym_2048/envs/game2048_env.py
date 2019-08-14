@@ -52,7 +52,7 @@ class Game2048Env(gym.Env):
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
         layers = self.squares
-        self.observation_space = spaces.Box(0, 1, (self.w * self.h, layers), dtype=np.int)
+        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
         self.set_illegal_move_reward(0.)
 
         # Initialise seed
@@ -93,7 +93,7 @@ class Game2048Env(gym.Env):
 
         #print("Am I done? {}".format(done))
         info = dict()
-        return stack(self.Matrix.flatten()), reward, done, info
+        return stack(self.Matrix), reward, done, info
         # Return observation (board state), reward, done and info dict
 
     def reset(self):
@@ -104,7 +104,7 @@ class Game2048Env(gym.Env):
         self.add_tile()
         self.add_tile()
 
-        return stack(self.Matrix.flatten())
+        return stack(self.Matrix)
 
     def render(self, mode='human'):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
