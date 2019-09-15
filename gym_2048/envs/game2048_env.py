@@ -54,6 +54,7 @@ class Game2048Env(gym.Env):
         layers = self.squares
         self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
         self.set_illegal_move_reward(0.)
+        self.set_max_tile(None)
 
         # Initialise seed
         self.seed()
@@ -72,6 +73,12 @@ class Game2048Env(gym.Env):
         # (assume that illegal move reward is the lowest value that can be returned
         self.illegal_move_reward = reward
         self.reward_range = (self.illegal_move_reward, float(2**self.squares))
+
+    def set_max_tile(self, max_tile):
+        """Define the maximum tile that will end the game (e.g. 2048). None means no limit.
+           This does not affect the state returned."""
+        assert max_tile is None or isinstance(max_tile, int)
+        self.max_tile = max_tile
 
     # Implement gym interface
     def step(self, action):
@@ -242,11 +249,11 @@ class Game2048Env(gym.Env):
         return (combined_row, move_score)
 
     def isend(self):
-        """Has the game ended. Game ends if there is a 2048 tile or there are
-        no legal moves. If there are empty spaces then there must be legal
-        moves."""
+        """Has the game ended. Game ends if there is a tile equal to the limit
+           or there are no legal moves. If there are empty spaces then there
+           must be legal moves."""
 
-        if self.highest() == 2048:
+        if self.max_tile is not None and self.highest() == self.max_tile:
             return True
 
         for direction in range(4):
