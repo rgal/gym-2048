@@ -105,7 +105,7 @@ def gather_training_data(env, model, seed=None):
 
             ## Get predictions from model
             if model:
-                predictions = model.predict(np.reshape(observation, (-1, 16))).reshape((4))
+                predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 16))).reshape((4))
                 predicted_action = np.argmax(predictions)
                 #print(predictions)
 
