@@ -86,6 +86,9 @@ class Game2048Env(gym.Env):
         logging.debug("Action {}".format(action))
         score = 0
         done = None
+        info = {
+            'illegal_move': False,
+        }
         try:
             score = float(self.move(action))
             self.score += score
@@ -95,13 +98,15 @@ class Game2048Env(gym.Env):
             reward = float(score)
         except IllegalMove as e:
             logging.debug("Illegal move")
+            info['illegal_move'] = True
             done = False
             reward = self.illegal_move_reward
 
         #print("Am I done? {}".format(done))
-        info = dict()
-        return stack(self.Matrix), reward, done, info
+        info['highest'] = self.highest()
+
         # Return observation (board state), reward, done and info dict
+        return stack(self.Matrix), reward, done, info
 
     def reset(self):
         self.Matrix = np.zeros((self.h, self.w), np.int)

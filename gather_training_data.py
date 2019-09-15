@@ -160,7 +160,7 @@ def gather_training_data(env, model, seed=None):
             new_observation, reward, done, info = env.step(action)
             # For now just unstack the stacked state
             new_observation = unstack(new_observation)
-            illegal_move = np.array_equal(observation, new_observation)
+            illegal_move = info['illegal_move']
             if record_action and not illegal_move:
                 data.add(observation, action, reward, new_observation, done)
             else:

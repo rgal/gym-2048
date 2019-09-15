@@ -66,7 +66,7 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
         #print("Score: {} Total reward: {}".format(env.score, total_reward))
 
         # Count illegal moves
-        if np.array_equal(state, next_state):
+        if info['illegal_move']:
             total_illegals += 1
 
         # Update values for our tracking
@@ -82,7 +82,7 @@ def evaluate(model, env, epsilon, seed=None, agent_seed=None):
             break
 
         #print("")
-    return total_reward, moves_taken, total_illegals
+    return total_reward, moves_taken, total_illegals, info['highest']
 
 
 def evaluate_model(model, epsilon, label='eval'):
@@ -93,9 +93,9 @@ def evaluate_model(model, epsilon, label='eval'):
   tt_reward = 0
   max_t_reward = 0.
   for i_episode in range(evaluation_episodes):
-    (total_reward, moves_taken, total_illegals) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
-    print("Episode {}, using epsilon {}, total reward {}, moves taken {} illegals {}".format(i_episode, epsilon, total_reward, moves_taken, total_illegals))
-    scores.append({'total_reward': total_reward, 'highest': env.highest(), 'moves': moves_taken, 'illegal_moves': total_illegals})
+    (total_reward, moves_taken, total_illegals, highest) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
+    print("Episode {}, using epsilon {}, highest {}, total reward {}, moves taken {} illegals {}".format(i_episode, epsilon, highest, total_reward, moves_taken, total_illegals))
+    scores.append({'total_reward': total_reward, 'highest': highest, 'moves': moves_taken, 'illegal_moves': total_illegals})
     tt_reward += total_reward
     max_t_reward = max(max_t_reward, total_reward)
 
