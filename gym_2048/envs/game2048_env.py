@@ -6,6 +6,8 @@ from gym.utils import seeding
 
 import numpy as np
 
+from PIL import Image, ImageDraw, ImageFont
+
 import itertools
 import logging
 from six import StringIO
@@ -36,7 +38,7 @@ def stack(flat, layers=16):
   return newstack
 
 class Game2048Env(gym.Env):
-    metadata = {'render.modes': ['human', 'ansi']}
+    metadata = {'render.modes': ['ansi', 'human', 'rgb_array']}
 
     def __init__(self):
         # Definitions for game. Board must be square.
@@ -55,6 +57,9 @@ class Game2048Env(gym.Env):
         self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
         self.set_illegal_move_reward(0.)
         self.set_max_tile(None)
+
+        # Size of square for rendering
+        self.grid_size = 70
 
         # Initialise seed
         self.seed()
@@ -119,6 +124,43 @@ class Game2048Env(gym.Env):
         return stack(self.Matrix)
 
     def render(self, mode='human'):
+        if mode == 'rgb_array':
+            black = (0, 0, 0)
+            grey = (128, 128, 128)
+            white = (255, 255, 255)
+            tile_colour_map = {
+                2: (255, 0, 0),
+                4: (224, 32, 0),
+                8: (192, 64, 0),
+                16: (160, 96, 0),
+                32: (128, 128, 0),
+                64: (96, 160, 0),
+                128: (64, 192, 0),
+                256: (32, 224, 0),
+                512: (0, 255, 0),
+                1024: (0, 224, 32),
+                2048: (0, 192, 64),
+            }
+            grid_size = self.grid_size
+
+            # Render with Pillow
+            pil_board = Image.new("RGB", (grid_size * 4, grid_size * 4))
+            draw = ImageDraw.Draw(pil_board)
+            draw.rectangle([0, 0, 4 * grid_size, 4 * grid_size], grey)
+            fnt = ImageFont.truetype('Tahoma.ttf', 30)
+
+            for y in range(4):
+              for x in range(4):
+                 o = self.get(y, x)
+                 if o:
+                     draw.rectangle([x * grid_size, y * grid_size, (x + 1) * grid_size, (y + 1) * grid_size], tile_colour_map[o])
+                     (text_x_size, text_y_size) = draw.textsize(str(o), font=fnt)
+                     draw.text((x * grid_size + (grid_size - text_x_size) // 2, y * grid_size + (grid_size - text_y_size) // 2), str(o), font=fnt, fill=white)
+                     assert text_x_size < grid_size
+                     assert text_y_size < grid_size
+
+            return np.asarray(pil_board).swapaxes(0, 1)
+
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
         s += 'Highest: {}\n'.format(self.highest())
