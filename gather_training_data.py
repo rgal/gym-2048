@@ -11,6 +11,8 @@ import gym
 import numpy as np
 import pygame
 import tensorflow as tf
+from tensorflow.keras.models import load_model
+
 import matplotlib
 matplotlib.use("Agg")
 
@@ -58,7 +60,7 @@ def gather_training_data(env, model, seed=None):
     else:
         env.seed()
     observation = env.reset()
-    observation = unstack(observation)
+    flat_observation = unstack(observation)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -91,7 +93,7 @@ def gather_training_data(env, model, seed=None):
             myfont = pygame.font.SysFont('Tahome', 30)
             for y in range(4):
               for x in range(4):
-                 o = observation[y][x]
+                 o = flat_observation[y][x]
                  if o:
                      pygame.draw.rect(screen, tile_colour_map[o], (x * grid_size, y * grid_size, grid_size, grid_size))
                      text = myfont.render(str(o), False, white)
@@ -105,7 +107,7 @@ def gather_training_data(env, model, seed=None):
 
             ## Get predictions from model
             if model:
-                predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 16))).reshape((4))
+                predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
                 predicted_action = np.argmax(predictions)
                 #print(predictions)
 
@@ -159,14 +161,15 @@ def gather_training_data(env, model, seed=None):
             # Add this data to the data collection if manually entered and not illegal
             new_observation, reward, done, info = env.step(action)
             # For now just unstack the stacked state
-            new_observation = unstack(new_observation)
+            new_flat_observation = unstack(new_observation)
             illegal_move = info['illegal_move']
             if record_action and not illegal_move:
-                data.add(observation, action, reward, new_observation, done)
+                data.add(flat_observation, action, reward, new_flat_observation, done)
             else:
                 print("Not recording move")
 
             observation = new_observation
+            flat_observation = new_flat_observation
             print()
 
             if done:
@@ -190,7 +193,7 @@ if __name__ == '__main__':
 
     # Load model
     if args.input:
-        model = tf.keras.models.load_weights(args.input)
+        model = load_model(args.input)
     else:
         model = None
 
