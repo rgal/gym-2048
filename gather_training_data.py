@@ -19,6 +19,8 @@ matplotlib.use("Agg")
 import matplotlib.backends.backend_agg as agg
 import matplotlib.pyplot as plt
 
+from PIL import Image, ImageDraw, ImageFont
+
 import gym_2048
 import training_data
 
@@ -50,6 +52,43 @@ def unstack(stacked, layers=16):
   flat = np.sum(stacked, axis=2)
   return flat
 
+def render(observation):
+    black = (0, 0, 0)
+    grey = (128, 128, 128)
+    blue = (0, 0, 128)
+    white = (255, 255, 255)
+    tile_colour_map = {
+        2: (255, 0, 0),
+        4: (224, 32, 0),
+        8: (192, 64, 0),
+        16: (160, 96, 0),
+        32: (128, 128, 0),
+        64: (96, 160, 0),
+        128: (64, 192, 0),
+        256: (32, 224, 0),
+        512: (0, 255, 0),
+        1024: (0, 224, 32),
+        2048: (0, 192, 64),
+    }
+
+    # Render with Pillow
+    pil_board = Image.new("RGB", (grid_size * 4, grid_size * 4))
+    draw = ImageDraw.Draw(pil_board)
+    draw.rectangle([0, 0, 280, 280], grey)
+    fnt = ImageFont.truetype('Tahoma.ttf', 30)
+
+    for y in range(4):
+      for x in range(4):
+         o = observation[y][x]
+         if o:
+             draw.rectangle([x * grid_size, y * grid_size, (x + 1) * grid_size, (y + 1) * grid_size], tile_colour_map[o])
+             (text_x_size, text_y_size) = draw.textsize(str(o), font=fnt)
+             draw.text((x * grid_size + (grid_size - text_x_size) // 2, y * grid_size + (grid_size - text_y_size) // 2), str(o), font=fnt, fill=white)
+             assert text_x_size < grid_size
+             assert text_y_size < grid_size
+
+    return np.asarray(pil_board).swapaxes(0, 1)
+
 def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
@@ -68,44 +107,11 @@ def gather_training_data(env, model, seed=None):
             action = None
             env.render()
 
-            # Display with pygame
-            black = (0, 0, 0)
-            grey = (128, 128, 128)
-            blue = (0, 0, 128)
-            white = (255, 255, 255)
-            tile_colour_map = {
-                2: (255, 0, 0),
-                4: (224, 32, 0),
-                8: (192, 64, 0),
-                16: (160, 96, 0),
-                32: (128, 128, 0),
-                64: (96, 160, 0),
-                128: (64, 192, 0),
-                256: (32, 224, 0),
-                512: (0, 255, 0),
-                1024: (0, 224, 32),
-                2048: (0, 192, 64),
-            }
-            # Background
-            screen.fill(black)
-            # Board
-            pygame.draw.rect(screen, grey, (0, 0, grid_size * 4, grid_size * 4))
-            myfont = pygame.font.SysFont('Tahome', 30)
-            for y in range(4):
-              for x in range(4):
-                 o = flat_observation[y][x]
-                 if o:
-                     pygame.draw.rect(screen, tile_colour_map[o], (x * grid_size, y * grid_size, grid_size, grid_size))
-                     text = myfont.render(str(o), False, white)
-                     text_rect = text.get_rect()
-                     width = text_rect.width
-                     height = text_rect.height
-                     assert width < grid_size
-                     assert height < grid_size
-                     screen.blit(text, (x * grid_size + grid_size / 2 - text_rect.width / 2,
-                         y * grid_size + grid_size / 2 - text_rect.height / 2))
+            board_array = render(flat_observation)
+            board_surface = pygame.surfarray.make_surface(board_array)
+            screen.blit(board_surface, (0,0))
 
-            ## Get predictions from model
+            # Get predictions from model
             if model:
                 predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
                 predicted_action = np.argmax(predictions)
