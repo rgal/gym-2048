@@ -74,7 +74,7 @@ def render(observation):
     # Render with Pillow
     pil_board = Image.new("RGB", (grid_size * 4, grid_size * 4))
     draw = ImageDraw.Draw(pil_board)
-    draw.rectangle([0, 0, 280, 280], grey)
+    draw.rectangle([0, 0, 4 * grid_size, 4 * grid_size], grey)
     fnt = ImageFont.truetype('Tahoma.ttf', 30)
 
     for y in range(4):
@@ -124,12 +124,12 @@ def gather_training_data(env, model, seed=None):
                 for direction, reward in dir_reward:
                     print('{}: {:.3f}'.format(direction, reward))
 
-                chart_height = 280
-                chart_width = 280
+                chart_height = 4 * grid_size
+                chart_width = 4 * grid_size
                 raw_data = get_bar_chart(predictions, chart_height, chart_width)
 
                 surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
-                screen.blit(surf, (280,0))
+                screen.blit(surf, (4 * grid_size, 0))
 
             pygame.display.update()
 
