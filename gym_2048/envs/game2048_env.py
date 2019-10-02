@@ -104,7 +104,7 @@ class Game2048Env(gym.Env):
         except IllegalMove as e:
             logging.debug("Illegal move")
             info['illegal_move'] = True
-            done = False
+            done = True
             reward = self.illegal_move_reward
 
         #print("Am I done? {}".format(done))
