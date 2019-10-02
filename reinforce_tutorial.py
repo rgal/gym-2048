@@ -27,7 +27,7 @@ num_iterations = 250  # @param
 collect_episodes_per_iteration = 2  # @param
 replay_buffer_capacity = 2000  # @param
 
-fc_layer_params = (100,)
+fc_layer_params = (1024, 1024)
 
 learning_rate = 1e-3  # @param
 log_interval = 25  # @param
