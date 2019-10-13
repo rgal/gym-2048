@@ -149,7 +149,7 @@ class Game2048Env(gym.Env):
             draw.rectangle([0, 0, 4 * grid_size, 4 * grid_size], grey)
             try:
               fnt = ImageFont.truetype('Arial.ttf', 30)
-            except OsError:
+            except OSError:
               fnt = ImageFont.load_default()
 
             for y in range(4):
