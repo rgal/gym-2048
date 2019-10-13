@@ -148,7 +148,7 @@ class Game2048Env(gym.Env):
             draw = ImageDraw.Draw(pil_board)
             draw.rectangle([0, 0, 4 * grid_size, 4 * grid_size], grey)
             try:
-              fnt = ImageFont.truetype('Tahoma.ttf', 30)
+              fnt = ImageFont.truetype('Arial.ttf', 30)
             except OsError:
               fnt = ImageFont.load_default()
 
