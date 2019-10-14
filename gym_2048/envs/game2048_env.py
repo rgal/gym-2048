@@ -164,7 +164,7 @@ class Game2048Env(gym.Env):
                      assert text_x_size < grid_size
                      assert text_y_size < grid_size
 
-            return np.asarray(pil_board).swapaxes(0, 1)
+            return np.asarray(pil_board)
 
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
