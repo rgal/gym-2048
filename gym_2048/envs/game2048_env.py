@@ -149,8 +149,10 @@ class Game2048Env(gym.Env):
             draw.rectangle([0, 0, 4 * grid_size, 4 * grid_size], grey)
             try:
               fnt = ImageFont.truetype('Arial.ttf', 30)
+              print("Loaded Arial")
             except OSError:
               fnt = ImageFont.load_default()
+              print("Loaded default")
 
             for y in range(4):
               for x in range(4):
