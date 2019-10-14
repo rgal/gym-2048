@@ -159,8 +159,10 @@ class Game2048Env(gym.Env):
                  o = self.get(y, x)
                  if o:
                      draw.rectangle([x * grid_size, y * grid_size, (x + 1) * grid_size, (y + 1) * grid_size], tile_colour_map[o])
-                     (text_x_size, text_y_size) = draw.textsize(str(o), font=fnt)
-                     draw.text((x * grid_size + (grid_size - text_x_size) // 2, y * grid_size + (grid_size - text_y_size) // 2), str(o), font=fnt, fill=white)
+                     #number = str(o)
+                     number = u"{}".format(o)
+                     (text_x_size, text_y_size) = draw.textsize(number, font=fnt)
+                     draw.text((x * grid_size + (grid_size - text_x_size) // 2, y * grid_size + (grid_size - text_y_size) // 2), number, font=fnt, fill=white)
                      assert text_x_size < grid_size
                      assert text_y_size < grid_size
 
