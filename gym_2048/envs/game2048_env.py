@@ -23,16 +23,13 @@ class IllegalMove(Exception):
     pass
 
 def stack(flat, layers=16):
-  larray = []
+  # Create a new empty stack
+  newstack = np.empty([4, 4, layers], dtype=int)
   for i in range(1, layers + 1):
+    # for layer i, set it to one if there is 2^i in flat
     ii = 2 ** i
-    layer = np.where(flat == ii, 1, 0)
-    #print("Layer")
-    #print(layer)
-    #print(layer.shape)
-    larray.append(layer)
+    newstack[:,:,i - 1] = np.where(flat == ii, 1, 0)
 
-  newstack = np.stack(larray, axis=-1)
   return newstack
 
 class Game2048Env(gym.Env):
