@@ -26,9 +26,7 @@ def stack(flat, layers=16):
   larray = []
   for i in range(1, layers + 1):
     ii = 2 ** i
-    layer = np.copy(flat)
-    layer[layer != ii] = 0
-    layer[layer == ii] = 1
+    layer = np.where(flat == ii, 1, 0)
     #print("Layer")
     #print(layer)
     #print(layer.shape)
