@@ -212,6 +212,7 @@ class EncodingNetwork(network.Network):
                 kernel_size=kernel_size,
                 strides=strides,
                 dilation_rate=dilation_rate,
+                padding='same',
                 activation=activation_fn,
                 kernel_initializer=kernel_initializer,
                 dtype=dtype,
@@ -479,8 +480,10 @@ filters = 256
 # filters, size, stride
 conv_layer_params = [
   (filters, 3, 1),
+  (filters, 3, 1),
+  (2, 1, 1),
 ]
-fc_layer_params = (1024, 1024)
+fc_layer_params = []#(1024, 1024)
 
 learning_rate = 1e-3  # @param
 log_interval = 25  # @param
