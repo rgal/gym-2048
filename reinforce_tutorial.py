@@ -213,10 +213,12 @@ class EncodingNetwork(network.Network):
                 strides=strides,
                 dilation_rate=dilation_rate,
                 padding='same',
-                activation=activation_fn,
+                #activation=activation_fn,
                 kernel_initializer=kernel_initializer,
                 dtype=dtype,
                 name='%s/conv%s' % (name, conv_type)))
+        layers.append(tf.keras.layers.BatchNormalization())
+        layers.append(tf.keras.layers.Activation('relu'))
 
     layers.append(tf.keras.layers.Flatten())
 
