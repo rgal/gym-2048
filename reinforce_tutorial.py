@@ -27,6 +27,11 @@ num_iterations = 250  # @param
 collect_episodes_per_iteration = 2  # @param
 replay_buffer_capacity = 2000  # @param
 
+filters = 256
+# filters, size, stride
+conv_layer_params = [
+  (filters, 3, 1),
+]
 fc_layer_params = (1024, 1024)
 
 learning_rate = 1e-3  # @param
@@ -64,6 +69,7 @@ eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 actor_net = actor_distribution_network.ActorDistributionNetwork(
     train_env.observation_spec(),
     train_env.action_spec(),
+    conv_layer_params=conv_layer_params,
     fc_layer_params=fc_layer_params)
 
 optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)

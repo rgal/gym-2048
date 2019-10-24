@@ -49,7 +49,7 @@ class Game2048Env(gym.Env):
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
         layers = self.squares
-        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
+        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.float32)
         self.set_illegal_move_reward(0.)
         self.set_max_tile(None)
 
@@ -106,7 +106,7 @@ class Game2048Env(gym.Env):
         info['highest'] = self.highest()
 
         # Return observation (board state), reward, done and info dict
-        return stack(self.Matrix), reward, done, info
+        return stack(self.Matrix).astype('float32'), reward, done, info
 
     def reset(self):
         self.Matrix = np.zeros((self.h, self.w), np.int)
@@ -116,7 +116,7 @@ class Game2048Env(gym.Env):
         self.add_tile()
         self.add_tile()
 
-        return stack(self.Matrix)
+        return stack(self.Matrix).astype('float32')
 
     def render(self, mode='human'):
         if mode == 'rgb_array':
