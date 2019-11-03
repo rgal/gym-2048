@@ -474,20 +474,22 @@ import gym_2048
 tf.compat.v1.enable_v2_behavior()
 
 env_name = '2048-v0'  # @param
-num_iterations = 250  # @param
+num_iterations = 10000  # @param
 collect_episodes_per_iteration = 2  # @param
 replay_buffer_capacity = 2000  # @param
 
-filters = 256
+filters = 64
 # filters, size, stride
 conv_layer_params = [
+  (filters, 3, 1),
+  (filters, 3, 1),
   (filters, 3, 1),
   (filters, 3, 1),
   (2, 1, 1),
 ]
 fc_layer_params = []#(1024, 1024)
 
-learning_rate = 1e-3  # @param
+learning_rate = 1e-4  # @param
 log_interval = 25  # @param
 num_eval_episodes = 10  # @param
 eval_interval = 50  # @param
