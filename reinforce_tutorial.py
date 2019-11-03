@@ -534,6 +534,7 @@ tf_agent = reinforce_agent.ReinforceAgent(
     train_env.action_spec(),
     actor_network=actor_net,
     optimizer=optimizer,
+    gamma=0.9,
     normalize_returns=True,
     train_step_counter=train_step_counter)
 tf_agent.initialize()
