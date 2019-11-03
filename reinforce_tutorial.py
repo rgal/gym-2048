@@ -545,6 +545,7 @@ collect_policy = tf_agent.collect_policy
 # metrics.
 def compute_avg_return(environment, policy, num_episodes=10):
   total_return = 0.0
+  max_return = 0.0
   for _ in range(num_episodes):
 
     time_step = environment.reset()
@@ -556,8 +557,10 @@ def compute_avg_return(environment, policy, num_episodes=10):
       episode_return += time_step.reward
     total_return += episode_return
 
+    max_return = max(episode_return, max_return)
+
   avg_return = total_return / num_episodes
-  return avg_return.numpy()[0]
+  return avg_return.numpy()[0], max_return.numpy()[0]
 
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
     data_spec=tf_agent.collect_data_spec,
@@ -589,7 +592,7 @@ tf_agent.train = common.function(tf_agent.train)
 tf_agent.train_step_counter.assign(0)
 
 # Evaluate the agent's policy once before training.
-avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+(avg_return, max_return) = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
 returns = [avg_return]
 
 for _ in range(num_iterations):
@@ -609,8 +612,8 @@ for _ in range(num_iterations):
     print('step = {0}: loss = {1}'.format(step, train_loss.loss))
 
   if step % eval_interval == 0:
-    avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
-    print('step = {0}: Average Return = {1}'.format(step, avg_return))
+    (avg_return, max_return) = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+    print('step = {0}: Average Return = {1}, Maximum Return = {2}'.format(step, avg_return, max_return))
     returns.append(avg_return)
 
 steps = range(0, num_iterations + 1, eval_interval)
