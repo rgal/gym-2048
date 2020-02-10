@@ -15,8 +15,7 @@ def stack(flat, layers=16):
 
   # Now set the values in the board to 1 or zero depending whether they match representation.
   # Representation is broadcast across a number of axes
-  layered[layered != representation] = 0
-  layered[layered == representation] = 1
+  layered = np.where(layered == representation, 1, 0)
 
   return layered
 
