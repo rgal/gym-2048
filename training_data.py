@@ -6,16 +6,19 @@ import copy
 import numpy as np
 
 def stack(flat, layers=16):
-  larray = []
-  for i in range(1, layers + 1):
-    ii = 2 ** i
-    layer = np.copy(flat)
-    layer[layer != ii] = 0
-    layer[layer == ii] = 1
-    larray.append(layer)
+  """Convert an [n, 4, 4] representation into [n, 4, 4, layers] with one layers for each value."""
+  # representation is what each layer represents
+  representation = 2 ** (np.arange(layers, dtype=int) + 1)
 
-  newstack = np.stack(larray, axis=-1)
-  return newstack
+  # layered is the flat board repeated layers times
+  layered = np.repeat(flat[:,:,:,np.newaxis], layers, axis=-1)
+
+  # Now set the values in the board to 1 or zero depending whether they match representation.
+  # Representation is broadcast across a number of axes
+  layered[layered != representation] = 0
+  layered[layered == representation] = 1
+
+  return layered
 
 class training_data(object):
 
