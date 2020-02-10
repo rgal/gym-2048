@@ -45,10 +45,8 @@ def get_bar_chart(predictions, width, height):
 
 def unstack(stacked, layers=16):
   """Convert a single 4, 4, 16 stacked board state into flat 4, 4 board."""
-  for i in range(layers):
-    stacked[:,:,i] *= 2 ** (i + 1)
-  flat = np.sum(stacked, axis=2)
-  return flat
+  representation = 2 ** (np.arange(layers, dtype=int) + 1)
+  return np.sum(stacked * representation, axis=2)
 
 def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
