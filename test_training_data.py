@@ -476,7 +476,7 @@ class TestTrainingData():
         td.shuffle()
         for i in range(n):
             # Find where this has been shuffled too
-            index_of_val = np.asscalar(np.where(td.get_y_digit() == i)[0])
+            index_of_val = np.where(td.get_y_digit() == i)[0].item(0)
 
             # Check that all parts of this equal i
             arrays = td.get_n(index_of_val)
