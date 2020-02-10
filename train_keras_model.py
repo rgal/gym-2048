@@ -174,6 +174,14 @@ if __name__ == '__main__':
   x = td.get_x()
   print(td.size())
   unique_x, x_indices, x_inverse, x_counts = np.unique(x, axis=0, return_index=True, return_inverse=True, return_counts=True)
+  listOfUniqueValues = zip(unique_x, x_counts, x_indices)
+  discounted_return = td.get_discounted_return()
+  print(discounted_return.shape)
+  y_digit = td.get_y_digit()
+  print(y_digit.shape)
+  for elem in listOfUniqueValues:
+    if elem[1] > 1:
+      print(elem[0], ' Occurs : ', elem[1], ' times & first index is ', elem[2])
   print(unique_x)
   print(len(unique_x))
   print(x_indices)
