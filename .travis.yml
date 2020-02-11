@@ -4,6 +4,7 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
   # PyPy versions
   #- "pypy-5.3.1"
 # command to install dependencies
@@ -16,4 +17,4 @@ script:
   - py.test --cov=training_data --cov=gym_2048 .
   - python train_keras_model.py test_data.csv
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then codecov; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then codecov; fi
