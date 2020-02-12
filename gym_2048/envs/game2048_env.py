@@ -100,7 +100,7 @@ class Game2048Env(gym.Env):
             self.add_tile()
             done = self.isend()
             reward = float(score)
-        except IllegalMove as e:
+        except IllegalMove:
             logging.debug("Illegal move")
             info['illegal_move'] = True
             done = False

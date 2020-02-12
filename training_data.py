@@ -125,7 +125,6 @@ class training_data(object):
 
     def normalize_boards(self, mean=None, sd=None):
         """Normalize boards by subtracting mean and dividing by stdandard deviation"""
-        items = self.size()
         boards = self._x
         if mean is None:
             mean = np.mean(boards)
@@ -138,7 +137,6 @@ class training_data(object):
 
     def normalize_rewards(self, mean=None, sd=None):
         """Normalize rewards by subtracting mean and dividing by stdandard deviation"""
-        items = self.size()
         rewards = self._reward
         if mean is None:
             mean = np.mean(rewards)
