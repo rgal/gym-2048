@@ -307,3 +307,16 @@ class training_data(object):
         self._reward = self._reward[p]
         self._next_x = self._next_x[p]
         self._done = self._done[p]
+
+    def make_boards_unique(self):
+        """Remove data samples where the board repeats another one. No
+           guarantee as to which sample is kept."""
+        unique_x, x_indices = np.unique(self._x, return_index=True, axis=0)
+        # Sort indices to keep games in same kind of order
+        sorted_indices = np.sort(x_indices)
+        self._x = self._x[sorted_indices]
+        self._y_digit = self._y_digit[sorted_indices]
+        self._reward = self._reward[sorted_indices]
+        self._next_x = self._next_x[sorted_indices]
+        self._done = self._done[sorted_indices]
+

@@ -486,6 +486,34 @@ class TestTrainingData():
                 else:
                     assert((a == i).all())
 
+    def test_make_boards_unique(self):
+        td = training_data.training_data()
+        td.add(np.ones([1, 4, 4]), 0, 4, np.zeros([1, 4, 4]))
+        td.add(np.zeros([1, 4, 4]), 1, 2, np.ones([1, 4, 4]))
+        td.add(np.ones([1, 4, 4]), 2, 16, np.zeros([1, 4, 4]))
+        td.add(np.zeros([1, 4, 4]), 3, 2, np.ones([1, 4, 4]))
+        td.make_boards_unique()
+        expected_x = np.array([
+            [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            ], dtype=np.int)
+        expected_y_digit = np.array([
+            [0],
+            [1]
+            ], dtype=np.int)
+        expected_reward = np.array([
+            [4],
+            [2]
+            ], dtype=np.float)
+        expected_next_x = np.array([
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+            [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
+            ], dtype=np.int)
+        assert np.array_equal(td.get_x(), expected_x)
+        assert np.array_equal(td.get_y_digit(), expected_y_digit)
+        assert np.allclose(td.get_reward(), expected_reward)
+        assert np.array_equal(td.get_next_x(), expected_next_x)
+
 if __name__ == '__main__':
     import pytest
     pytest.main()
