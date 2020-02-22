@@ -173,6 +173,7 @@ if __name__ == '__main__':
   td.shuffle()
   (training, validation) = td.split(0.8)
   training.augment()
+  training.make_boards_unique()
 
   # Flatten board
   training_data = np.reshape(training.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
