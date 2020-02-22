@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models
-from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, LearningRateScheduler
 from tensorflow.keras.metrics import sparse_top_k_categorical_accuracy
 
 import gym
@@ -164,9 +164,6 @@ if __name__ == '__main__':
   # Summarise
   model.summary()
 
-  model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-          loss='sparse_categorical_crossentropy',
-          metrics=['accuracy', top2_acc, top3_acc])
 
   td = training_data.training_data()
   td.import_csv(sys.argv[1])
@@ -198,12 +195,27 @@ if __name__ == '__main__':
                               min_delta=0,
                               patience=3,
                               verbose=0, mode='auto')
+
+  def scheduler(epoch):
+    if epoch < 10:
+      return 0.001
+    else:
+      return 0.001 * tf.math.exp(0.1 * (10 - epoch))
+
+  lr_callback = LearningRateScheduler(scheduler, verbose=1)
+
+  model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+          loss='sparse_categorical_crossentropy',
+          metrics=['accuracy', top2_acc, top3_acc])
+
   model.fit(training_data,
     training_labels,
     validation_data=(validation_data, validation_labels),
-    epochs=10,
+    epochs=20,
     batch_size=128,
-    callbacks=[tensorboard, early_stopping])
+    callbacks=[tensorboard,
+        early_stopping,
+        lr_callback])
 
   model.save('model.hdf5')
 
