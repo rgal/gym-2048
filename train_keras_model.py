@@ -197,10 +197,12 @@ if __name__ == '__main__':
                               verbose=0, mode='auto')
 
   def scheduler(epoch):
-    if epoch < 10:
+    initial_epochs = 10
+    decay_rate = 0.05
+    if epoch < initial_epochs:
       return 0.001
     else:
-      return 0.001 * tf.math.exp(0.1 * (10 - epoch))
+      return 0.001 * tf.math.exp(decay_rate * (initial_epochs - epoch))
 
   lr_callback = LearningRateScheduler(scheduler, verbose=1)
 
