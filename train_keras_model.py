@@ -156,8 +156,8 @@ if __name__ == '__main__':
   board_squares = board_size * board_size
   board_layers = 16 # Layers of game board to represent different numbers
   outputs = 4
-  filters = 32
-  residual_blocks = 4
+  filters = 64
+  residual_blocks = 8
 
   model = build_model(board_size, board_layers, outputs, filters, residual_blocks)
 
