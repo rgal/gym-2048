@@ -298,15 +298,20 @@ class training_data(object):
 
         self._check_lengths()
 
+    def _update(self, indices):
+        """Update the training data based on a set of indices."""
+        self._check_lengths()
+        self._x = self._x[indices]
+        self._y_digit = self._y_digit[indices]
+        self._reward = self._reward[indices]
+        self._next_x = self._next_x[indices]
+        self._done = self._done[indices]
+        self._check_lengths()
+
     def shuffle(self):
         """Shuffle data."""
-        self._check_lengths()
         p = np.random.permutation(len(self._x))
-        self._x = self._x[p]
-        self._y_digit = self._y_digit[p]
-        self._reward = self._reward[p]
-        self._next_x = self._next_x[p]
-        self._done = self._done[p]
+        self._update(p)
 
     def make_boards_unique(self):
         """Remove data samples where the board repeats another one. No
@@ -314,9 +319,4 @@ class training_data(object):
         unique_x, x_indices = np.unique(self._x, return_index=True, axis=0)
         # Sort indices to keep games in same kind of order
         sorted_indices = np.sort(x_indices)
-        self._x = self._x[sorted_indices]
-        self._y_digit = self._y_digit[sorted_indices]
-        self._reward = self._reward[sorted_indices]
-        self._next_x = self._next_x[sorted_indices]
-        self._done = self._done[sorted_indices]
-
+        self._update(sorted_indices)
