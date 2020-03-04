@@ -174,11 +174,11 @@ class training_data(object):
     def sample(self, index_list):
         indexes = np.asarray(index_list)
         sample = training_data()
-        sample._x = self._x[indexes,:,:]
-        sample._y_digit = self._y_digit[indexes,:]
-        sample._reward = self._reward[indexes,:]
-        sample._next_x = self._next_x[indexes,:,:]
-        sample._done = self._done[indexes,:]
+        sample._x = self._x[indexes]
+        sample._y_digit = self._y_digit[indexes]
+        sample._reward = self._reward[indexes]
+        sample._next_x = self._next_x[indexes]
+        sample._done = self._done[indexes]
         sample._check_lengths()
         return sample
 
