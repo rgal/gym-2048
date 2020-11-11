@@ -27,11 +27,14 @@ class Exiting(Exception):
     def __init__(self):
         super(Exiting, self).__init__()
 
-def get_bar_chart(predictions, width, height):
+def get_figure(width, height):
     dpi = 100.
-    fig = plt.figure(figsize=[width / dpi, height / dpi], # Inches
+    return plt.figure(figsize=[width / dpi, height / dpi], # Inches
                        dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
                        )
+
+def get_bar_chart(predictions, fig):
+    fig.clf()
     ax = fig.gca()
     ax.set_ylim([0, 1])
     ax.bar(['up', 'right', 'down', 'left'], predictions)
@@ -57,6 +60,10 @@ def gather_training_data(env, model, seed=None):
     else:
         env.seed()
     observation = env.reset()
+    if model:
+        chart_height = 4 * grid_size
+        chart_width = 4 * grid_size
+        fig = get_figure(chart_width, chart_height)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -81,9 +88,7 @@ def gather_training_data(env, model, seed=None):
                 for direction, reward in dir_reward:
                     print('{}: {:.3f}'.format(direction, reward))
 
-                chart_height = 4 * grid_size
-                chart_width = 4 * grid_size
-                raw_data = get_bar_chart(predictions, chart_height, chart_width)
+                raw_data = get_bar_chart(predictions, fig)
 
                 surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
                 screen.blit(surf, (4 * grid_size, 0))
