@@ -36,9 +36,12 @@ def get_figure(width, height):
 def get_bar_chart(predictions, fig):
     fig.clf()
     ax = fig.gca()
+    ax.set_xlabel('Action')
+    ax.set_ylabel('Probability')
     ax.set_ylim([0, 1])
-    ax.bar(['up', 'right', 'down', 'left'], predictions)
+    ax.bar(['Up', 'Right', 'Down', 'Left'], predictions)
 
+    plt.tight_layout()
     canvas = agg.FigureCanvasAgg(fig)
     canvas.draw()
     renderer = canvas.get_renderer()
