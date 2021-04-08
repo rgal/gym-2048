@@ -91,8 +91,8 @@ def gather_training_data(env, model, seed=None):
                 for direction, reward in dir_reward:
                     print('{}: {:.3f}'.format(direction, reward))
 
+                # Create graph of predictions
                 raw_data = get_bar_chart(predictions, fig)
-
                 surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
                 screen.blit(surf, (4 * grid_size, 0))
 
