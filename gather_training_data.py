@@ -100,32 +100,42 @@ def gather_training_data(env, model, seed=None):
 
             # Ask user for action
             record_action = False
-            while True:
-                # Loop waiting for valid input
-                event = pygame.event.wait()
-                if event.type == pygame.KEYDOWN:
-                    key_action_map = {
-                        pygame.K_UP: 0,
-                        pygame.K_RIGHT: 1,
-                        pygame.K_DOWN: 2,
-                        pygame.K_LEFT: 3
-                    }
-                    if event.key in key_action_map:
-                        action = key_action_map[event.key]
-                        record_action = True
-                        break
-                    if event.key == pygame.K_q:
+            # Auto-select best action according to model
+            # Require at least 50% confidence
+            # Naive view of confidence, not counting symmetrical boards
+            if model is not None:
+                confidence = np.max(predictions)
+                print("Confidence: {}".format(confidence))
+            if model is None or confidence < 0.5:
+                # Ask user for input
+                while True:
+                    # Loop waiting for valid input
+                    event = pygame.event.wait()
+                    if event.type == pygame.KEYDOWN:
+                        key_action_map = {
+                            pygame.K_UP: 0,
+                            pygame.K_RIGHT: 1,
+                            pygame.K_DOWN: 2,
+                            pygame.K_LEFT: 3
+                        }
+                        if event.key in key_action_map:
+                            action = key_action_map[event.key]
+                            record_action = True
+                            break
+                        if event.key == pygame.K_q:
+                            raise Exiting
+                        if model and (event.key == pygame.K_a):
+                            # Auto-select best action according to model
+                            action = predicted_action
+                            break
+                        if event.key == pygame.K_r:
+                            # Randomly select action
+                            action = random.randrange(4)
+                            break
+                    if event.type == pygame.QUIT:
                         raise Exiting
-                    if model and (event.key == pygame.K_a):
-                        # Auto-select best action according to model
-                        action = predicted_action
-                        break
-                    if event.key == pygame.K_r:
-                        # Randomly select action
-                        action = random.choice([0, 1, 2, 3])
-                        break
-                if event.type == pygame.QUIT:
-                    raise Exiting
+            else:
+                action = predicted_action
 
             print("Selected action {}".format(action))
 
