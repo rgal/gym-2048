@@ -106,7 +106,15 @@ def gather_training_data(env, model, seed=None):
             if model is not None:
                 confidence = np.max(predictions)
                 print("Confidence: {}".format(confidence))
-            if model is None or confidence < 0.5:
+
+                predicted_is_illegal = False
+                env2 = gym.make('2048-v0')
+                env2.set_board(unstack(observation))
+                predicted_is_illegal = env2.step(predicted_action)[3]['illegal_move']
+                if predicted_is_illegal:
+                    print("***Predicted is illegal. ***")
+
+            if model is None or confidence < 0.5 or predicted_is_illegal:
                 # Ask user for input
                 while True:
                     # Loop waiting for valid input
