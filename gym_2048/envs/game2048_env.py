@@ -103,7 +103,7 @@ class Game2048Env(gym.Env):
         except IllegalMove:
             logging.debug("Illegal move")
             info['illegal_move'] = True
-            done = True
+            done = False
             reward = self.illegal_move_reward
 
         #print("Am I done? {}".format(done))
@@ -159,7 +159,7 @@ class Game2048Env(gym.Env):
                      assert text_x_size < grid_size
                      assert text_y_size < grid_size
 
-            return np.asarray(pil_board).swapaxes(0, 1)
+            return np.asarray(pil_board)
 
         outfile = StringIO() if mode == 'ansi' else sys.stdout
         s = 'Score: {}\n'.format(self.score)
