@@ -72,7 +72,7 @@ class Game2048Env(gym.Env):
         action_mask = []
         for k in range(4):
             try:
-                self._environment.environment.move(k, trial=True)
+                self.move(k, trial=True)
                 action_mask.append(True)
             except:
                 action_mask.append(False)
