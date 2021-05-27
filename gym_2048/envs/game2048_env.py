@@ -5,6 +5,7 @@ from gym import spaces
 from gym.utils import seeding
 
 import numpy as np
+import random
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -65,6 +66,17 @@ class Game2048Env(gym.Env):
 
         # Reset ready for a game
         self.reset()
+    
+    # method to get list of invalid moves
+    def get_invalid_moves(self):
+        action_mask = []
+        for k in range(4):
+            try:
+                self.move(k, trial=True)
+                action_mask.append(True)
+            except:
+                action_mask.append(False)
+        return action_mask
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -319,3 +331,4 @@ class Game2048Env(gym.Env):
     def set_board(self, new_board):
         """Retrieve the whole board, useful for testing."""
         self.Matrix = new_board
+        
