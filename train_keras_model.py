@@ -111,12 +111,6 @@ def evaluate_model(model, epsilon, label='eval'):
 
   env.close()
 
-def top2_acc(labels, logits):
-  return sparse_top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=2)
-
-def top3_acc(labels, logits):
-  return sparse_top_k_categorical_accuracy(y_true=labels, y_pred=logits, k=3)
-
 def build_model(board_size=4, board_layers=16, outputs=4, filters=64, residual_blocks=4):
   # Functional API model
   inputs = layers.Input(shape=(board_size * board_size * board_layers,))
@@ -208,7 +202,7 @@ if __name__ == '__main__':
 
   model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
           loss='sparse_categorical_crossentropy',
-          metrics=['accuracy', top2_acc, top3_acc])
+          metrics=['accuracy'])
 
   model.fit(training_data,
     training_labels,
