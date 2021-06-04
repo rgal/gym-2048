@@ -1,4 +1,4 @@
-![GitHub actions status](https://github.com/rgal/gym-2048/actions/workflows/python-package.yml/badge.svg)
+[![Build Status](https://github.com/rgal/gym-2048/actions/workflows/python-package.yml/badge.svg)](https://github.com/rgal/gym-2048/actions/workflows/python-package.yml)
 [![Coverage Status](https://codecov.io/gh/rgal/gym-2048/branch/master/graph/badge.svg)](https://codecov.io/gh/rgal/gym-2048)
 
 
