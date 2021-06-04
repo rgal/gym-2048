@@ -1,4 +1,3 @@
-[![Travis Build Status](https://travis-ci.org/rgal/gym-2048.svg?branch=master)](https://travis-ci.org/rgal/gym-2048)
 ![GitHub actions status](https://github.com/rgal/gym-2048/actions/workflows/python-package.yml/badge.svg)
 [![Coverage Status](https://codecov.io/gh/rgal/gym-2048/branch/master/graph/badge.svg)](https://codecov.io/gh/rgal/gym-2048)
 
