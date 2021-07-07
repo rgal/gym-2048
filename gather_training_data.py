@@ -76,10 +76,9 @@ def gather_training_data(env, model, seed=None):
     else:
         env.seed()
     observation = env.reset()
-    if model:
-        chart_height = 4 * grid_size
-        chart_width = 4 * grid_size
-        fig = get_figure(chart_width, chart_height)
+    chart_height = 4 * grid_size
+    chart_width = 4 * grid_size
+    fig = get_figure(chart_width, chart_height)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -92,22 +91,21 @@ def gather_training_data(env, model, seed=None):
             screen.blit(board_surface, (0,0))
 
             # Get predictions from model
-            if model:
-                predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
-                predicted_action = np.argmax(predictions)
-                #print(predictions)
+            predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
+            predicted_action = np.argmax(predictions)
+            #print(predictions)
 
-                # Report predicted rewards for actions
-                dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
-                dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
-                dir_reward.sort(key=lambda x: x[1], reverse=True)
-                for direction, reward in dir_reward:
-                    print('{}: {:.3f}'.format(direction, reward))
+            # Report predicted rewards for actions
+            dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
+            dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
+            dir_reward.sort(key=lambda x: x[1], reverse=True)
+            for direction, reward in dir_reward:
+                print('{}: {:.3f}'.format(direction, reward))
 
-                # Create graph of predictions
-                raw_data = get_bar_chart(predictions, fig)
-                surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
-                screen.blit(surf, (4 * grid_size, 0))
+            # Create graph of predictions
+            raw_data = get_bar_chart(predictions, fig)
+            surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
+            screen.blit(surf, (4 * grid_size, 0))
 
             pygame.display.update()
 
@@ -116,26 +114,25 @@ def gather_training_data(env, model, seed=None):
             # Auto-select best action according to model
             # Require at least 50% confidence
             # Naive view of confidence, not counting symmetrical boards
-            if model is not None:
-                confidence = np.max(predictions)
-                if confidence < 0.5:
-                    print("***Confidence < 50%: {}***".format(confidence))
+            confidence = np.max(predictions)
+            if confidence < 0.5:
+                print("***Confidence < 50%: {}***".format(confidence))
 
-                predicted_is_illegal = False
-                env2 = gym.make('2048-v0')
-                env2.set_board(unstack(observation))
-                (board2, _, _, info2) = env2.step(predicted_action)
-                predicted_is_illegal = info2['illegal_move']
-                if predicted_is_illegal:
-                    print("***Predicted is illegal.***")
+            predicted_is_illegal = False
+            env2 = gym.make('2048-v0')
+            env2.set_board(unstack(observation))
+            (board2, _, _, info2) = env2.step(predicted_action)
+            predicted_is_illegal = info2['illegal_move']
+            if predicted_is_illegal:
+                print("***Predicted is illegal.***")
 
-                high_in_corner_before = high_tile_in_corner(unstack(observation))
-                high_in_corner_after = high_tile_in_corner(unstack(board2))
-                lost_high_corner = high_in_corner_before and not high_in_corner_after
-                if lost_high_corner:
-                    print("***Lost high corner tile.***")
+            high_in_corner_before = high_tile_in_corner(unstack(observation))
+            high_in_corner_after = high_tile_in_corner(unstack(board2))
+            lost_high_corner = high_in_corner_before and not high_in_corner_after
+            if lost_high_corner:
+                print("***Lost high corner tile.***")
 
-            if model is None or confidence < 0.5 or predicted_is_illegal or lost_high_corner:
+            if confidence < 0.5 or predicted_is_illegal or lost_high_corner:
                 # Ask user for input
                 while True:
                     # Loop waiting for valid input
@@ -153,7 +150,7 @@ def gather_training_data(env, model, seed=None):
                             break
                         if event.key == pygame.K_q:
                             raise Exiting
-                        if model and (event.key == pygame.K_a):
+                        if event.key == pygame.K_a:
                             # Auto-select best action according to model
                             action = predicted_action
                             break
@@ -213,9 +210,7 @@ if __name__ == '__main__':
     # Initialise pygame for detecting keypresses
     pygame.init()
     height = 4 * grid_size
-    width = 4 * grid_size
-    if model:
-        width = 8 * grid_size
+    width = 8 * grid_size
     screen = pygame.display.set_mode((width, height), 0, 32)
     pygame.font.init()
     data = gather_training_data(env, model, seed=args.seed)
