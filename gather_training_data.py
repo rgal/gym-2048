@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 
 import gym_2048
 import training_data
+import train_keras_model
 
 grid_size = 70
 
@@ -202,7 +203,12 @@ if __name__ == '__main__':
     if args.input:
         model = load_model(args.input)
     else:
-        model = None
+        board_size = 4
+        board_layers = 16 # Layers of game board to represent different numbers
+        outputs = 4
+        filters = 64
+        residual_blocks = 8
+        model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
 
     # Initialise pygame for detecting keypresses
     pygame.init()
