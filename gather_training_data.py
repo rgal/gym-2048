@@ -53,6 +53,18 @@ def unstack(stacked, layers=16):
   representation = 2 ** (np.arange(layers, dtype=int) + 1)
   return np.sum(stacked * representation, axis=2)
 
+def high_tile_in_corner(board):
+  """Reports whether the a high tile >=64 is in the corner of (flat) board."""
+  assert board.shape == (4, 4)
+  highest_tile = np.amax(board)
+  if highest_tile < 64:
+    return False
+  tiles_equal_to_highest = np.equal(board, np.full((4,4), highest_tile))
+  corners_equal_to_highest = tiles_equal_to_highest[[0, 0, -1, -1], [0, -1, 0, -1]]
+  high_tile_in_corner = np.any(corners_equal_to_highest)
+  #print(f"{board}, {highest_tile}, {tiles_equal_to_highest}, {corners_equal_to_highest}, {high_tile_in_corner}")
+  return high_tile_in_corner
+
 def gather_training_data(env, model, seed=None):
     """Gather training data from letting the user play the game"""
     # Data is a list of input and outputs
@@ -105,16 +117,24 @@ def gather_training_data(env, model, seed=None):
             # Naive view of confidence, not counting symmetrical boards
             if model is not None:
                 confidence = np.max(predictions)
-                print("Confidence: {}".format(confidence))
+                if confidence < 0.5:
+                    print("***Confidence < 50%: {}***".format(confidence))
 
                 predicted_is_illegal = False
                 env2 = gym.make('2048-v0')
                 env2.set_board(unstack(observation))
-                predicted_is_illegal = env2.step(predicted_action)[3]['illegal_move']
+                (board2, _, _, info2) = env2.step(predicted_action)
+                predicted_is_illegal = info2['illegal_move']
                 if predicted_is_illegal:
-                    print("***Predicted is illegal. ***")
+                    print("***Predicted is illegal.***")
 
-            if model is None or confidence < 0.5 or predicted_is_illegal:
+                high_in_corner_before = high_tile_in_corner(unstack(observation))
+                high_in_corner_after = high_tile_in_corner(unstack(board2))
+                lost_high_corner = high_in_corner_before and not high_in_corner_after
+                if lost_high_corner:
+                    print("***Lost high corner tile.***")
+
+            if model is None or confidence < 0.5 or predicted_is_illegal or lost_high_corner:
                 # Ask user for input
                 while True:
                     # Loop waiting for valid input
