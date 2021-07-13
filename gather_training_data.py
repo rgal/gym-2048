@@ -24,9 +24,13 @@ import train_keras_model
 
 grid_size = 70
 
-class Exiting(Exception):
+class EndingEpisode(Exception):
     def __init__(self):
-        super(Exiting, self).__init__()
+        super(EndingEpisode, self).__init__()
+
+class Quitting(Exception):
+    def __init__(self):
+        super(Quitting, self).__init__()
 
 def get_figure(width, height):
     dpi = 100.
@@ -148,8 +152,10 @@ def gather_training_data(env, model, seed=None):
                             action = key_action_map[event.key]
                             record_action = True
                             break
+                        if event.key == pygame.K_e:
+                            raise EndingEpisode
                         if event.key == pygame.K_q:
-                            raise Exiting
+                            raise Quitting
                         if event.key == pygame.K_a:
                             # Auto-select best action according to model
                             action = predicted_action
@@ -159,7 +165,7 @@ def gather_training_data(env, model, seed=None):
                             action = random.randrange(4)
                             break
                     if event.type == pygame.QUIT:
-                        raise Exiting
+                        raise Quitting
             else:
                 action = predicted_action
 
@@ -182,8 +188,8 @@ def gather_training_data(env, model, seed=None):
                 env.render()
                 print("End of game")
                 break
-    except Exiting:
-        print("Exiting...")
+    except EndingEpisode:
+        print("Ending episode...")
 
     return data
 
@@ -213,12 +219,18 @@ if __name__ == '__main__':
     width = 8 * grid_size
     screen = pygame.display.set_mode((width, height), 0, 32)
     pygame.font.init()
-    data = gather_training_data(env, model, seed=args.seed)
+    alldata = training_data.training_data()
+    try:
+        while True:
+            data = gather_training_data(env, model, seed=args.seed)
+            alldata.merge(data)
+            print("Got {} data values".format(alldata.size()))
+
+    except Quitting:
+        print("Quitting...")
 
     # Close the environment
     env.close()
 
-    print("Got {} data values".format(data.size()))
-
-    if data.size():
-        data.export_csv(args.output)
+    if alldata.size():
+        alldata.export_csv(args.output)
