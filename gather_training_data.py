@@ -195,23 +195,22 @@ def gather_training_data(env, model, seed=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', '-i', default=None, help="Input trained model to get predictions from (optional)")
+    parser.add_argument('--input', '-i', default=None, help="Input existing training data to start from (optional)")
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
     env = gym.make('2048-v0')
 
-    # Load model
-    if args.input:
-        model = load_model(args.input)
-    else:
-        board_size = 4
-        board_layers = 16 # Layers of game board to represent different numbers
-        outputs = 4
-        filters = 64
-        residual_blocks = 8
-        model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
+    board_size = 4
+    board_layers = 16 # Layers of game board to represent different numbers
+    outputs = 4
+    filters = 64
+    residual_blocks = 8
+    model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
+    model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy'])
 
     # Initialise pygame for detecting keypresses
     pygame.init()
@@ -220,6 +219,9 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((width, height), 0, 32)
     pygame.font.init()
     alldata = training_data.training_data()
+    if args.input:
+        alldata.import_csv(args.input)
+
     try:
         while True:
             data = gather_training_data(env, model, seed=args.seed)
