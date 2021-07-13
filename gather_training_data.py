@@ -224,6 +224,17 @@ if __name__ == '__main__':
         while True:
             data = gather_training_data(env, model, seed=args.seed)
             alldata.merge(data)
+            train_from_me = alldata.copy()
+            train_from_me.augment()
+            train_from_me.make_boards_unique()
+            train_data = np.reshape(train_from_me.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
+            train_labels = train_from_me.get_y_digit()
+
+            model.fit(train_data,
+              train_labels,
+              epochs=1,
+              batch_size=128)
+
             print("Got {} data values".format(alldata.size()))
 
     except Quitting:
