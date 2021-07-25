@@ -33,7 +33,7 @@ def choose_action(model, observation, epsilon=0.):
         #print("Choosing random action: {}".format(chosen))
     return chosen
 
-def evaluate(model, env, epsilon, seed=None, agent_seed=None):
+def evaluate_episode(model, env, epsilon, seed=None, agent_seed=None):
     """Evaluate estimator for one episode.
     seed (optional) specifies the seed for the game.
     agent_seed specifies the seed for the agent."""
@@ -93,7 +93,7 @@ def evaluate_model(model, epsilon, label='eval'):
   tt_reward = 0
   max_t_reward = 0.
   for i_episode in range(evaluation_episodes):
-    (total_reward, moves_taken, total_illegals, highest) = evaluate(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
+    (total_reward, moves_taken, total_illegals, highest) = evaluate_episode(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
     print("Episode {}, using epsilon {}, highest {}, total reward {}, moves taken {} illegals {}".format(i_episode, epsilon, highest, total_reward, moves_taken, total_illegals))
     scores.append({'total_reward': total_reward, 'highest': highest, 'moves': moves_taken, 'illegal_moves': total_illegals})
     tt_reward += total_reward
