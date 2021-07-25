@@ -175,6 +175,22 @@ def gather_training_data(env, model, data, seed=None):
             if record_action and not illegal_move:
                 # Unstack the stacked state
                 data.add(unstack(observation), action, reward, unstack(new_observation), done)
+
+                # Train model using new data
+                train_from_me = data.copy()
+                train_from_me.augment()
+                train_from_me.make_boards_unique()
+                minibatch_size = min(32, train_from_me.size())
+                sample_indexes = random.sample(range(train_from_me.size()), minibatch_size)
+                sample_data = train_from_me.sample(sample_indexes)
+
+                train_data = np.reshape(sample_data.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
+                train_labels = sample_data.get_y_digit()
+
+                model.fit(train_data,
+                  train_labels,
+                  epochs=1,
+                  batch_size=32)
             else:
                 print("Not recording move")
 
@@ -223,16 +239,6 @@ if __name__ == '__main__':
     try:
         while True:
             gather_training_data(env, model, alldata, seed=args.seed)
-            train_from_me = alldata.copy()
-            train_from_me.augment()
-            train_from_me.make_boards_unique()
-            train_data = np.reshape(train_from_me.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
-            train_labels = train_from_me.get_y_digit()
-
-            model.fit(train_data,
-              train_labels,
-              epochs=1,
-              batch_size=128)
 
             print("Got {} data values".format(alldata.size()))
 
