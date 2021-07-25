@@ -70,10 +70,8 @@ def high_tile_in_corner(board):
   #print(f"{board}, {highest_tile}, {tiles_equal_to_highest}, {corners_equal_to_highest}, {high_tile_in_corner}")
   return high_tile_in_corner
 
-def gather_training_data(env, model, seed=None):
+def gather_training_data(env, model, data, seed=None):
     """Gather training data from letting the user play the game"""
-    # Data is a list of input and outputs
-    data = training_data.training_data()
     # Initialise seed for environment
     if seed:
         env.seed(seed)
@@ -224,8 +222,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            data = gather_training_data(env, model, seed=args.seed)
-            alldata.merge(data)
+            gather_training_data(env, model, alldata, seed=args.seed)
             train_from_me = alldata.copy()
             train_from_me.augment()
             train_from_me.make_boards_unique()
