@@ -19,7 +19,7 @@ import gym
 import gym_2048
 import training_data
 
-def choose_action(model, observation, epsilon=0.1):
+def choose_action(model, observation, epsilon=0.):
     """Choose best action from the esimator or random, based on epsilon
        Return both the action id and the estimated quality."""
     predictions = np.reshape(model.predict(np.reshape(observation.astype('float32'), (-1, 256))), (4, ))
