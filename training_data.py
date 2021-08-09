@@ -22,11 +22,11 @@ def stack(flat, layers=16):
 class training_data(object):
 
     def __init__(self):
-        self._x = np.empty([0, 4, 4], dtype=np.int)
-        self._y_digit = np.zeros([0, 1], dtype=np.int)
-        self._reward = np.zeros([0, 1], dtype=np.float)
-        self._next_x = np.empty([0, 4, 4], dtype=np.int)
-        self._done = np.empty([0, 1], dtype=np.bool)
+        self._x = np.empty([0, 4, 4], dtype=int)
+        self._y_digit = np.zeros([0, 1], dtype=int)
+        self._reward = np.zeros([0, 1], dtype=float)
+        self._next_x = np.empty([0, 4, 4], dtype=int)
+        self._done = np.empty([0, 1], dtype=bool)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -66,17 +66,17 @@ class training_data(object):
         assert reward is not None
         self._x = np.append(self._x, np.reshape(board, (1, 4, 4)), axis=0)
 
-        y_digit = np.zeros([1, 1], dtype=np.int)
+        y_digit = np.zeros([1, 1], dtype=int)
         y_digit[0, 0] = action
         self._y_digit = np.append(self._y_digit, y_digit, axis=0)
 
-        r = np.zeros([1, 1], dtype=np.float)
+        r = np.zeros([1, 1], dtype=float)
         r[0, 0] = reward
         self._reward = np.append(self._reward, r, axis=0)
 
         self._next_x = np.append(self._next_x, np.reshape(next_board, (1, 4, 4)), axis=0)
 
-        done_array = np.zeros([1, 1], dtype=np.bool)
+        done_array = np.zeros([1, 1], dtype=bool)
         done_array[0, 0] = done
         self._done = np.append(self._done, done_array, axis=0)
 
@@ -99,7 +99,7 @@ class training_data(object):
         items = self.size()
         rewards = np.reshape(self._reward, (items))
         log_rewards = np.ma.log(rewards) / np.ma.log(2)
-        self._reward = np.reshape(np.array(log_rewards, np.float), (items, 1))
+        self._reward = np.reshape(np.array(log_rewards, float), (items, 1))
 
     def get_discounted_return(self, gamma=0.9):
         """Calculate discounted return from rewards.
@@ -121,7 +121,7 @@ class training_data(object):
             smoothed_rewards.append(smoothed)
             previous = smoothed
         smoothed_rewards.reverse()
-        return np.reshape(np.array(smoothed_rewards, np.float), (items, 1))
+        return np.reshape(np.array(smoothed_rewards, float), (items, 1))
 
     def normalize_boards(self, mean=None, sd=None):
         """Normalize boards by subtracting mean and dividing by stdandard deviation"""
@@ -188,11 +188,11 @@ class training_data(object):
     def import_csv(self, filename):
         """Load data as CSV file"""
         # Load board state
-        flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=tuple(range(16)))
+        flat_data = np.loadtxt(filename, dtype=int, delimiter=',', skiprows=1, usecols=tuple(range(16)))
         self._x = np.reshape(flat_data, (-1, 4, 4))
 
         # Load actions
-        digits = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=16)
+        digits = np.loadtxt(filename, dtype=int, delimiter=',', skiprows=1, usecols=16)
         self._y_digit = np.reshape(digits, (-1, 1))
 
         # Load rewards
@@ -200,11 +200,11 @@ class training_data(object):
         self._reward = reward_data.reshape(-1, 1)
 
         # Load next board state
-        flat_data = np.loadtxt(filename, dtype=np.int, delimiter=',', skiprows=1, usecols=tuple(range(18, 34)))
+        flat_data = np.loadtxt(filename, dtype=int, delimiter=',', skiprows=1, usecols=tuple(range(18, 34)))
         self._next_x = np.reshape(flat_data, (-1, 4, 4))
 
         # Load dones
-        done_data = np.loadtxt(filename, dtype=np.bool, delimiter=',', skiprows=1, usecols=34)
+        done_data = np.loadtxt(filename, dtype=bool, delimiter=',', skiprows=1, usecols=34)
         self._done = done_data.reshape(-1, 1)
 
         self._check_lengths()

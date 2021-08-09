@@ -12,17 +12,17 @@ import training_data
 class TestTrainingData():
     def test_add(self):
         td = training_data.training_data()
-        assert np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=np.int))
-        assert np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=np.int))
-        assert np.allclose(td.get_reward(), np.empty([0, 1], dtype=np.float))
-        assert np.array_equal(td.get_next_x(), np.empty([0, 4, 4], dtype=np.int))
-        assert np.array_equal(td.get_done(), np.empty([0, 1], dtype=np.bool))
+        assert np.array_equal(td.get_x(), np.empty([0, 4, 4], dtype=int))
+        assert np.array_equal(td.get_y_digit(), np.empty([0, 1], dtype=int))
+        assert np.allclose(td.get_reward(), np.empty([0, 1], dtype=float))
+        assert np.array_equal(td.get_next_x(), np.empty([0, 4, 4], dtype=int))
+        assert np.array_equal(td.get_done(), np.empty([0, 1], dtype=bool))
         td.add(np.ones([1, 4, 4]), 1, 4, np.zeros([1, 4, 4]), True)
-        assert np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=np.int))
-        assert np.array_equal(td.get_y_digit(), np.array([[1]], dtype=np.int))
-        assert np.allclose(td.get_reward(), np.array([[4]], dtype=np.float))
-        assert np.array_equal(td.get_next_x(), np.zeros([1, 4, 4], dtype=np.int))
-        assert np.array_equal(td.get_done(), np.array([[1]], dtype=np.bool))
+        assert np.array_equal(td.get_x(), np.ones([1, 4, 4], dtype=int))
+        assert np.array_equal(td.get_y_digit(), np.array([[1]], dtype=int))
+        assert np.allclose(td.get_reward(), np.array([[4]], dtype=float))
+        assert np.array_equal(td.get_next_x(), np.zeros([1, 4, 4], dtype=int))
+        assert np.array_equal(td.get_done(), np.array([[1]], dtype=bool))
 
     def test_get_x_stacked(self):
         td = training_data.training_data()
@@ -84,7 +84,7 @@ class TestTrainingData():
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]]
             ]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x_stacked(), expected_x_stacked)
 
     def test_get_y_one_hot(self):
@@ -98,7 +98,7 @@ class TestTrainingData():
             [0, 1, 0, 0],
             [0, 0, 0, 1],
             [0, 0, 1, 0]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_y_one_hot(), expected_y_one_hot)
 
     def test_get_total_reward(self):
@@ -120,10 +120,10 @@ class TestTrainingData():
         td.add(np.ones([4, 4]), 1, 4, np.zeros([4, 4]))
         td.add(np.zeros([4, 4]), 2, 8, np.ones([4, 4]))
         (state, action, reward, next_state, done) = td.get_n(1)
-        assert np.array_equal(state, np.zeros([4, 4], dtype=np.int))
+        assert np.array_equal(state, np.zeros([4, 4], dtype=int))
         assert action == 2
         assert reward == pytest.approx(8.)
-        assert np.array_equal(next_state, np.ones([4, 4], dtype=np.int))
+        assert np.array_equal(next_state, np.ones([4, 4], dtype=int))
 
     def test_hflip(self):
         td = training_data.training_data()
@@ -141,19 +141,19 @@ class TestTrainingData():
         expected_x = np.array([
             [[0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 4, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [3],
             [2]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [2],
             [0],
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 0], [0, 0, 4, 2], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x(), expected_x)
         assert np.array_equal(td.get_y_digit(), expected_y_digit)
         assert np.allclose(td.get_reward(), expected_reward)
@@ -175,19 +175,19 @@ class TestTrainingData():
         expected_x = np.array([
             [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 4, 0, 0], [0, 2, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [0],
             [1]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [2],
             [0],
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 4, 0, 0], [0, 2, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x(), expected_x)
         assert np.array_equal(td.get_y_digit(), expected_y_digit)
         assert np.allclose(td.get_reward(), expected_reward)
@@ -215,7 +215,7 @@ class TestTrainingData():
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]],
             [[1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [1],
             [3],
@@ -225,7 +225,7 @@ class TestTrainingData():
             [1],
             [0],
             [2]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [4],
             [4],
@@ -235,7 +235,7 @@ class TestTrainingData():
             [4],
             [4],
             [4]
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 2], [0, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], # Original
             [[2, 0, 0, 0], [0, 0, 2, 0], [0, 0, 0, 0], [0, 0, 0, 0]], # Hflip'd
@@ -245,7 +245,7 @@ class TestTrainingData():
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 2, 0, 0], [0, 0, 0, 2]], # Hflip, rotated 180 degrees
             [[2, 0, 0, 0], [0, 0, 0, 0], [0, 2, 0, 0], [0, 0, 0, 0]], # Original, rotate 270 degrees
             [[0, 0, 0, 0], [0, 2, 0, 0], [0, 0, 0, 0], [2, 0, 0, 0]]  # Hflip, rotated 270 degrees
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x(), expected_x)
         assert np.array_equal(td.get_y_digit(), expected_y_digit)
         assert np.allclose(td.get_reward(), expected_reward)
@@ -260,19 +260,19 @@ class TestTrainingData():
         expected_x = np.array([
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [1],
             [2]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [16],
             [0]
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x(), expected_x)
         assert np.array_equal(td.get_y_digit(), expected_y_digit)
         assert np.allclose(td.get_reward(), expected_reward)
@@ -324,11 +324,11 @@ class TestTrainingData():
         td.log2_rewards()
         expected_reward = np.array([
             [0], [1], [2], [4], [6.2288], [11]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(td.get_reward(), expected_reward)
         expected_action = np.array([
             [0], [1], [2], [3], [0], [1]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.allclose(td.get_y_digit(), expected_action)
 
     def test_get_discounted_return(self):
@@ -344,7 +344,7 @@ class TestTrainingData():
         discounted_return = td2.get_discounted_return()
         expected_return = np.array([
             [20.218], [18.02], [17.8], [2.0]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(discounted_return, expected_return)
 
         # Test using gamma value of 0, should have no effect on rewards
@@ -352,7 +352,7 @@ class TestTrainingData():
         discounted_return = td2.get_discounted_return(gamma=0.0)
         expected_return = np.array([
             [4], [2], [16], [2]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(discounted_return, expected_return)
 
         # Test end of episode
@@ -364,7 +364,7 @@ class TestTrainingData():
         discounted_return = td3.get_discounted_return()
         expected_return = np.array([
             [5.8], [2.0], [17.8], [2.0]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(discounted_return, expected_return)
 
     def test_normalize_rewards(self):
@@ -377,7 +377,7 @@ class TestTrainingData():
         td.normalize_rewards()
         expected_reward = np.array([
             [-0.8165], [-0.8165], [0.], [1.633],
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(td.get_reward(), expected_reward)
         # Test specifying mean and standard deviation
         td = training_data.training_data()
@@ -388,7 +388,7 @@ class TestTrainingData():
         td.normalize_rewards(mean=8, sd=1)
         expected_reward = np.array([
             [-4.], [-4.], [0.], [8.],
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(td.get_reward(), expected_reward)
 
     def test_normalize_boards(self):
@@ -411,14 +411,14 @@ class TestTrainingData():
             [[b, b, b, b], [b, b, b, b], [b, b, b, b], [b, b, b, b]],
             [[c, c, c, c], [c, c, c, c], [c, c, c, c], [c, c, c, c]],
             [[d, d, d, d], [d, d, d, d], [d, d, d, d], [d, d, d, d]]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(td.get_x(), expected_x)
         expected_next_x = np.array([
             [[b, b, b, b], [b, b, b, b], [b, b, b, b], [b, b, b, b]],
             [[c, c, c, c], [c, c, c, c], [c, c, c, c], [c, c, c, c]],
             [[d, d, d, d], [d, d, d, d], [d, d, d, d], [d, d, d, d]],
             [[e, e, e, e], [e, e, e, e], [e, e, e, e], [e, e, e, e]]
-            ], dtype=np.float)
+            ], dtype=float)
         assert np.allclose(td.get_next_x(), expected_next_x)
 
     def test_save_restore(self):
@@ -441,25 +441,25 @@ class TestTrainingData():
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [0],
             [1],
             [2],
             [3]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [4],
             [2],
             [16],
             [2]
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td2.get_x(), expected_x)
         assert np.array_equal(td2.get_y_digit(), expected_y_digit)
         assert np.allclose(td2.get_reward(), expected_reward)
@@ -481,7 +481,7 @@ class TestTrainingData():
             # Check that all parts of this equal i
             arrays = td.get_n(index_of_val)
             for a in arrays:
-                if a.dtype is np.dtype(np.bool):
+                if a.dtype is np.dtype(bool):
                     assert((a == ((i % 2) == 1)).all())
                 else:
                     assert((a == i).all())
@@ -496,19 +496,19 @@ class TestTrainingData():
         expected_x = np.array([
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_y_digit = np.array([
             [0],
             [1]
-            ], dtype=np.int)
+            ], dtype=int)
         expected_reward = np.array([
             [4],
             [2]
-            ], dtype=np.float)
+            ], dtype=float)
         expected_next_x = np.array([
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-            ], dtype=np.int)
+            ], dtype=int)
         assert np.array_equal(td.get_x(), expected_x)
         assert np.array_equal(td.get_y_digit(), expected_y_digit)
         assert np.allclose(td.get_reward(), expected_reward)

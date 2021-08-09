@@ -53,7 +53,7 @@ class Game2048Env(gym.Env):
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
         layers = self.squares
-        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=np.int)
+        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=int)
         self.set_illegal_move_reward(0.)
         self.set_max_tile(None)
 
@@ -113,7 +113,7 @@ class Game2048Env(gym.Env):
         return stack(self.Matrix), reward, done, info
 
     def reset(self):
-        self.Matrix = np.zeros((self.h, self.w), np.int)
+        self.Matrix = np.zeros((self.h, self.w), int)
         self.score = 0
 
         logging.debug("Adding tiles")
