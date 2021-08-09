@@ -1,4 +1,5 @@
 gym
+matplotlib
 numpy
 pillow
 pytest
