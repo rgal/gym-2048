@@ -38,7 +38,7 @@ def get_figure(width, height):
                        dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
                        )
 
-def get_bar_chart(predictions, fig):
+def get_bar_chart(fig, predictions):
     fig.clf()
     ax = fig.gca()
     ax.set_xlabel('Action')
@@ -105,7 +105,7 @@ def gather_training_data(env, model, data, seed=None):
                 print('{}: {:.3f}'.format(direction, reward))
 
             # Create graph of predictions
-            raw_data = get_bar_chart(predictions, fig)
+            raw_data = get_bar_chart(fig, predictions)
             surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
             screen.blit(surf, (4 * grid_size, 0))
 
