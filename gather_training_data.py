@@ -236,15 +236,18 @@ if __name__ == '__main__':
     if args.input:
         alldata.import_csv(args.input)
 
+    results = [train_keras_model.evaluate_model(model, 10, 0.)]
     try:
         while True:
             gather_training_data(env, model, alldata, seed=args.seed)
+            results.append(train_keras_model.evaluate_model(model, 10, 0.))
 
             print("Got {} data values".format(alldata.size()))
 
     except Quitting:
         print("Quitting...")
 
+    print([r['Average score'] for r in results])
     # Close the environment
     env.close()
 
