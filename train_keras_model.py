@@ -85,22 +85,34 @@ def evaluate_episode(model, env, epsilon, seed=None, agent_seed=None):
     return total_reward, moves_taken, total_illegals, info['highest']
 
 
-def evaluate_model(model, epsilon, label='eval'):
+def evaluate_model(model, episodes, epsilon):
   env = gym.make('2048-v0')
   env = env.unwrapped
 
   scores = []
-  tt_reward = 0
-  max_t_reward = 0.
-  for i_episode in range(evaluation_episodes):
+  for i_episode in range(episodes):
     (total_reward, moves_taken, total_illegals, highest) = evaluate_episode(model, env, epsilon, seed=456+i_episode, agent_seed=123+i_episode)
     print("Episode {}, using epsilon {}, highest {}, total reward {}, moves taken {} illegals {}".format(i_episode, epsilon, highest, total_reward, moves_taken, total_illegals))
     scores.append({'total_reward': total_reward, 'highest': highest, 'moves': moves_taken, 'illegal_moves': total_illegals})
-    tt_reward += total_reward
-    max_t_reward = max(max_t_reward, total_reward)
 
-  print("Average score: {}, Max score: {}".format(tt_reward / evaluation_episodes, max_t_reward))
-  #print(scores)
+  env.close()
+
+  total_score = sum([s['total_reward'] for s in scores])
+  average_score = total_score / episodes
+  max_score = max(s['total_reward'] for s in scores)
+  highest_tile = max(s['highest'] for s in scores)
+
+  print("Highest tile: {}, Average score: {}, Max score: {}".format(highest_tile, average_score, max_score))
+
+  return {
+    "Average score": average_score,
+    "Max score": max_score,
+    "Highest tile": highest_tile,
+    "Episodes" : scores,
+  }
+
+def report_evaluation_results(results, label='eval'):
+  scores = results['Episodes']
   with open('scores_{}.csv'.format(label), 'w') as f:
     fieldnames = ['total_reward', 'highest', 'moves', 'illegal_moves']
 
@@ -109,7 +121,6 @@ def evaluate_model(model, epsilon, label='eval'):
     for s in scores:
       writer.writerow(s)
 
-  env.close()
 
 def build_model(board_size=4, board_layers=16, outputs=4, filters=64, residual_blocks=4):
   # Functional API model
@@ -176,7 +187,8 @@ if __name__ == '__main__':
   evaluation_episodes = 10
 
   # Evaluate
-  evaluate_model(model, epsilon, 'pretraining')
+  results = evaluate_model(model, evaluation_episodes, epsilon)
+  report_evaluation_results(results, 'pretraining')
 
   # Add tensorboard
   tensorboard = TensorBoard(log_dir='./logs',
@@ -221,4 +233,5 @@ if __name__ == '__main__':
   print("Confusion matrix (labels on left, predictions across the top)")
   print(confusion)
 
-  evaluate_model(model, epsilon, 'trained_0_1')
+  results = evaluate_model(model, evaluation_episodes, epsilon)
+  report_evaluation_results(results, 'trained_0_1')
