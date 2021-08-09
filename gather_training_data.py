@@ -202,7 +202,6 @@ def gather_training_data(env, model, data, results, seed=None):
                 # Train model using new data
                 train_from_me = data.copy()
                 train_from_me.augment()
-                train_from_me.make_boards_unique()
                 minibatch_size = min(32, train_from_me.size())
                 sample_indexes = random.sample(range(train_from_me.size()), minibatch_size)
                 sample_data = train_from_me.sample(sample_indexes)
