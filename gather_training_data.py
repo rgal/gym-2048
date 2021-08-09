@@ -53,6 +53,23 @@ def get_bar_chart(fig, predictions):
     raw_data = renderer.tostring_rgb()
     return raw_data
 
+def get_line_plot(fig, results):
+    fig.clf()
+    ax = fig.gca()
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Score')
+    ax.set_xlim([0, len(results)])
+    ax.plot(range(len(results)), [r['Average score'] for r in results], label="Average score")
+    ax.plot(range(len(results)), [r['Max score'] for r in results], label="Max score")
+    ax.legend()
+
+    plt.tight_layout()
+    canvas = agg.FigureCanvasAgg(fig)
+    canvas.draw()
+    renderer = canvas.get_renderer()
+    raw_data = renderer.tostring_rgb()
+    return raw_data
+
 def unstack(stacked, layers=16):
   """Convert a single 4, 4, 16 stacked board state into flat 4, 4 board."""
   representation = 2 ** (np.arange(layers, dtype=int) + 1)
@@ -70,7 +87,7 @@ def high_tile_in_corner(board):
   #print(f"{board}, {highest_tile}, {tiles_equal_to_highest}, {corners_equal_to_highest}, {high_tile_in_corner}")
   return high_tile_in_corner
 
-def gather_training_data(env, model, data, seed=None):
+def gather_training_data(env, model, data, results, seed=None):
     """Gather training data from letting the user play the game"""
     # Initialise seed for environment
     if seed:
@@ -81,6 +98,7 @@ def gather_training_data(env, model, data, seed=None):
     chart_height = 4 * grid_size
     chart_width = 4 * grid_size
     fig = get_figure(chart_width, chart_height)
+    fig2 = get_figure(chart_width, chart_height)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -108,6 +126,11 @@ def gather_training_data(env, model, data, seed=None):
             raw_data = get_bar_chart(fig, predictions)
             surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
             screen.blit(surf, (4 * grid_size, 0))
+
+            # Create graph of results
+            raw_data2 = get_line_plot(fig2, results)
+            surf2 = pygame.image.fromstring(raw_data2, (chart_height, chart_width), "RGB")
+            screen.blit(surf2, (8 * grid_size, 0))
 
             pygame.display.update()
 
@@ -229,7 +252,7 @@ if __name__ == '__main__':
     # Initialise pygame for detecting keypresses
     pygame.init()
     height = 4 * grid_size
-    width = 8 * grid_size
+    width = 12 * grid_size
     screen = pygame.display.set_mode((width, height), 0, 32)
     pygame.font.init()
     alldata = training_data.training_data()
@@ -239,7 +262,7 @@ if __name__ == '__main__':
     results = [train_keras_model.evaluate_model(model, 10, 0.)]
     try:
         while True:
-            gather_training_data(env, model, alldata, seed=args.seed)
+            gather_training_data(env, model, alldata, results, seed=args.seed)
             results.append(train_keras_model.evaluate_model(model, 10, 0.))
 
             print("Got {} data values".format(alldata.size()))
