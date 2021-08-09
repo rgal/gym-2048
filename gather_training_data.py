@@ -270,7 +270,6 @@ if __name__ == '__main__':
     except Quitting:
         print("Quitting...")
 
-    print([r['Average score'] for r in results])
     # Close the environment
     env.close()
 
