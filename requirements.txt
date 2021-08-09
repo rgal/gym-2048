@@ -2,4 +2,5 @@ gym
 numpy
 pillow
 pytest
+pygame
 tensorflow
