@@ -35,8 +35,8 @@ class Quitting(Exception):
 def get_figure(width, height):
     dpi = 100.
     return plt.figure(figsize=[width / dpi, height / dpi], # Inches
-                       dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
-                       )
+                      dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
+                     )
 
 def get_bar_chart(fig, predictions):
     fig.clf()
@@ -71,21 +71,21 @@ def get_line_plot(fig, results):
     return raw_data
 
 def unstack(stacked, layers=16):
-  """Convert a single 4, 4, 16 stacked board state into flat 4, 4 board."""
-  representation = 2 ** (np.arange(layers, dtype=int) + 1)
-  return np.sum(stacked * representation, axis=2)
+    """Convert a single 4, 4, 16 stacked board state into flat 4, 4 board."""
+    representation = 2 ** (np.arange(layers, dtype=int) + 1)
+    return np.sum(stacked * representation, axis=2)
 
 def high_tile_in_corner(board):
-  """Reports whether the a high tile >=64 is in the corner of (flat) board."""
-  assert board.shape == (4, 4)
-  highest_tile = np.amax(board)
-  if highest_tile < 64:
-    return False
-  tiles_equal_to_highest = np.equal(board, np.full((4,4), highest_tile))
-  corners_equal_to_highest = tiles_equal_to_highest[[0, 0, -1, -1], [0, -1, 0, -1]]
-  high_tile_in_corner = np.any(corners_equal_to_highest)
-  #print(f"{board}, {highest_tile}, {tiles_equal_to_highest}, {corners_equal_to_highest}, {high_tile_in_corner}")
-  return high_tile_in_corner
+    """Reports whether the a high tile >=64 is in the corner of (flat) board."""
+    assert board.shape == (4, 4)
+    highest_tile = np.amax(board)
+    if highest_tile < 64:
+        return False
+    tiles_equal_to_highest = np.equal(board, np.full((4, 4), highest_tile))
+    corners_equal_to_highest = tiles_equal_to_highest[[0, 0, -1, -1], [0, -1, 0, -1]]
+    high_tile_in_corner = np.any(corners_equal_to_highest)
+    #print(f"{board}, {highest_tile}, {tiles_equal_to_highest}, {corners_equal_to_highest}, {high_tile_in_corner}")
+    return high_tile_in_corner
 
 def gather_training_data(env, model, data, results, seed=None):
     """Gather training data from letting the user play the game"""
@@ -108,7 +108,7 @@ def gather_training_data(env, model, data, results, seed=None):
 
             board_array = env.render(mode='rgb_array')
             board_surface = pygame.surfarray.make_surface(board_array)
-            screen.blit(board_surface, (0,0))
+            screen.blit(board_surface, (0, 0))
 
             # Get predictions from model
             predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
@@ -116,7 +116,7 @@ def gather_training_data(env, model, data, results, seed=None):
             #print(predictions)
 
             # Report predicted rewards for actions
-            dir_dict = { 0: 'up', 1: 'right', 2: 'down', 3: 'left'}
+            dir_dict = {0: 'up', 1: 'right', 2: 'down', 3: 'left'}
             dir_reward = [(dir_dict[i], p) for i, p in enumerate(list(predictions))]
             dir_reward.sort(key=lambda x: x[1], reverse=True)
             for direction, reward in dir_reward:
@@ -210,9 +210,9 @@ def gather_training_data(env, model, data, results, seed=None):
                 train_labels = sample_data.get_y_digit()
 
                 model.fit(train_data,
-                  train_labels,
-                  epochs=1,
-                  batch_size=32)
+                          train_labels,
+                          epochs=1,
+                          batch_size=32)
             else:
                 print("Not recording move")
 
