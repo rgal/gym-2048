@@ -229,24 +229,30 @@ def gather_training_data(env, model, data, results, seed=None):
 
     return data
 
+
+board_size = 4
+board_layers = 16 # Layers of game board to represent different numbers
+outputs = 4
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', '-i', default=None, help="Input existing training data to start from (optional)")
+    parser.add_argument('--model', '-m', default=None, help="Pre-trained model to start from (optional)")
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output file name")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
     env = gym.make('2048-v0')
 
-    board_size = 4
-    board_layers = 16 # Layers of game board to represent different numbers
-    outputs = 4
-    filters = 64
-    residual_blocks = 8
-    model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
-    model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy'])
+    if args.model:
+        model = load_model(args.model)
+    else:
+        filters = 64
+        residual_blocks = 8
+        model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
+        model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['accuracy'])
 
     # Initialise pygame for detecting keypresses
     pygame.init()
