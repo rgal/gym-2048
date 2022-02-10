@@ -82,7 +82,7 @@ def evaluate_episode(model, env, epsilon, seed=None, agent_seed=None):
             break
 
         #print("")
-    return total_reward, moves_taken, total_illegals, info['highest']
+    return total_reward, moves_taken, total_illegals, int(info['highest'])
 
 
 def evaluate_model(model, episodes, epsilon):
