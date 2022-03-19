@@ -226,6 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', '-m', default=None, help="Pre-trained model to start from (optional)")
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(int(time.time())), help="Set the output training data file name")
     parser.add_argument('--results', '-r', default='results_{}.json'.format(int(time.time())), help="Set the output results file name")
+    parser.add_argument('--reload-results', default=None, help="Reload previous results")
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
@@ -261,7 +262,11 @@ if __name__ == '__main__':
           epochs=1,
           batch_size=128)
 
-    results = [train_keras_model.evaluate_model(model, 10, 0.)]
+    if args.reload_results:
+        with open(args.reload_results) as r:
+            results = json.load(r)
+    else:
+        results = [train_keras_model.evaluate_model(model, 10, 0.)]
 
     try:
         while True:
