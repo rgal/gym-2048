@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
         model.fit(train_data,
           train_labels,
-          epochs=1,
+          epochs=3,
           batch_size=128)
 
     if args.reload_results:
@@ -281,7 +281,7 @@ if __name__ == '__main__':
 
             model.fit(train_data,
               train_labels,
-              epochs=1,
+              epochs=3,
               batch_size=128)
 
             results.append(train_keras_model.evaluate_model(model, 10, 0.))
