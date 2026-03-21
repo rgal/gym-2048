@@ -231,7 +231,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
     args = parser.parse_args()
     # Initialise environment
-    env = gym.make('2048-v0')
+    env = gym.make('2048-v0').unwrapped
 
     if args.model:
         model = load_model(args.model)
