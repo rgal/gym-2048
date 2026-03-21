@@ -17,9 +17,9 @@ This project implements an AI agent to play the game 2048. It includes:
 | Area | Current | Target |
 |---|---|---|
 | Language | Python | Python |
-| Deep Learning | TensorFlow / Keras | **PyTorch** (migration in progress) |
-| Data | NumPy, Pandas | NumPy, Pandas |
-| Environment | OpenAI Gym | OpenAI Gym |
+| Deep Learning | TensorFlow / Keras | **PyTorch** |
+| Data | NumPy, Pandas | NumPy |
+| Environment | Gymnasium |  Gymnasium |
 
 ---
 
