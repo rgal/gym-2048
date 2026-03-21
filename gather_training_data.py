@@ -7,7 +7,7 @@ import json
 import time
 import random
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pygame
 import tensorflow as tf
@@ -90,12 +90,7 @@ def high_tile_in_corner(board):
 
 def gather_training_data(env, model, data, results, seed=None):
     """Gather training data from letting the user play the game"""
-    # Initialise seed for environment
-    if seed:
-        env.seed(seed)
-    else:
-        env.seed()
-    observation = env.reset()
+    observation, _ = env.reset(seed=seed)
     chart_height = 4 * grid_size
     chart_width = 4 * grid_size
     fig = get_figure(chart_width, chart_height)
@@ -146,8 +141,9 @@ def gather_training_data(env, model, data, results, seed=None):
 
             predicted_is_illegal = False
             env2 = gym.make('2048-v0')
+            env2.reset()
             env2.set_board(unstack(observation))
-            (board2, _, _, info2) = env2.step(predicted_action)
+            (board2, _, _, _, info2) = env2.step(predicted_action)
             predicted_is_illegal = info2['illegal_move']
             if predicted_is_illegal:
                 print("***Predicted is illegal.***")
@@ -194,7 +190,8 @@ def gather_training_data(env, model, data, results, seed=None):
             print("Selected action {}".format(action))
 
             # Add this data to the data collection if manually entered and not illegal
-            new_observation, reward, done, info = env.step(action)
+            new_observation, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             illegal_move = info['illegal_move']
             if record_action and not illegal_move:
                 # Unstack the stacked state

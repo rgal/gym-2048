@@ -5,7 +5,7 @@ from __future__ import print_function
 import argparse
 import numpy as np
 
-import gym
+import gymnasium as gym
 
 import gym_2048
 
@@ -20,11 +20,7 @@ def gather_training_data(env, seed=None):
     # Data is a list of input and outputs
     data = training_data.training_data()
     # Initialise seed for environment
-    if seed:
-        env.seed(seed)
-    else:
-        env.seed()
-    observation = env.reset()
+    observation, _ = env.reset(seed=seed)
     print("User cursor keys to play, q to quit")
     try:
         while True:
@@ -36,7 +32,8 @@ def gather_training_data(env, seed=None):
             print("Read action {}".format(action))
 
             # Add this data to the data collection
-            new_observation, reward, done, info = env.step(action)
+            new_observation, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             if np.array_equal(observation, new_observation):
                 print("Suppressing recording of illegal move")
             else:
@@ -57,7 +54,7 @@ def gather_training_data(env, seed=None):
 def get_reward_for_state_action(env, state, action):
     env.reset()
     env.set_board(state)
-    new_observation, reward, done, info = env.step(action)
+    new_observation, reward, terminated, truncated, info = env.step(action)
     return reward
 
 def add_rewards_to_training_data(env, input_training_data):

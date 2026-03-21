@@ -1,8 +1,8 @@
 from __future__ import print_function
 
-import gym
-from gym import spaces
-from gym.utils import seeding
+import gymnasium as gym
+from gymnasium import spaces
+from gymnasium.utils import seeding
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import itertools
 import logging
-from six import StringIO
+from io import StringIO
 import sys
 
 def pairwise(iterable):
@@ -37,7 +37,7 @@ def stack(flat, layers=16):
   return layered
 
 class Game2048Env(gym.Env):
-    metadata = {'render.modes': ['ansi', 'human', 'rgb_array']}
+    metadata = {'render_modes': ['ansi', 'human', 'rgb_array']}
 
     def __init__(self):
         # Definitions for game. Board must be square.
@@ -60,14 +60,9 @@ class Game2048Env(gym.Env):
         # Size of square for rendering
         self.grid_size = 70
 
-        # Initialise seed
-        self.seed()
-
-        # Reset ready for a game
-        self.reset()
-
     def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
+        # Keep for backward compatibility with scripts that call env.seed()
+        self._np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def set_illegal_move_reward(self, reward):
@@ -89,7 +84,7 @@ class Game2048Env(gym.Env):
         """Perform one step of the game. This involves moving and adding a new tile."""
         logging.debug("Action {}".format(action))
         score = 0
-        done = None
+        terminated = None
         info = {
             'illegal_move': False,
         }
@@ -98,21 +93,21 @@ class Game2048Env(gym.Env):
             self.score += score
             assert score <= 2**(self.w*self.h)
             self.add_tile()
-            done = self.isend()
+            terminated = self.isend()
             reward = float(score)
         except IllegalMove:
             logging.debug("Illegal move")
             info['illegal_move'] = True
-            done = True
+            terminated = True
             reward = self.illegal_move_reward
 
-        #print("Am I done? {}".format(done))
         info['highest'] = self.highest()
 
-        # Return observation (board state), reward, done and info dict
-        return stack(self.Matrix), reward, done, info
+        # Return observation (board state), reward, terminated, truncated and info dict
+        return stack(self.Matrix), reward, terminated, False, info
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         self.Matrix = np.zeros((self.h, self.w), int)
         self.score = 0
 
@@ -120,7 +115,7 @@ class Game2048Env(gym.Env):
         self.add_tile()
         self.add_tile()
 
-        return stack(self.Matrix)
+        return stack(self.Matrix), {}
 
     def render(self, mode='human'):
         if mode == 'rgb_array':

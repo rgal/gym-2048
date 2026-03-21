@@ -14,7 +14,7 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, LearningRateScheduler
 from tensorflow.keras.metrics import sparse_top_k_categorical_accuracy
 
-import gym
+import gymnasium as gym
 
 import gym_2048
 import training_data
@@ -38,11 +38,6 @@ def evaluate_episode(model, env, epsilon, seed=None, agent_seed=None):
     seed (optional) specifies the seed for the game.
     agent_seed specifies the seed for the agent."""
     #print("Evaluating")
-    # Initialise seed for environment
-    if seed:
-        env.seed(seed)
-    else:
-        env.seed()
     # Initialise seed for agent choosing epsilon greedy
     if agent_seed:
         random.seed(agent_seed)
@@ -54,14 +49,15 @@ def evaluate_episode(model, env, epsilon, seed=None, agent_seed=None):
     moves_taken = 0
 
     # Initialise S
-    state = env.reset()
+    state, _ = env.reset(seed=seed)
     # Choose A from S using policy derived from Q
     while 1:
         #print(state.reshape(4, 4))
         action = choose_action(model, state, epsilon)
 
         # Take action, observe R, S'
-        next_state, reward, done, info = env.step(action)
+        next_state, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
         total_reward += reward
         #print("Score: {} Total reward: {}".format(env.score, total_reward))
 
