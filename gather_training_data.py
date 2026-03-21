@@ -50,8 +50,7 @@ def get_bar_chart(fig, predictions):
     plt.tight_layout()
     canvas = agg.FigureCanvasAgg(fig)
     canvas.draw()
-    renderer = canvas.get_renderer()
-    raw_data = renderer.tostring_rgb()
+    raw_data = bytes(canvas.buffer_rgba())
     return raw_data
 
 def get_line_plot(fig, results):
@@ -67,8 +66,7 @@ def get_line_plot(fig, results):
     plt.tight_layout()
     canvas = agg.FigureCanvasAgg(fig)
     canvas.draw()
-    renderer = canvas.get_renderer()
-    raw_data = renderer.tostring_rgb()
+    raw_data = bytes(canvas.buffer_rgba())
     return raw_data
 
 def unstack(stacked, layers=16):
@@ -120,12 +118,12 @@ def gather_training_data(env, model, data, results, seed=None):
 
             # Create graph of predictions
             raw_data = get_bar_chart(fig, predictions)
-            surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGB")
+            surf = pygame.image.fromstring(raw_data, (chart_height, chart_width), "RGBA")
             screen.blit(surf, (4 * grid_size, 0))
 
             # Create graph of results
             raw_data2 = get_line_plot(fig2, results)
-            surf2 = pygame.image.fromstring(raw_data2, (chart_height, chart_width), "RGB")
+            surf2 = pygame.image.fromstring(raw_data2, (chart_height, chart_width), "RGBA")
             screen.blit(surf2, (8 * grid_size, 0))
 
             pygame.display.update()
@@ -140,7 +138,7 @@ def gather_training_data(env, model, data, results, seed=None):
                 print("***Confidence < 50%: {}***".format(confidence))
 
             predicted_is_illegal = False
-            env2 = gym.make('2048-v0')
+            env2 = gym.make('2048-v0').unwrapped
             env2.reset()
             env2.set_board(unstack(observation))
             (board2, _, _, _, info2) = env2.step(predicted_action)
