@@ -107,7 +107,7 @@ def gather_training_data(env, model, data, results, seed=None):
             screen.blit(board_surface, (0, 0))
 
             # Get predictions from model
-            predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256))).reshape((4))
+            predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256)), verbose=0).reshape((4))
             predicted_action = np.argmax(predictions)
             #print(predictions)
 
