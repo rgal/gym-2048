@@ -10,8 +10,7 @@ import random
 import gymnasium as gym
 import numpy as np
 import pygame
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+import torch
 
 import matplotlib
 matplotlib.use("Agg")
@@ -105,7 +104,7 @@ def gather_training_data(env, model, data, results, seed=None):
             screen.blit(board_surface, (0, 0))
 
             # Get predictions from model
-            predictions = model.predict(np.reshape(observation.astype('float32'), (-1, 256)), verbose=0).reshape((4))
+            predictions = train_keras_model.predict(model, observation)
             predicted_action = np.argmax(predictions)
             #print(predictions)
 
@@ -223,7 +222,7 @@ if __name__ == '__main__':
 
     timestamp = int(time.time())
     parser.add_argument('--output', '-o', default='data_{}.csv'.format(timestamp), help="Set the output training data file name")
-    parser.add_argument('--output-model', default='model_{}.hdf5'.format(timestamp), help="Set the output model file name")
+    parser.add_argument('--output-model', default='model_{}.pt'.format(timestamp), help="Set the output model file name")
     parser.add_argument('--results', '-r', default='results_{}.json'.format(timestamp), help="Set the output results file name")
 
     parser.add_argument('--seed', type=int, default=None, help="Set the seed for the game")
@@ -232,14 +231,11 @@ if __name__ == '__main__':
     env = gym.make('2048-v0').unwrapped
 
     if args.model:
-        model = load_model(args.model)
+        model = torch.load(args.model)
     else:
         filters = 64
         residual_blocks = 8
         model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
-        model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
 
     # Initialise pygame for detecting keypresses
     pygame.init()
@@ -253,13 +249,7 @@ if __name__ == '__main__':
         train_from_me = alldata.copy()
         train_from_me.augment()
         #train_from_me.make_boards_unique()
-        train_data = np.reshape(train_from_me.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
-        train_labels = train_from_me.get_y_digit()
-
-        model.fit(train_data,
-          train_labels,
-          epochs=3,
-          batch_size=128)
+        train_keras_model.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
 
     if args.reload_results:
         with open(args.reload_results) as r:
@@ -275,13 +265,7 @@ if __name__ == '__main__':
             train_from_me = alldata.copy()
             train_from_me.augment()
             # train_from_me.make_boards_unique()
-            train_data = np.reshape(train_from_me.get_x_stacked().astype('float'), (-1, board_size * board_size * board_layers))
-            train_labels = train_from_me.get_y_digit()
-
-            model.fit(train_data,
-              train_labels,
-              epochs=3,
-              batch_size=128)
+            train_keras_model.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
 
             results.append(train_keras_model.evaluate_model(model, 10, 0.))
 
@@ -302,4 +286,4 @@ if __name__ == '__main__':
         alldata.export_csv(args.output)
 
     if args.output_model:
-        model.save(args.output_model)
+        torch.save(model, args.output_model)

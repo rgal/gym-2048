@@ -4,4 +4,4 @@ numpy
 pillow
 pytest
 pygame
-tensorflow
+torch
