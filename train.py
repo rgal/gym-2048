@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-"""Model training pipeline for the 2048 agent (PyTorch).
-
-Previously used Keras/TensorFlow; migrated to PyTorch.
-The public API (build_model, evaluate_model, predict, train) is preserved
-so that gather_training_data.py requires minimal changes.
-"""
+"""Model training pipeline for the 2048 agent (PyTorch)."""
 
 from __future__ import print_function
 

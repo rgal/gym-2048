@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import gym_2048
 import training_data
-import train_keras_model
+import train
 
 grid_size = 70
 
@@ -104,7 +104,7 @@ def gather_training_data(env, model, data, results, seed=None):
             screen.blit(board_surface, (0, 0))
 
             # Get predictions from model
-            predictions = train_keras_model.predict(model, observation)
+            predictions = train.predict(model, observation)
             predicted_action = np.argmax(predictions)
             #print(predictions)
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
     else:
         filters = 64
         residual_blocks = 8
-        model = train_keras_model.build_model(board_size, board_layers, outputs, filters, residual_blocks)
+        model = train.build_model(board_size, board_layers, outputs, filters, residual_blocks)
 
     # Initialise pygame for detecting keypresses
     pygame.init()
@@ -249,13 +249,13 @@ if __name__ == '__main__':
         train_from_me = alldata.copy()
         train_from_me.augment()
         #train_from_me.make_boards_unique()
-        train_keras_model.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
+        train.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
 
     if args.reload_results:
         with open(args.reload_results) as r:
             results = json.load(r)
     else:
-        results = [train_keras_model.evaluate_model(model, 10, 0.)]
+        results = [train.evaluate_model(model, 10, 0.)]
 
     try:
         while True:
@@ -265,9 +265,9 @@ if __name__ == '__main__':
             train_from_me = alldata.copy()
             train_from_me.augment()
             # train_from_me.make_boards_unique()
-            train_keras_model.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
+            train.train(model, train_from_me.get_x_stacked(), train_from_me.get_y_digit(), epochs=3)
 
-            results.append(train_keras_model.evaluate_model(model, 10, 0.))
+            results.append(train.evaluate_model(model, 10, 0.))
 
             print("Got {} data values".format(alldata.size()))
 
