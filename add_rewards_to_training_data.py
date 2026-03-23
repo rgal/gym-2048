@@ -7,7 +7,7 @@ import numpy as np
 
 import gymnasium as gym
 
-import gym_2048
+import env
 
 import training_data
 

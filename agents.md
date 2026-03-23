@@ -39,7 +39,7 @@ Current layout:
 
 ```
 /
-├── gym_2048/                    # Gymnasium environment for 2048
+├── env/                    # Gymnasium environment for 2048
 │   └── envs/game2048_env.py     # Game logic and env implementation
 ├── data/                        # Training data (CSV files)
 ├── model.py                     # PyTorch model definition (Game2048Model)
@@ -88,7 +88,7 @@ Target layout:
 - Python 3.10+
 - Type hints on all function signatures
 - Docstrings on all public functions and classes (Google style preferred)
-- Keep environment logic (`gym_2048/`) decoupled from model logic (`model.py`, `train.py`)
+- Keep environment logic (`env/`) decoupled from model logic (`model.py`, `train.py`)
 - Use `numpy` arrays for board state internally; convert to `torch.Tensor` at the model boundary
 - Reproducibility: always accept and pass through a `seed` parameter where randomness is involved
 - Avoid hardcoding paths — use `pathlib.Path` and config arguments

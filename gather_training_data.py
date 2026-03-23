@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.backends.backend_agg as agg
 import matplotlib.pyplot as plt
 
-import gym_2048
+import env
 import training_data
 import train
 

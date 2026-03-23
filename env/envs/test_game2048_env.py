@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import numpy as np
 
-import gym_2048.envs.game2048_env as game2048_env
+import env.envs.game2048_env as game2048_env
 import pytest
 
 class TestBoard():

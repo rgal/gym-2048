@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader, Dataset
 
 import gymnasium as gym
 
-import gym_2048
+import env
 import training_data as td_module
 from model import Game2048Model, build_model, observation_to_tensor, stacked_to_tensor
 
