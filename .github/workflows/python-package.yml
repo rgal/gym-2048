@@ -48,4 +48,4 @@ jobs:
         fail_ci_if_error: false
     - name: Test training a model
       run: |
-        python train.py test_data.csv
+        python train.py data/test_data.csv
