@@ -23,16 +23,16 @@ class IllegalMove(Exception):
     pass
 
 def stack(flat, layers=16):
-  """Convert an [4, 4] representation into [4, 4, layers] with one layers for each value."""
+  """Convert an [4, 4] representation into [layers, 4, 4] with one layer for each value."""
   # representation is what each layer represents
   representation = 2 ** (np.arange(layers, dtype=int) + 1)
 
-  # layered is the flat board repeated layers times
-  layered = np.repeat(flat[:,:,np.newaxis], layers, axis=-1)
+  # layered is the flat board repeated layers times (channels-first)
+  layered = np.repeat(flat[np.newaxis, :, :], layers, axis=0)
 
   # Now set the values in the board to 1 or zero depending whether they match representation.
-  # Representation is broadcast across a number of axes
-  layered = np.where(layered == representation, 1, 0)
+  # Representation is broadcast across H and W axes
+  layered = np.where(layered == representation[:, np.newaxis, np.newaxis], 1, 0)
 
   return layered
 
@@ -53,7 +53,7 @@ class Game2048Env(gym.Env):
         self.action_space = spaces.Discrete(4)
         # Suppose that the maximum tile is as if you have powers of 2 across the board.
         layers = self.squares
-        self.observation_space = spaces.Box(0, 1, (self.w, self.h, layers), dtype=int)
+        self.observation_space = spaces.Box(0, 1, (layers, self.w, self.h), dtype=int)
         self.set_illegal_move_reward(0.)
         self.set_max_tile(None)
 

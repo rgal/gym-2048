@@ -107,13 +107,12 @@ def observation_to_tensor(observation: np.ndarray) -> torch.Tensor:
     """Convert a single stacked board observation to a model input tensor.
 
     Args:
-        observation: Numpy array of shape (4, 4, 16) from the gym environment.
+        observation: Numpy array of shape (16, 4, 4) from the gym environment.
 
     Returns:
         Float tensor of shape (1, 16, 4, 4) ready for model input.
     """
-    # (4, 4, 16) -> (16, 4, 4) -> (1, 16, 4, 4)
-    arr = observation.astype(np.float32).transpose(2, 0, 1)
+    arr = observation.astype(np.float32)
     return torch.from_numpy(arr).unsqueeze(0)
 
 
