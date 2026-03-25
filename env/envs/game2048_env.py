@@ -37,9 +37,9 @@ def stack(flat, layers=16):
   return layered
 
 class Game2048Env(gym.Env):
-    metadata = {'render_modes': ['ansi', 'human', 'rgb_array']}
+    metadata = {'render_modes': ['ansi', 'human', 'rgb_array'], 'render_fps': 4}
 
-    def __init__(self):
+    def __init__(self, render_mode: str | None = None):
         # Definitions for game. Board must be square.
         self.size = 4
         self.w = self.size
@@ -59,6 +59,7 @@ class Game2048Env(gym.Env):
 
         # Size of square for rendering
         self.grid_size = 70
+        self.render_mode = render_mode
 
     def seed(self, seed=None):
         # Keep for backward compatibility with scripts that call env.seed()
@@ -117,7 +118,9 @@ class Game2048Env(gym.Env):
 
         return stack(self.Matrix), {}
 
-    def render(self, mode='human'):
+    def render(self, mode=None):
+        if mode is None:
+            mode = self.render_mode or 'human'
         if mode == 'rgb_array':
             black = (0, 0, 0)
             grey = (128, 128, 128)
