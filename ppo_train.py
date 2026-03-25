@@ -21,6 +21,7 @@ import torch
 import torch.nn as nn
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
+from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
 import env  # noqa: F401 — registers 2048-v0
@@ -85,7 +86,7 @@ class HighestTileCallback(BaseCallback):
 # ---------------------------------------------------------------------------
 
 def train(args: argparse.Namespace) -> None:
-    env_instance = gym.make("2048-v0")
+    env_instance = make_vec_env("2048-v0", n_envs=args.n_envs)
 
     policy_kwargs = dict(
         features_extractor_class=ResNetExtractor,
@@ -150,6 +151,8 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="PPO training for 2048-v0 via Stable Baselines 3")
 
     p.add_argument("--total-timesteps", type=int, default=5_000_000)
+    p.add_argument("--n-envs", type=int, default=8,
+                   help="Number of parallel environments")
     p.add_argument("--seed", type=int, default=42)
 
     p.add_argument("--n-steps", type=int, default=2048,
