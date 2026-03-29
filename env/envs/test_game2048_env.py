@@ -180,5 +180,86 @@ class TestBoard():
             [0,    0, 0, 0]]))
         assert b.isend() == False
 
+class TestStep():
+    def test_step_returns_correct_shapes(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+        obs, reward, terminated, truncated, info = b.step(0)
+        assert obs.shape == (16, 4, 4)
+        assert isinstance(reward, float)
+        assert isinstance(terminated, bool)
+        assert isinstance(truncated, bool)
+        assert 'illegal_move' in info
+        assert 'highest' in info
+
+    def test_step_reward_equals_merge_score(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+        # Set up a board where merging is guaranteed: two 2s in the same column
+        b.set_board(np.array([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 0, 0, 0],
+            [2, 0, 0, 0]]))
+        obs, reward, terminated, truncated, info = b.step(0)  # shift up
+        assert reward == 4.0
+
+    def test_step_score_accumulates(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+        b.set_board(np.array([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 0, 0, 0],
+            [2, 0, 0, 0]]))
+        b.step(0)  # merges two 2s → score 4
+        b.set_board(np.array([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [4, 0, 0, 0],
+            [4, 0, 0, 0]]))
+        b.step(0)  # merges two 4s → score 8
+        assert b.score == 12.0
+
+    def test_step_illegal_move_terminates(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+        # Board that cannot shift up (all tiles already at top or blocked)
+        b.set_board(np.array([
+            [2, 4, 8, 16],
+            [4, 8, 16, 2],
+            [8, 16, 2, 4],
+            [16, 2, 4, 8]]))
+        obs, reward, terminated, truncated, info = b.step(0)
+        assert terminated == True
+        assert info['illegal_move'] == True
+
+    def test_step_illegal_move_reward(self):
+        b = game2048_env.Game2048Env()
+        b.set_illegal_move_reward(-1.0)
+        b.reset(seed=0)
+        b.set_board(np.array([
+            [2, 4, 8, 16],
+            [4, 8, 16, 2],
+            [8, 16, 2, 4],
+            [16, 2, 4, 8]]))
+        obs, reward, terminated, truncated, info = b.step(0)
+        assert reward == -1.0
+
+    def test_step_observation_is_valid_one_hot(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+        b.set_board(np.array([
+            [2, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 4, 0]]))
+        obs, _, _, _, _ = b.step(1)  # shift right
+        # Each cell should be one-hot: at most one channel set per position
+        assert obs.shape == (16, 4, 4)
+        assert obs.sum(axis=0).max() <= 1
+        assert set(obs.flatten().tolist()) == {0, 1}
+
+
 if __name__ == '__main__':
     pytest.main()
