@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import itertools
 import logging
+import random
 from io import StringIO
 import sys
 
@@ -38,6 +39,7 @@ def stack(flat, layers=16):
 
 class Game2048Env(gym.Env):
     metadata = {'render_modes': ['ansi', 'human', 'rgb_array'], 'render_fps': 4}
+    _all_positions = [(r, c) for r in range(4) for c in range(4)]
 
     def __init__(self, render_mode: str | None = None):
         # Definitions for game. Board must be square.
@@ -173,15 +175,15 @@ class Game2048Env(gym.Env):
     # Implement 2048 game
     def add_tile(self):
         """Add a tile, probably a 2 but maybe a 4"""
-        possible_tiles = np.array([2, 4])
-        tile_probabilities = np.array([0.9, 0.1])
-        val = self.np_random.choice(possible_tiles, 1, p=tile_probabilities)[0]
-        empties = self.empties()
-        assert empties.shape[0]
-        empty_idx = self.np_random.choice(empties.shape[0])
-        empty = empties[empty_idx]
-        logging.debug("Adding %s at %s", val, (empty[0], empty[1]))
-        self.set(empty[0], empty[1], val)
+        val = 2 if random.random() < 0.9 else 4
+        positions = self._all_positions.copy()
+        random.shuffle(positions)
+        for r, c in positions:
+            if self.Matrix[r, c] == 0:
+                logging.debug("Adding %s at %s", val, (r, c))
+                self.set(r, c, val)
+                return
+        assert False, "No empty cell found"
 
     def get(self, x, y):
         """Return the value of one square."""
