@@ -138,18 +138,47 @@ class TestBoard():
 
     def test_isend(self):
         b = game2048_env.Game2048Env()
+
+        # Full board with adjacent equal tiles — legal moves exist
         b.set_board(np.array([
             [2, 2, 2, 2],
             [2, 2, 2, 2],
             [2, 2, 2, 2],
             [2, 2, 2, 2]]))
         assert b.isend() == False
+
+        # Full board with no adjacent equals — no legal moves
         b.set_board(np.array([
             [2, 4, 8, 16],
             [4, 8, 16, 2],
             [8, 16, 2, 4],
             [16, 2, 4, 8]]))
         assert b.isend() == True
+
+        # Board with empty cells — must return False via early exit
+        b.set_board(np.array([
+            [2, 4, 8, 16],
+            [4, 8, 16, 2],
+            [8, 16, 2, 4],
+            [16, 2, 4, 0]]))
+        assert b.isend() == False
+
+        # max_tile reached — must return True regardless of empty cells
+        b.set_max_tile(2048)
+        b.set_board(np.array([
+            [2048, 0, 0, 0],
+            [0,    0, 0, 0],
+            [0,    0, 0, 0],
+            [0,    0, 0, 0]]))
+        assert b.isend() == True
+
+        # max_tile set but not yet reached — empty cells present, should be False
+        b.set_board(np.array([
+            [1024, 0, 0, 0],
+            [0,    0, 0, 0],
+            [0,    0, 0, 0],
+            [0,    0, 0, 0]]))
+        assert b.isend() == False
 
 if __name__ == '__main__':
     pytest.main()

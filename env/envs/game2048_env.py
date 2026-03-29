@@ -303,6 +303,9 @@ class Game2048Env(gym.Env):
         if self.max_tile is not None and self.highest() == self.max_tile:
             return True
 
+        if self.empties().shape[0] > 0:
+            return False
+
         for direction in range(4):
             try:
                 self.move(direction, trial=True)
