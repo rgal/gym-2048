@@ -117,7 +117,7 @@ def train(args: argparse.Namespace) -> None:
         policy_kwargs=policy_kwargs,
         seed=args.seed,
         verbose=1,
-        device="auto",
+        device="mps" if torch.backends.mps.is_available() else "auto",
         tensorboard_log="./tensorboard_logs/",
     )
 
