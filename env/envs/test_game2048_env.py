@@ -42,26 +42,15 @@ class TestBoard():
     def test_shift(self):
         b = game2048_env.Game2048Env()
         # Shift left without combining
-        assert b.shift([0, 0, 0, 0], 0) == ([0, 0, 0, 0], 0)
-        assert b.shift([0, 2, 0, 0], 0) == ([2, 0, 0, 0], 0)
-        assert b.shift([0, 2, 0, 4], 0) == ([2, 4, 0, 0], 0)
-        assert b.shift([2, 4, 8, 16], 0) == ([2, 4, 8, 16], 0)
+        assert b.shift([0, 0, 0, 0]) == ([0, 0, 0, 0], 0)
+        assert b.shift([0, 2, 0, 0]) == ([2, 0, 0, 0], 0)
+        assert b.shift([0, 2, 0, 4]) == ([2, 4, 0, 0], 0)
+        assert b.shift([2, 4, 8, 16]) == ([2, 4, 8, 16], 0)
 
         # Shift left and combine
-        assert b.shift([0, 2, 2, 8], 0) == ([4, 8, 0, 0], 4)
-        assert b.shift([2, 2, 2, 8], 0) == ([4, 2, 8, 0], 4)
-        assert b.shift([2, 2, 4, 4], 0) == ([4, 8, 0, 0], 12)
-
-        # Shift right without combining
-        assert b.shift([0, 0, 0, 0], 1) == ([0, 0, 0, 0], 0)
-        assert b.shift([0, 2, 0, 0], 1) == ([0, 0, 0, 2], 0)
-        assert b.shift([0, 2, 0, 4], 1) == ([0, 0, 2, 4], 0)
-        assert b.shift([2, 4, 8, 16], 1) == ([2, 4, 8, 16], 0)
-
-        # Shift right and combine
-        assert b.shift([2, 2, 8, 0], 1) == ([0, 0, 4, 8], 4)
-        assert b.shift([2, 2, 2, 8], 1) == ([0, 2, 4, 8], 4)
-        assert b.shift([2, 2, 4, 4], 1) == ([0, 0, 4, 8], 12)
+        assert b.shift([0, 2, 2, 8]) == ([4, 8, 0, 0], 4)
+        assert b.shift([2, 2, 2, 8]) == ([4, 2, 8, 0], 4)
+        assert b.shift([2, 2, 4, 4]) == ([4, 8, 0, 0], 12)
 
     def test_move(self):
         # Test a bunch of lines all moving at once.

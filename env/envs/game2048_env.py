@@ -225,22 +225,26 @@ class Game2048Env(gym.Env):
             # Up or down, split into columns
             for y in range(self.h):
                 old = self.Matrix[:, y].tolist()
-                (new, ms) = self.shift(old, shift_direction)
+                if shift_direction:
+                    old = old[::-1]
+                (new, ms) = self.shift(old)
                 move_score += ms
                 if old != new:
                     changed = True
                     if not trial:
-                        self.Matrix[:, y] = new
+                        self.Matrix[:, y] = new[::-1] if shift_direction else new
         else:
             # Left or right, split into rows
             for x in range(self.w):
                 old = self.Matrix[x, :].tolist()
-                (new, ms) = self.shift(old, shift_direction)
+                if shift_direction:
+                    old = old[::-1]
+                (new, ms) = self.shift(old)
                 move_score += ms
                 if old != new:
                     changed = True
                     if not trial:
-                        self.Matrix[x, :] = new
+                        self.Matrix[x, :] = new[::-1] if shift_direction else new
         if changed != True:
             raise IllegalMove
 
@@ -269,25 +273,11 @@ class Game2048Env(gym.Env):
 
         return (combined_row, move_score)
 
-    def shift(self, row, direction):
-        """Shift one row left (direction == 0) or right (direction == 1), combining if required."""
-        length = len(row)
-        assert length == self.size
-        assert direction == 0 or direction == 1
-
-        # Shift all non-zero digits up
+    def shift(self, row):
+        """Shift one row left, combining equal adjacent tiles."""
+        assert len(row) == self.size
         shifted_row = [i for i in row if i != 0]
-
-        # Reverse list to handle shifting to the right
-        if direction:
-            shifted_row.reverse()
-
         (combined_row, move_score) = self.combine(shifted_row)
-
-        # Reverse list to handle shifting to the right
-        if direction:
-            combined_row.reverse()
-
         assert len(combined_row) == self.size
         return (combined_row, move_score)
 
