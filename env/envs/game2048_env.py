@@ -221,32 +221,26 @@ class Game2048Env(gym.Env):
         dir_mod_two = int(direction % 2)
         shift_direction = dir_mod_two ^ dir_div_two # 0 for towards up left, 1 for towards bottom right
 
-        # Construct a range for extracting row/column into a list
-        rx = list(range(self.w))
-        ry = list(range(self.h))
-
         if dir_mod_two == 0:
             # Up or down, split into columns
             for y in range(self.h):
-                old = [self.get(x, y) for x in rx]
+                old = self.Matrix[:, y].tolist()
                 (new, ms) = self.shift(old, shift_direction)
                 move_score += ms
                 if old != new:
                     changed = True
                     if not trial:
-                        for x in rx:
-                            self.set(x, y, new[x])
+                        self.Matrix[:, y] = new
         else:
             # Left or right, split into rows
             for x in range(self.w):
-                old = [self.get(x, y) for y in ry]
+                old = self.Matrix[x, :].tolist()
                 (new, ms) = self.shift(old, shift_direction)
                 move_score += ms
                 if old != new:
                     changed = True
                     if not trial:
-                        for y in ry:
-                            self.set(x, y, new[y])
+                        self.Matrix[x, :] = new
         if changed != True:
             raise IllegalMove
 
