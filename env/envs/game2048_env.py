@@ -8,17 +8,10 @@ import numpy as np
 
 from PIL import Image, ImageDraw, ImageFont
 
-import itertools
 import logging
 import random
 from io import StringIO
 import sys
-
-def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = itertools.tee(iterable)
-    next(b, None)
-    return zip(a, b)
 
 class IllegalMove(Exception):
     pass
@@ -250,34 +243,29 @@ class Game2048Env(gym.Env):
 
         return move_score
 
-    def combine(self, shifted_row):
-        """Combine same tiles when moving to one side. This function always
-           shifts towards the left. Also count the score of combined tiles."""
+    def combine(self, row):
+        """Compact and combine a row leftward in a single pass."""
         move_score = 0
         combined_row = [0] * self.size
-        skip = False
         output_index = 0
-        for p in pairwise(shifted_row):
-            if skip:
-                skip = False
+        can_merge = False
+        for val in row:
+            if val == 0:
                 continue
-            combined_row[output_index] = p[0]
-            if p[0] == p[1]:
-                combined_row[output_index] += p[1]
-                move_score += p[0] + p[1]
-                # Skip the next thing in the list.
-                skip = True
-            output_index += 1
-        if shifted_row and not skip:
-            combined_row[output_index] = shifted_row[-1]
-
+            if can_merge and combined_row[output_index - 1] == val:
+                combined_row[output_index - 1] *= 2
+                move_score += combined_row[output_index - 1]
+                can_merge = False
+            else:
+                combined_row[output_index] = val
+                output_index += 1
+                can_merge = True
         return (combined_row, move_score)
 
     def shift(self, row):
         """Shift one row left, combining equal adjacent tiles."""
         assert len(row) == self.size
-        shifted_row = [i for i in row if i != 0]
-        (combined_row, move_score) = self.combine(shifted_row)
+        (combined_row, move_score) = self.combine(row)
         assert len(combined_row) == self.size
         return (combined_row, move_score)
 
