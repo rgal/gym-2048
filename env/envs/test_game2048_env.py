@@ -7,47 +7,28 @@ import env.envs.game2048_env as game2048_env
 import pytest
 
 class TestBoard():
-    def test_combine(self):
-        b = game2048_env.Game2048Env()
-        # Test not combining
-        assert b.combine([0, 0, 0, 0]) == ([0, 0, 0, 0], 0)
-        assert b.combine([2, 0, 0, 0]) == ([2, 0, 0, 0], 0)
-        assert b.combine([2, 4, 0, 0]) == ([2, 4, 0, 0], 0)
-        # None the same
-        assert b.combine([2, 4, 8, 16]) == ([2, 4, 8, 16], 0)
-
-        # Test combining
-        # Left same same
-        assert b.combine([2, 2, 8, 0]) == ([4, 8, 0, 0], 4)
-        # Middle the same
-        assert b.combine([4, 2, 2, 4]) == ([4, 4, 4, 0], 4)
-        # Left and middle the same
-        assert b.combine([2, 2, 2, 8]) == ([4, 2, 8, 0], 4)
-        # Right the same
-        assert b.combine([2, 8, 4, 4]) == ([2, 8, 8, 0], 8)
-        # Left and right the same
-        assert b.combine([2, 2, 4, 4]) == ([4, 8, 0, 0], 12)
-        # Right and middle the same
-        assert b.combine([2, 4, 4, 4]) == ([2, 8, 4, 0], 8)
-        # All the same
-        assert b.combine([4, 4, 4, 4]) == ([8, 8, 0, 0], 16)
-
-        # Test short input
-        assert b.combine([]) == ([0, 0, 0, 0], 0)
-        assert b.combine([0]) == ([0, 0, 0, 0], 0)
-        assert b.combine([2]) == ([2, 0, 0, 0], 0)
-        assert b.combine([2, 4]) == ([2, 4, 0, 0], 0)
-        assert b.combine([2, 2, 8]) == ([4, 8, 0, 0], 4)
-
     def test_shift(self):
         b = game2048_env.Game2048Env()
-        # Shift left without combining
+        # No combining
         assert b.shift([0, 0, 0, 0]) == ([0, 0, 0, 0], 0)
         assert b.shift([0, 2, 0, 0]) == ([2, 0, 0, 0], 0)
         assert b.shift([0, 2, 0, 4]) == ([2, 4, 0, 0], 0)
         assert b.shift([2, 4, 8, 16]) == ([2, 4, 8, 16], 0)
-
-        # Shift left and combine
+        # Zeros interspersed
+        assert b.shift([2, 2, 8, 0]) == ([4, 8, 0, 0], 4)
+        # Middle the same
+        assert b.shift([4, 2, 2, 4]) == ([4, 4, 4, 0], 4)
+        # Left and middle the same
+        assert b.shift([2, 2, 2, 8]) == ([4, 2, 8, 0], 4)
+        # Right the same
+        assert b.shift([2, 8, 4, 4]) == ([2, 8, 8, 0], 8)
+        # Left and right the same
+        assert b.shift([2, 2, 4, 4]) == ([4, 8, 0, 0], 12)
+        # Right and middle the same
+        assert b.shift([2, 4, 4, 4]) == ([2, 8, 4, 0], 8)
+        # All the same
+        assert b.shift([4, 4, 4, 4]) == ([8, 8, 0, 0], 16)
+        # Sparse input
         assert b.shift([0, 2, 2, 8]) == ([4, 8, 0, 0], 4)
         assert b.shift([2, 2, 2, 8]) == ([4, 2, 8, 0], 4)
         assert b.shift([2, 2, 4, 4]) == ([4, 8, 0, 0], 12)

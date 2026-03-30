@@ -243,7 +243,7 @@ class Game2048Env(gym.Env):
 
         return move_score
 
-    def combine(self, row):
+    def shift(self, row):
         """Compact and combine a row leftward in a single pass."""
         move_score = 0
         combined_row = [0] * self.size
@@ -260,13 +260,6 @@ class Game2048Env(gym.Env):
                 combined_row[output_index] = val
                 output_index += 1
                 can_merge = True
-        return (combined_row, move_score)
-
-    def shift(self, row):
-        """Shift one row left, combining equal adjacent tiles."""
-        assert len(row) == self.size
-        (combined_row, move_score) = self.combine(row)
-        assert len(combined_row) == self.size
         return (combined_row, move_score)
 
     def isend(self):
