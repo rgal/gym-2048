@@ -127,6 +127,9 @@ def train(args: argparse.Namespace) -> None:
         model.policy.load_state_dict(pretrained.policy.state_dict())
         print("  Pre-trained weights loaded.")
 
+    print("Compiling policy (first rollout will be slower)...")
+    model.policy = torch.compile(model.policy)
+
     callbacks: list[BaseCallback] = [HighestTileCallback()]
     if args.save_interval > 0:
         callbacks.append(
