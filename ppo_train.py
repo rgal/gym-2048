@@ -121,6 +121,12 @@ def train(args: argparse.Namespace) -> None:
         tensorboard_log="./tensorboard_logs/",
     )
 
+    if args.pretrained:
+        print(f"Loading pre-trained policy weights from {args.pretrained}")
+        pretrained = PPO.load(args.pretrained)
+        model.policy.load_state_dict(pretrained.policy.state_dict())
+        print("  Pre-trained weights loaded.")
+
     callbacks: list[BaseCallback] = [HighestTileCallback()]
     if args.save_interval > 0:
         callbacks.append(
@@ -173,6 +179,9 @@ def parse_args() -> argparse.Namespace:
 
     p.add_argument("--filters", type=int, default=64)
     p.add_argument("--residual-blocks", type=int, default=4)
+
+    p.add_argument("--pretrained", default=None,
+                   help="Path to BC pre-trained model from pretrain_bc.py (no .zip extension)")
 
     p.add_argument("--log-interval", type=int, default=10,
                    help="Log every N rollouts")
