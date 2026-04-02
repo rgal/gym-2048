@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from stable_baselines3 import PPO
+from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
@@ -82,6 +83,39 @@ class HighestTileCallback(BaseCallback):
 
 
 # ---------------------------------------------------------------------------
+# Callback: record video
+# ---------------------------------------------------------------------------
+
+class VideoRecorderCallback(BaseCallback):
+    """Records one episode of the current policy every `record_freq` timesteps."""
+
+    def __init__(self, record_freq: int, video_folder: str = "./videos") -> None:
+        super().__init__()
+        self.record_freq = record_freq
+        self.video_folder = video_folder
+        self._last_recorded = 0
+
+    def _on_step(self) -> bool:
+        if self.num_timesteps - self._last_recorded >= self.record_freq:
+            self._last_recorded = self.num_timesteps
+            eval_env = RecordVideo(
+                gym.make("2048-v0", render_mode="rgb_array"),
+                video_folder=self.video_folder,
+                episode_trigger=lambda _: True,
+                name_prefix=f"ppo_{self.num_timesteps}",
+                disable_logger=True,
+            )
+            obs, _ = eval_env.reset()
+            done = False
+            while not done:
+                action, _ = self.model.predict(obs, deterministic=True)
+                obs, _, terminated, truncated, _ = eval_env.step(int(action))
+                done = terminated or truncated
+            eval_env.close()
+        return True
+
+
+# ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
 
@@ -131,6 +165,8 @@ def train(args: argparse.Namespace) -> None:
     model.policy = torch.compile(model.policy)
 
     callbacks: list[BaseCallback] = [HighestTileCallback()]
+    if args.video_freq > 0:
+        callbacks.append(VideoRecorderCallback(args.video_freq))
     if args.save_interval > 0:
         callbacks.append(
             CheckpointCallback(
@@ -185,6 +221,9 @@ def parse_args() -> argparse.Namespace:
 
     p.add_argument("--pretrained", default=None,
                    help="Path to BC pre-trained model from pretrain_bc.py (no .zip extension)")
+
+    p.add_argument("--video-freq", type=int, default=1_000_000,
+                   help="Record a video every N timesteps (0 = disable)")
 
     p.add_argument("--log-interval", type=int, default=10,
                    help="Log every N rollouts")
