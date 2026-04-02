@@ -100,7 +100,7 @@ def gather_training_data(env, model, data, results, seed=None):
             env.render()
 
             board_array = env.render(mode='rgb_array')
-            board_surface = pygame.surfarray.make_surface(board_array)
+            board_surface = pygame.surfarray.make_surface(board_array.swapaxes(0, 1))
             screen.blit(board_surface, (0, 0))
 
             # Get predictions from model
