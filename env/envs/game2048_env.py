@@ -8,7 +8,6 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 import logging
-import random
 from io import StringIO
 import sys
 
@@ -163,9 +162,9 @@ class Game2048Env(gym.Env):
     # Implement 2048 game
     def add_tile(self):
         """Add a tile, probably a 2 but maybe a 4"""
-        val = 2 if random.random() < 0.9 else 4
+        val = 2 if self.np_random.random() < 0.9 else 4
         positions = self._all_positions.copy()
-        random.shuffle(positions)
+        self.np_random.shuffle(positions)
         for r, c in positions:
             if self.Matrix[r, c] == 0:
                 logging.debug("Adding %s at %s", val, (r, c))
