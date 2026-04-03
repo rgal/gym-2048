@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.utils import seeding
 
 import numpy as np
 
@@ -56,10 +55,6 @@ class Game2048Env(gym.Env):
         self.grid_size = 70
         self.render_mode = render_mode
 
-    def seed(self, seed=None):
-        # Keep for backward compatibility with scripts that call env.seed()
-        self._np_random, seed = seeding.np_random(seed)
-        return [seed]
 
     def set_illegal_move_reward(self, reward):
         """Define the reward/penalty for performing an illegal move. Also need
