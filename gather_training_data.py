@@ -68,10 +68,11 @@ def get_line_plot(fig, results):
     raw_data = bytes(canvas.buffer_rgba())
     return raw_data
 
-def unstack(stacked, layers=16):
-    """Convert a single 16, 4, 4 stacked board state into flat 4, 4 board."""
+def unstack(stacked, layers=15):
+    """Convert a single (layers+1), 4, 4 stacked board state into flat 4, 4 board.
+    Layer 0 is the empty-cell indicator and is skipped; layers 1..layers hold tile values."""
     representation = 2 ** (np.arange(layers, dtype=int) + 1)
-    return np.sum(stacked * representation[:, np.newaxis, np.newaxis], axis=0)
+    return np.sum(stacked[1:] * representation[:, np.newaxis, np.newaxis], axis=0)
 
 def high_tile_in_corner(board):
     """Reports whether the a high tile >=64 is in the corner of (flat) board."""
