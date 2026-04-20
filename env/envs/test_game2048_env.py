@@ -151,6 +151,23 @@ class TestBoard():
             [0,    0, 0, 0]]))
         assert b.isend() == False
 
+        # non-2048 max_tile (256) — ends when 256 is reached
+        b = game2048_env.Game2048Env(max_tile=256)
+        b.set_board(np.array([
+            [256, 0, 0, 0],
+            [0,   0, 0, 0],
+            [0,   0, 0, 0],
+            [0,   0, 0, 0]]))
+        assert b.isend() == True
+
+        # 256 max_tile not yet reached — should be False
+        b.set_board(np.array([
+            [128, 0, 0, 0],
+            [0,   0, 0, 0],
+            [0,   0, 0, 0],
+            [0,   0, 0, 0]]))
+        assert b.isend() == False
+
 class TestStep():
     def test_step_returns_correct_shapes(self):
         b = game2048_env.Game2048Env()
