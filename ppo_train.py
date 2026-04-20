@@ -120,7 +120,9 @@ class VideoRecorderCallback(BaseCallback):
 # ---------------------------------------------------------------------------
 
 def train(args: argparse.Namespace) -> None:
-    env_instance = make_vec_env("2048-v0", n_envs=args.n_envs)
+    max_tile = args.max_tile if args.max_tile > 0 else None
+    env_instance = make_vec_env("2048-v0", n_envs=args.n_envs,
+                                env_kwargs={"max_tile": max_tile})
 
     policy_kwargs = dict(
         features_extractor_class=ResNetExtractor,
@@ -218,6 +220,9 @@ def parse_args() -> argparse.Namespace:
 
     p.add_argument("--filters", type=int, default=64)
     p.add_argument("--residual-blocks", type=int, default=4)
+
+    p.add_argument("--max-tile", type=int, default=2048,
+                   help="End episode when this tile is reached (default: 2048, 0 = no limit)")
 
     p.add_argument("--pretrained", default=None,
                    help="Path to BC pre-trained model from pretrain_bc.py (no .zip extension)")

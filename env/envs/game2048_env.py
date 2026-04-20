@@ -35,7 +35,7 @@ class Game2048Env(gym.Env):
     metadata = {'render_modes': ['ansi', 'human', 'rgb_array'], 'render_fps': 4}
     _all_positions = [(r, c) for r in range(4) for c in range(4)]
 
-    def __init__(self, render_mode: str | None = None):
+    def __init__(self, render_mode: str | None = None, max_tile: int | None = None):
         # Definitions for game. Board must be square.
         self.size = 4
         self.w = self.size
@@ -51,7 +51,7 @@ class Game2048Env(gym.Env):
         layers = self.squares  # layer 0 = empty, layers 1-15 = tile values 2^1..2^15
         self.observation_space = spaces.Box(0, 1, (layers, self.w, self.h), dtype=int)
         self.set_illegal_move_reward(0.)
-        self.set_max_tile(None)
+        self.set_max_tile(max_tile)
 
         # Size of square for rendering
         self.grid_size = 70

@@ -134,7 +134,8 @@ class TestBoard():
         assert b.isend() == False
 
         # max_tile reached — must return True regardless of empty cells
-        b.set_max_tile(2048)
+        # Also verify constructor argument works the same way
+        b = game2048_env.Game2048Env(max_tile=2048)
         b.set_board(np.array([
             [2048, 0, 0, 0],
             [0,    0, 0, 0],
