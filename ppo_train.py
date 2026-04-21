@@ -83,32 +83,6 @@ class HighestTileCallback(BaseCallback):
 
 
 # ---------------------------------------------------------------------------
-# Callback: save checkpoint without torch.compile wrapper
-# ---------------------------------------------------------------------------
-
-class UncompiledCheckpointCallback(BaseCallback):
-    """Saves a checkpoint with torch.compile unwrapped so it reloads cleanly."""
-
-    def __init__(self, save_freq: int, save_path: str = ".") -> None:
-        super().__init__()
-        self.save_freq = save_freq
-        self.save_path = save_path
-
-    def _on_step(self) -> bool:
-        if self.num_timesteps % self.save_freq == 0:
-            compiled_policy = None
-            if hasattr(self.model.policy, '_orig_mod'):
-                compiled_policy = self.model.policy
-                self.model.policy = compiled_policy._orig_mod
-            path = f"{self.save_path}/ppo_model_{self.num_timesteps}_steps"
-            self.model.save(path)
-            print(f"Checkpoint saved: {path}.zip")
-            if compiled_policy is not None:
-                self.model.policy = compiled_policy
-        return True
-
-
-# ---------------------------------------------------------------------------
 # Callback: record video
 # ---------------------------------------------------------------------------
 
@@ -163,34 +137,25 @@ def train(args: argparse.Namespace) -> None:
     # SB3 lr schedule receives progress_remaining: 1.0 → 0.0
     lr = (lambda p: args.lr * p) if args.anneal_lr else args.lr
 
-    if args.load_model:
-        print(f"Resuming from {args.load_model}")
-        model = PPO.load(
-            args.load_model,
-            env=env_instance,
-            device="mps" if torch.backends.mps.is_available() else "auto",
-            tensorboard_log="./tensorboard_logs/",
-        )
-    else:
-        model = PPO(
-            "CnnPolicy",
-            env_instance,
-            learning_rate=lr,
-            n_steps=args.n_steps,
-            batch_size=args.batch_size,
-            n_epochs=args.n_epochs,
-            gamma=args.gamma,
-            gae_lambda=args.gae_lambda,
-            clip_range=args.clip_coef,
-            vf_coef=args.vf_coef,
-            ent_coef=args.ent_coef,
-            max_grad_norm=args.max_grad_norm,
-            policy_kwargs=policy_kwargs,
-            seed=args.seed,
-            verbose=1,
-            device="mps" if torch.backends.mps.is_available() else "auto",
-            tensorboard_log="./tensorboard_logs/",
-        )
+    model = PPO(
+        "CnnPolicy",
+        env_instance,
+        learning_rate=lr,
+        n_steps=args.n_steps,
+        batch_size=args.batch_size,
+        n_epochs=args.n_epochs,
+        gamma=args.gamma,
+        gae_lambda=args.gae_lambda,
+        clip_range=args.clip_coef,
+        vf_coef=args.vf_coef,
+        ent_coef=args.ent_coef,
+        max_grad_norm=args.max_grad_norm,
+        policy_kwargs=policy_kwargs,
+        seed=args.seed,
+        verbose=1,
+        device="mps" if torch.backends.mps.is_available() else "auto",
+        tensorboard_log="./tensorboard_logs/",
+    )
 
     if args.pretrained:
         print(f"Loading pre-trained policy weights from {args.pretrained}")
@@ -205,20 +170,19 @@ def train(args: argparse.Namespace) -> None:
     if args.video_freq > 0:
         callbacks.append(VideoRecorderCallback(args.video_freq))
     if args.save_interval > 0:
-        callbacks.append(UncompiledCheckpointCallback(
-            save_freq=args.save_interval * args.n_steps,
-        ))
+        callbacks.append(
+            CheckpointCallback(
+                save_freq=args.save_interval * args.n_steps,
+                save_path=".",
+                name_prefix="ppo_model",
+            )
+        )
 
     model.learn(
         total_timesteps=args.total_timesteps,
         callback=callbacks,
         log_interval=args.log_interval,
-        reset_num_timesteps=not args.load_model,
     )
-
-    # Unwrap torch.compile before saving so state dict keys are clean for reloading
-    if hasattr(model.policy, '_orig_mod'):
-        model.policy = model.policy._orig_mod
 
     final_path = f"ppo_model_final_{int(time.time())}.zip"
     model.save(final_path)
@@ -257,8 +221,6 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--filters", type=int, default=64)
     p.add_argument("--residual-blocks", type=int, default=4)
 
-    p.add_argument("--load-model", default=None,
-                   help="Resume training from a saved model (.zip). Preserves optimizer state and timestep count.")
     p.add_argument("--max-tile", type=int, default=2048,
                    help="End episode when this tile is reached (default: 2048, 0 = no limit)")
 
