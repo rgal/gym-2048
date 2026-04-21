@@ -195,34 +195,50 @@ def train(args: argparse.Namespace) -> None:
 # ---------------------------------------------------------------------------
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="PPO training for 2048-v0 via Stable Baselines 3")
+    p = argparse.ArgumentParser(
+        description="PPO training for 2048-v0 via Stable Baselines 3",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
-    p.add_argument("--total-timesteps", type=int, default=5_000_000)
+    p.add_argument("--total-timesteps", type=int, default=5_000_000,
+                   help="Total training steps")
     p.add_argument("--n-envs", type=int, default=8,
                    help="Number of parallel environments")
-    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--seed", type=int, default=42,
+                   help="Random seed")
 
     p.add_argument("--n-steps", type=int, default=2048,
-                   help="Steps collected per rollout")
-    p.add_argument("--batch-size", type=int, default=256)
-    p.add_argument("--n-epochs", type=int, default=4)
+                   help="Steps collected per env per rollout")
+    p.add_argument("--batch-size", type=int, default=256,
+                   help="Minibatch size for PPO updates")
+    p.add_argument("--n-epochs", type=int, default=4,
+                   help="Number of epochs per rollout")
 
-    p.add_argument("--gamma", type=float, default=0.99)
-    p.add_argument("--gae-lambda", type=float, default=0.95)
-    p.add_argument("--clip-coef", type=float, default=0.2)
-    p.add_argument("--vf-coef", type=float, default=0.5)
-    p.add_argument("--ent-coef", type=float, default=0.01)
-    p.add_argument("--max-grad-norm", type=float, default=0.5)
+    p.add_argument("--gamma", type=float, default=0.99,
+                   help="Discount factor")
+    p.add_argument("--gae-lambda", type=float, default=0.95,
+                   help="GAE lambda")
+    p.add_argument("--clip-coef", type=float, default=0.2,
+                   help="PPO clip range")
+    p.add_argument("--vf-coef", type=float, default=0.5,
+                   help="Value function loss coefficient")
+    p.add_argument("--ent-coef", type=float, default=0.01,
+                   help="Entropy bonus coefficient")
+    p.add_argument("--max-grad-norm", type=float, default=0.5,
+                   help="Max gradient norm for clipping")
 
-    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--lr", type=float, default=3e-4,
+                   help="Learning rate")
     p.add_argument("--anneal-lr", action="store_true",
                    help="Linearly decay LR to 0 over training")
 
-    p.add_argument("--filters", type=int, default=64)
-    p.add_argument("--residual-blocks", type=int, default=4)
+    p.add_argument("--filters", type=int, default=64,
+                   help="Conv filters in ResNet trunk")
+    p.add_argument("--residual-blocks", type=int, default=4,
+                   help="Number of residual blocks")
 
     p.add_argument("--max-tile", type=int, default=2048,
-                   help="End episode when this tile is reached (default: 2048, 0 = no limit)")
+                   help="End episode when this tile is reached (0 = no limit)")
 
     p.add_argument("--pretrained", default=None,
                    help="Path to BC pre-trained model from pretrain_bc.py (no .zip extension)")
