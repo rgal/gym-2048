@@ -248,6 +248,15 @@ class TestStep():
         assert obs.sum(axis=0).max() <= 1
         assert set(obs.flatten().tolist()) == {0, 1}
 
+class TestRender():
+    def test_render_rgb_array_returns_image(self):
+        b = game2048_env.Game2048Env()
+        b.reset(seed=0)
+
+        image = b.render(mode='rgb_array')
+
+        assert image.shape == (b.grid_size * b.h, b.grid_size * b.w, 3)
+        assert image.dtype == np.uint8
 
 if __name__ == '__main__':
     pytest.main()
